@@ -50,12 +50,18 @@ def build(load_db: bool = True) -> dict:
             k, c = tok.split(":")
             res[k] = dict(code.get(c, {"state": c}), id=int(k))
         files = [db.ROOT / "data" / "cache" / "stores" / "gtv_codes.txt"]
+    try:
+        tail = json.loads((db.ROOT / "data" / "cache" / "stores" / "gtv_tail_cards.json").read_text(encoding="utf-8"))["cards"]
+    except (OSError, ValueError, KeyError):
+        tail = {}
     counts, lines = {}, []
     for n, (tid, orig, ru, year) in enumerate(items, 1):
         r = res.get(str(tid))
         st = status(r)
         counts[st.split(" (")[0].split(":")[0]] = counts.get(st.split(" (")[0].split(":")[0], 0) + 1
         card = f" — карточка: «{r.get('title')}», {r.get('sub')}" if r and r.get("title") else ""
+        if not card and str(tid) in tail:   # second reading of the cards (R147): what Google shows instead
+            card = f" — карточка Google: {tail[str(tid)]}"
         lines.append(f"| {n} | {ru or orig} | {orig if ru and orig != ru else ''} | {year} | {st}{card} |")
     head = [f"# Google TV «Хочу посмотреть»: отчёт по каждому фильму ({len(items)})", "",
             f"Источник: `{files[-1].name}`. Итог: " + ", ".join(f"{k} — {v}" for k, v in sorted(counts.items(), key=lambda x: -x[1])),
