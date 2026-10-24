@@ -123,7 +123,13 @@ def main(mode: str) -> None:
     # every finished stage goes to GitHub (owner, 2026-10-24: «на гитхаб каждый этап — пуш в мастер»)
     import subprocess
     git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
-    dirty = [l for l in git("status", "--porcelain").splitlines() if l[3:] and not l[3:].startswith("backup/")]
+    # files a running background agent is still editing (one path per line) are not a finished stage — commit them
+    # after checking its result, not half-written
+    try:
+        wip = {x.strip() for x in (ROOT / "data" / "cache" / "locks" / "wip.txt").read_text(encoding="utf-8").splitlines() if x.strip()}
+    except OSError:
+        wip = set()
+    dirty = [l for l in git("status", "--porcelain").splitlines() if l[3:] and not l[3:].startswith("backup/") and l[3:] not in wip]
     ahead = git("rev-list", "--count", "@{u}..HEAD").strip()
     if not dirty and ahead and ahead != "0":
         # unpushed only: if GitHub is unreachable (network outage) a push is impossible — remind, do not block
