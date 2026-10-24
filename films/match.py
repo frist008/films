@@ -32,6 +32,11 @@ def _basics(conn, tconst: str):
     return conn.execute("SELECT * FROM imdb_basics WHERE tconst = ?", (tconst,)).fetchone()
 
 
+def _keep_episode_id(np: dict) -> bool:
+    """A release of one special episode (a Christmas special, a pilot film) may rightly link an IMDb episode id."""
+    return bool(re.search(r"(?i)спецвыпуск|special|рождеств|christmas|пилот|pilot|эпизод|episode", np.get("name") or ""))
+
+
 def _years(p: dict) -> tuple[int | None, int | None]:
     np = p.get("name_parsed") or {}
     y1 = np.get("year_from") or np.get("year") or p.get("year")
@@ -302,6 +307,10 @@ def match_releases(conn, retry_issues: bool = False) -> dict:
             issue("collection_pack", {"page_imdb": tconst, "years": [y1, y2]})
             continue
         exclude, mismatch = frozenset(), None
+        if tconst and b is not None and b["title_type"] == "tvEpisode" and not _keep_episode_id(np):
+            # the page links one episode (often a typo of the film's id: «Пассажиры» 2016 → tt13556444 instead of tt1355644;
+            # 8 such titles found 2026-10-25) — resolved by name instead; a special released as an episode keeps it
+            exclude, mismatch, tconst = frozenset({tconst}), {"page_imdb": tconst, "imdb_type": "tvEpisode"}, None
         if tconst and b is not None and not _page_year_ok(conn, tconst, b, kind, p, y1, y2, seasons):
             # the page links another title (often an earlier part: «Коты Эрмитажа 2 (2026)» -> «Коты Эрмитажа» 2023):
             # resolved by name instead, that title excluded
