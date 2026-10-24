@@ -33,8 +33,14 @@ Claude не вписывает ключи/токены в веб-формы и �
 ## Новая машина / другой Claude-аккаунт
 
 1. `git clone` репозитория, `pip install -r requirements.txt`.
-2. Открыть заметку Keep «films — секреты» (<google.cloud>) → создать `.env` по `.env.example` и `secrets/google_oauth_client.json`.
-3. `python -X utf8 -m films init-db` (схема), дальше по скилам.
+2. Открыть заметку Keep «films — секреты» (<google.cloud>) → создать `.env` по `.env.example`, `secrets/google_oauth_client.json`
+   и `config/private.toml` (шаблон — `config/private.example.toml`; без него код не знает аккаунтов и ID списков владельца).
+3. База: `python -X utf8 -m films.backup restore data/films.db` — восстановить из текстовой копии `backup/` (схема + все таблицы,
+   кроме кэшей сторонних сайтов). Кэши заполняются заново: `python -X utf8 -m films ratings all` (датасеты IMDb + RT),
+   `python -X utf8 -m films enrich` (TMDB), `python -X utf8 -m films rutor …` (страницы раздач → разбор). Пустую базу без копии — `python -X utf8 -m films init-db`.
+4. Plex-токен — из реестра Windows машины с Plex (в файлы не пишется); Jellyfin — копия `jellyfin.db` (`films link jellyfin`).
+5. Chrome залогинен под владельцем (Google, YouTube, rutracker); первые JS-вызовы на сайте владелец подтверждает «Allow».
+6. Читать CLAUDE.md, скил owner-rules и PLAN.md (раздел «При следующем обновлении базы»), дальше — по скилам.
 
 ## История (2026-10-23)
 

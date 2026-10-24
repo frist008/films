@@ -303,6 +303,36 @@ def _name(t: dict) -> str:
     return f"{n}, сезон {t['season_number']}" if t["kind"] == "series" and t["season_number"] else n
 
 
+_BASE = re.compile(r"\s*[.:—–-]\s+|\s+\d+\s*$")
+_parasite_index: dict | None = None
+
+
+def _base(name: str | None) -> str:
+    """«Синистер. Пожиратель душ» → «синистер»; «Синистер 2» → «синистер»."""
+    return _BASE.split((name or "").lower().replace("ё", "е"), 1)[0].strip()
+
+
+def parasite_franchise(conn, t: dict) -> str | None:
+    """R69 (owner, 2026-10-23): a Russian title that borrows a franchise's name without belonging to it («Синистер.
+    Пожиратель душ» is not «Синистер») — returns the franchise name to say «к франшизе «…» не относится»."""
+    global _parasite_index
+    if _parasite_index is None:
+        _parasite_index = {}
+        for fkey, tmdb_id, title_ru in conn.execute(
+                "SELECT franchise_key, tmdb_id, title_ru FROM franchise_members WHERE confidence = 'confirmed'"):
+            b = _base(title_ru)
+            if len(b) >= 4:
+                e = _parasite_index.setdefault(b, {"name": (title_ru or "").split(".")[0].split(":")[0].strip(), "tmdb": set()})
+                e["tmdb"].add(tmdb_id)
+    b = _base(t.get("title_ru"))
+    e = _parasite_index.get(b)
+    # only a title that adds its own subtitle to the franchise name («Хэллоуин. Ночной кошмар»); the bare same word
+    # («Тень») is a namesake, not a borrowed name
+    if not e or len((t.get("title_ru") or "").strip()) <= len(b) + 1 or t.get("tmdb_id") in e["tmdb"] or t.get("series_tmdb_id") in e["tmdb"]:
+        return None
+    return e["name"]
+
+
 def render(conn, key: str, final: list[dict] | None = None) -> tuple[str, int, dict]:
     """The notes follow the playlist exactly: the final list (all_members — franchise grouping, moves between
     playlists), only titles that have a trailer in it, in the playlist's order."""
@@ -315,6 +345,9 @@ def render(conn, key: str, final: list[dict] | None = None) -> tuple[str, int, d
     info["earlier_unseen"] = []
     for i, t in enumerate(rows, 1):
         lines.append(f"{i}. **{_name(t)}** ({t['year'] or '?'}) — {description(conn, t)}")
+        fr = parasite_franchise(conn, t)
+        if fr:
+            lines.append(f"   ⚠ к франшизе «{fr}» не относится")
         p = earlier_unseen_part(conn, t, wt)
         if p:
             info["earlier_unseen"].append((t["id"], t["title_ru"], p["title_ru"], p["year"]))
