@@ -4,6 +4,17 @@
 // Items: [[title_id, original, ru, year], …] (data/cache/gtv_a.json + gtv_b.json). Progress: window.__gRun and
 // localStorage 'gtvRun' (results by title id). Google's 429 «sorry» page shows as 'nopanel' in a row → pause 10 min and
 // retry the same film; never bypass a captcha; pause lengths are logged in __gRun.blocks.
+// Chrome throttles timers of a background tab to one wake-up a minute («intensive throttling»): a film took ~3 min. Timers
+// run from a Worker are not throttled — page setTimeout is served by one (the guard's sleeps too; the guard is untouched).
+if (!window.__workerTimers) {
+  const w = new Worker(URL.createObjectURL(new Blob(['onmessage = e => setTimeout(() => postMessage(e.data.id), e.data.ms)'], {type: 'text/javascript'})));
+  const cbs = new Map(); let seq = 0;
+  w.onmessage = e => { const f = cbs.get(e.data); cbs.delete(e.data); if (f) f(); };
+  const native = window.setTimeout.bind(window);
+  window.setTimeout = (fn, ms, ...args) => { if (typeof fn !== 'function') return native(fn, ms, ...args);
+    const id = ++seq + 1e9; cbs.set(id, () => fn(...args)); w.postMessage({id, ms: ms || 0}); return id; };
+  window.__workerTimers = true;
+}
 window.__gtvLoop = items => {
   const sleep = ms => new Promise(r => setTimeout(r, ms));
   // items are kept in localStorage: after a frozen tab is closed, __gtvLoop() in a new google.com tab resumes (R140)
