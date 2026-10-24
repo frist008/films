@@ -119,12 +119,21 @@ def main(mode: str) -> None:
     plan = PLAN.read_text(encoding="utf-8")
     inbox = re.findall(r"^- \[ \] ВХ-\w+.*$", plan, re.M)
     done = re.findall(r"^- \[x\].*$", plan, re.M)
-    why = []
+    why, net_note = [], ""
     # every finished stage goes to GitHub (owner, 2026-10-24: «на гитхаб каждый этап — пуш в мастер»)
     import subprocess
     git = lambda *a: subprocess.run(["git", *a], cwd=ROOT, capture_output=True, text=True).stdout
     dirty = [l for l in git("status", "--porcelain").splitlines() if l[3:] and not l[3:].startswith("backup/")]
     ahead = git("rev-list", "--count", "@{u}..HEAD").strip()
+    if not dirty and ahead and ahead != "0":
+        # unpushed only: if GitHub is unreachable (network outage) a push is impossible — remind, do not block
+        try:
+            reach = subprocess.run(["git", "ls-remote", "--heads", "origin"], cwd=ROOT, capture_output=True, timeout=20).returncode == 0
+        except subprocess.TimeoutExpired:
+            reach = False
+        if not reach:
+            net_note = f"GitHub недоступен (сеть): {ahead} незапушенных коммитов — push, когда сеть вернётся."
+            ahead = "0"
     if dirty or (ahead and ahead != "0"):
         why.append(f"GitHub: {len(dirty)} незакоммиченных файлов, {ahead or '?'} незапушенных коммитов — `python -X utf8 -m "
                    "films.backup export` → `git add -A` → коммит → `git push origin main`.")
@@ -133,6 +142,11 @@ def main(mode: str) -> None:
                    + " | ".join(x[:90] for x in inbox[:6]))
     if done:
         why.append(f"В PLAN.md {len(done)} выполненных «- [x]»: проверить, что сделано, и перенести в PLAN-done.md.")
+    if not why and net_note:
+        print(json.dumps({"systemMessage": net_note}, ensure_ascii=False))
+        return
+    if net_note:
+        why.append(net_note)
     if why and not d.get("stop_hook_active"):
         print(json.dumps({"decision": "block", "reason": " ".join(why)}, ensure_ascii=False))
     elif why:
