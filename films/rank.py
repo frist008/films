@@ -152,7 +152,9 @@ def apply_responsible(conn, cfg: dict) -> dict:
             short = {r[0] for r in conn.execute("SELECT id FROM titles WHERE runtime_min IS NOT NULL AND runtime_min < ?",
                                                 (d.get("min_runtime", 0),))}
             for tid, year in rows:
-                if d.get("exclude_franchises") and tid in skip:
+                if d.get("exclude_franchises") and tid in skip:   # an older automatic guess goes away too
+                    conn.execute("DELETE FROM responsibility WHERE title_id = ? AND person = ? AND source != 'manual'",
+                                 (tid, d["name"]))
                     continue
                 if tid in short:   # feature films only (a game trailer was a «cartoon» on TMDB)
                     continue
@@ -248,6 +250,8 @@ def compute(conn) -> list[dict]:
     from . import watchlist, kostya_list, responsible
     wanted = watchlist.title_ids()                 # owner's «хочу» list, high priority (R48)
     list_marker = kostya_list.markers_by_title()   # owner's 2021–2025 list: ❤️ / 💛 / 🔵 / 🧞‍♀ / 🧸 (R54)
+    top_list = list(cfg.get("top", {}).get("imdb") or [])   # «в топ над всем» (owner): above even the urgent rows,
+    top_imdb = set(top_list)                                # in the order the owner named them
     urgent = responsible.urgent_titles()           # 🟢 / 🧞‍♀ / unticked ❤️ → the very top (R54, R55)
     from . import fresh
     first_seen = fresh.first_seen(conn)
@@ -256,6 +260,8 @@ def compute(conn) -> list[dict]:
 
     pats = cfg.get("not_interested", {}).get("title_patterns") or []
     ni_rx = re.compile("|".join(pats), re.I) if pats else None   # «вообще не интересно» by name ([not_interested])
+    apats = cfg.get("not_interested", {}).get("animation_patterns") or []
+    ni_anim_rx = re.compile("|".join(apats), re.I) if apats else None   # same, cartoons only (live action stays)
 
     rows = []
     for t in conn.execute("SELECT * FROM titles"):
@@ -291,10 +297,12 @@ def compute(conn) -> list[dict]:
             hidden.append("не интересен")
         elif ni_rx and ni_rx.search(f"{t.get('title_ru') or ''} | {t.get('title_original') or ''}"):
             hidden.append("не интересен (правило)")
+        elif ni_anim_rx and t.get("is_animation") and ni_anim_rx.search(f"{t.get('title_ru') or ''} | {t.get('title_original') or ''}"):
+            hidden.append("не интересен (правило)")
         cid = t.get("collection_id")
         is_member = (t.get("imdb_id") or t.get("series_imdb_id")) in member_imdb
         in_franchise_scope = (cid in franchise_years and (t.get("year") or 0) >= franchise_years[cid]) or is_member
-        owner_pick = t["id"] in wanted or t["id"] in queued or t["id"] in list_marker             or t["id"] in urgent             or (resp.get(t["id"]) or {}).get("source") == "manual" and (resp.get(t["id"]) or {}).get("person") not in (None, "—")
+        owner_pick = (t.get("imdb_id") or "") in top_imdb or t["id"] in wanted or t["id"] in queued or t["id"] in list_marker             or t["id"] in urgent             or (resp.get(t["id"]) or {}).get("source") == "manual" and (resp.get(t["id"]) or {}).get("person") not in (None, "—")
         # ↑ the owner asked for it (his lists, Дима's / Яна's manual lists): no year / cartoon-series rule
         if t.get("year") not in years and not in_franchise_scope and not owner_pick:
             hidden.append(f"год {t.get('year')}")
@@ -358,13 +366,15 @@ def compute(conn) -> list[dict]:
             "RT": round(max(0, (fresh.rt_score(t) or 0) - 50) * wts.get("rt_per_point_over_50", 0), 1),
         }
         score = round(sum(parts.values()), 1)
-        key = (0 if t["id"] in urgent else 1, -score) + tuple(sort_vals[k] for k in cfg["sort"]["order"])
+        is_top = (t.get("imdb_id") or "") in top_imdb
+        key = ((0, top_list.index(t["imdb_id"])) if is_top else (1 if t["id"] in urgent else 2, -score)) \
+            + tuple(sort_vals[k] for k in cfg["sort"]["order"])
         for vi, (label, r) in enumerate(variants):
             rows.append({"title": t, "variant": label, "variant_index": vi, "release": r,
                          "quality": describe(r), "hidden_reasons": hidden, "upgrade": upgrade,
                          "have": have, "queued": queued.get(t["id"]), "wanted": t["id"] in wanted,
                          "list_marker": list_marker.get(t["id"]) or auto_mark.get(t["id"]), "auto_mark": auto_mark.get(t["id"]),
-                         "urgent": t["id"] in urgent, "score": score, "score_parts": {k: v for k, v in parts.items() if v},
+                         "urgent": t["id"] in urgent, "top": is_top, "score": score, "score_parts": {k: v for k, v in parts.items() if v},
                          "first_seen": first_seen.get(t["id"]),
                          "franchise": franchise,
                          "people_hits": sorted(person_hits),

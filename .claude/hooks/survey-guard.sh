@@ -20,6 +20,8 @@ for q in qs:
     text = q.get("question", "")
     opts = q.get("options") or []
     blob = text + " " + " ".join(o.get("label", "") + " " + o.get("description", "") for o in opts)
+    if re.search(r"https?://|www\.|docs\.google|youtu", blob, re.I):
+        deny("Ссылки в вопросе не кликабельны (владелец с телефона, 2026-10-24): дай ссылку гиперссылкой [текст](url) в сообщении перед вопросом, а в вопросе — «по ссылке выше».")
     if re.search(r"ранни[ех] част", blob, re.I):
         deny("Не писать «ранние части» — владелец не понял термин: «предыдущий фильм серии» + пример (2026-10-24).")
     if re.search(r"TMDB\s*\d|TMDB[^.]{0,20}рейтинг|рейтинг[^.]{0,20}TMDB", blob, re.I):

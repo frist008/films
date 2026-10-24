@@ -9,7 +9,7 @@
 ["imdb_datasets","2026-10-23 10:17:28","2026-10-23 06:19:21",null]
 ["rt","2026-10-23 10:17:28","2026-10-23 10:17:27","{\"checked\": 2336}"]
 ["jellyfin","2026-10-24 03:34:15","2026-10-19 19:09:23","{\"items\": {\"movie\": 314, \"series\": 15, \"season\": 17, \"episode\": 166}, \"items_with_imdb\": 396, \"played_movies\": 9, \"played_episodes\": 3, \"last_played\": \"2026-10-19 19:09:23\"}"]
-["plex_mark","2026-10-24 05:36:02",null,"{\"title_id\": 5060, \"title\": \"Дамбо\", \"season\": null, \"plex\": [{\"where\": \"discover\", \"plexId\": \"5d776837a091de001f2e83dd\", \"viewCount\": 1, \"viewState\": \"complete\", \"already\": false}], \"dry_run\": false, \"confirmed\": true}"]
+["plex_mark","2026-10-24 06:55:58",null,"{\"title_id\": 240, \"title\": \"Одиссея\", \"season\": null, \"plex\": [{\"where\": \"discover\", \"plexId\": \"670cb74204e43056959bd4b3\", \"viewCount\": 1, \"viewState\": \"complete\", \"already\": false}], \"dry_run\": false, \"confirmed\": true}"]
 ["jellyfin_to_plex","2026-10-24 03:35:11",null,"{\"movies\": 0, \"episodes\": 3, \"not_confirmed\": 0}"]
 ["trailer_lang","2026-10-23 20:37:15",null,"{\"titles\": 2219, \"confirmed_ru\": 1986, \"replaced\": 124, \"removed\": 15, \"unknown\": 94}"]
 ["qbittorrent","2026-10-24 03:32:53","2026-10-22 13:56:37","{\"linked_btih\": 34, \"linked_topic\": 0, \"linked_name\": 0, \"linked_tmdb\": 33, \"queued\": 64, \"complete\": 11, \"torrents\": 75, \"unlinked\": 8}"]

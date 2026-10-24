@@ -455,7 +455,7 @@ def _score_rows(rows: list[dict]) -> list[list]:
         url = f"https://www.imdb.com/title/{t['imdb_id']}/" if t.get("imdb_id") else None
         parts = r["score_parts"]
         out.append([_cell(len(out) + 1), _cell(_tab(t)), _cell(name, link=url), _cell(t.get("year")),
-                    _cell("да" if r["urgent"] else ""), _cell(r["score"], bold=True),
+                    _cell("ТОП" if r.get("top") else "да" if r["urgent"] else ""), _cell(r["score"], bold=True),
                     *(_cell(parts.get(p) or None) for p in SCORE_PARTS), _cell(t["id"])])
     return out
 
@@ -479,10 +479,24 @@ def _playlist_rows(conn) -> list[list]:
 MARK_TABS = ("Главная", "Сериалы", "Мультфильмы", "Мультсериалы", "Аниме")
 
 
+def owner_cartoons(conn) -> set[int]:
+    """Cartoons of the franchises Яна dislikes and the owner likes (DC, Marvel, Mario, Star Wars…): «это ко мне из мультиков
+    в фильмы перемести» (owner, 2026-10-24) → shown with the films / series, not on the cartoon tabs."""
+    keys = [k for d in rank.settings()["responsible"].values() if d.get("owner_cartoons") for k in d.get("exclude_franchises", [])]
+    if not keys:
+        return set()
+    return {r[0] for r in conn.execute(
+        f"""SELECT t.id FROM titles t JOIN franchise_members m ON m.imdb_id = coalesce(t.imdb_id, t.series_imdb_id)
+            WHERE t.is_animation = 1 AND m.franchise_key IN ({",".join("?" * len(keys))}) AND m.confidence != 'review'""", keys)}
+
+
+_OWNER_CARTOONS: set[int] = set()
+
+
 def _tab(t: dict) -> str:
     if t.get("tracker_category") == "anime":
         return "Аниме"
-    if t.get("is_animation"):
+    if t.get("is_animation") and t["id"] not in _OWNER_CARTOONS:
         return "Мультфильмы" if t["kind"] == "movie" else "Мультсериалы"
     return "Главная" if t["kind"] == "movie" else "Сериалы"
 
@@ -500,6 +514,8 @@ def _rebuild(conn) -> dict:
     if not created:
         stats["read_back"] = read_back(conn, sh)
     rows = rank.compute(conn)
+    _OWNER_CARTOONS.clear()
+    _OWNER_CARTOONS.update(owner_cartoons(conn))
     people = _people(conn)
     collections = {r[0]: r[1] for r in conn.execute("SELECT id, name_ru FROM collections")}
     tabs = {t: [] for t in MARK_TABS}

@@ -170,7 +170,20 @@ def visible_order() -> dict[int, int]:
             if r["variant_index"] == 0 and not r["hidden_reasons"] and r["title"]["id"] not in _VISIBLE:
                 _VISIBLE[r["title"]["id"]] = i
                 i += 1
+            if r["franchise"] or r.get("top"):
+                _FOLLOWED.add(r["title"]["id"])
     return _VISIBLE
+
+
+_FOLLOWED: set[int] = set()
+
+
+def followed() -> set[int]:
+    """Titles of the franchises the owner follows (franchise points in the sheet) and the «в топ» titles: they rise by
+    priority alone, a trailer is not needed (owner, 2026-10-24: «Хищник — часть франшизы, которую мы утвердили … что он
+    делает в трейлерах моих папок?»; Крёстный отец, Супер Марио, Хитрый койот, Дьявол носит Prada 2 before)."""
+    visible_order()
+    return _FOLLOWED
 
 
 def members(conn, key: str) -> tuple[list[dict], dict]:
@@ -205,10 +218,19 @@ def members(conn, key: str) -> tuple[list[dict], dict]:
                 t = prev
         if t["id"] not in {x["id"] for x in out}:
             out.append(t)
+    # the franchise is already chosen when another film of its TMDB collection is downloaded / queued / watched — no
+    # trailer for the other parts, they rise by the franchise points (owner, 2026-10-24: «Я иду искать скачано, зачем нам
+    # трейлер второй части, если мы уже утвердили франшизу тем, что скачали первую часть?»)
+    have_imdb = have(conn)
+    approved = {cid for cid, tid, imdb in conn.execute("SELECT collection_id, id, imdb_id FROM titles WHERE collection_id IS NOT NULL")
+                if tid in w or imdb in have_imdb}
+    col = {t["id"]: conn.execute("SELECT collection_id FROM titles WHERE id = ?", (t["id"],)).fetchone()[0] for t in out}
+    franchise_approved = [(t["id"], t["title_ru"]) for t in out if col[t["id"]] in approved or t["id"] in followed()]
+    out = [t for t in out if col[t["id"]] not in approved and t["id"] not in followed()]
     vis = visible_order()
     out = [t for t in out if t["id"] in vis]
     out.sort(key=lambda t: vis[t["id"]])
-    return out, {"listed": len(set(ids)), "missing_in_db": sorted(missing), "watched": len(rows) - len(unseen),
+    return out, {"listed": len(set(ids)), "franchise_approved": franchise_approved, "missing_in_db": sorted(missing), "watched": len(rows) - len(unseen),
                  "later_parts": [(t["id"], t["title_ru"], t["kept_instead"]["title_ru"]) for t in dropped],
                  "swapped_for_earlier": swapped}
 
@@ -352,11 +374,20 @@ def _fits(conn, key: str, tid: int) -> bool:
     return True
 
 
+PRECEDENCE = ("dima", "yana", "kostya_want", "probably", "possible")
+
+
 def all_members(conn) -> dict[str, list[dict]]:
     """Every playlist, with the owner's franchise rules (2026-10-24):
     1) trailers of one franchise sit next to each other (at the place of its best-ranked title, oldest film first);
     2) a franchise spread over several playlists lives where its first film is — sequels move there (if they fit)."""
     lists = {k: members(conn, k)[0] for k in PLAYLISTS}
+    # 0) one title — one playlist (owner, 2026-10-24: «в плейлистах не может быть повторений», «не может быть в Костя
+    # хочет фильмов, которые есть у Димки или у Яны»): Дима / Яна first, then Костя Хочет → Вероятно → Возможно
+    taken = set()
+    for k in PRECEDENCE:
+        lists[k] = [t for t in lists[k] if t["id"] not in taken]
+        taken |= {t["id"] for t in lists[k]}
     gk = {}
     for k, rows in lists.items():
         for t in rows:
@@ -413,6 +444,10 @@ def desired(conn) -> dict:
     got, w = have(conn), watched_ids(conn)
     rejected = {v["url"].split("v=")[-1] for v in json.loads(REJECTED.read_text(encoding="utf-8")).values()} if REJECTED.exists() else set()
     vis = visible_order()
+    skip_imdb = _skip_imdb(conn)
+    chosen = {cid for cid, tid, imdb in conn.execute("SELECT collection_id, id, imdb_id FROM titles WHERE collection_id IS NOT NULL")
+              if tid in w or imdb in got}
+    col_of = lambda tid: conn.execute("SELECT collection_id FROM titles WHERE id = ?", (tid,)).fetchone()[0]
     from .sources.youtube import YouTube
     yt = YouTube(log=lambda m: None)
     out, problems, bad_videos = {}, [], []
@@ -427,6 +462,9 @@ def desired(conn) -> dict:
             if r[1] in got: problems.append((k, t["id"], "downloaded/queued"))
             if t["id"] in w: problems.append((k, t["id"], "watched"))
             if t["id"] not in vis: problems.append((k, t["id"], "hidden by the sheet filter"))
+            if t["id"] in followed(): problems.append((k, t["id"], "followed franchise / top — no trailer"))
+            if r[1] in skip_imdb: problems.append((k, t["id"], "skip_imdb"))
+            if col_of(t["id"]) in chosen: problems.append((k, t["id"], "collection chosen by a downloaded/watched part"))
             # the first of RU / fallback trailer that YouTube plays in UA and that is a trailer by length (1:30–5:00:
             # shorter is a teaser, longer is a whole film — owner, 2026-10-24); a title without one waits for a new search
             v = None
@@ -445,6 +483,13 @@ def desired(conn) -> dict:
                 tids.append(t["id"])
         out[k] = vids
         out_titles[k] = tids
+    seen_t, seen_v = {}, {}
+    for k in out:   # no title and no video in two playlists
+        for tid, v in zip(out_titles[k], out[k]):
+            if tid in seen_t: problems.append((k, tid, f"also in {seen_t[tid]}"))
+            if v in seen_v: problems.append((k, tid, f"video {v} also in {seen_v[v]}"))
+            seen_t.setdefault(tid, k)
+            seen_v.setdefault(v, k)
     if problems:
         raise SystemExit(f"playlist rules violated: {problems[:10]}")
     doc = {"generated_at": datetime.now().isoformat(timespec="seconds"), "playlists": out, "titles": out_titles,
