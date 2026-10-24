@@ -57,6 +57,16 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-memory.sh\"",
+            "timeout": 15
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

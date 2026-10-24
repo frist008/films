@@ -496,7 +496,7 @@ def desired(conn) -> dict:
            "bad_videos": bad_videos}
     DESIRED.write_text(json.dumps(doc, ensure_ascii=False), encoding="utf-8")
     # the exact text to load into the YouTube tab (playlist-guard.sh accepts only this text, while it is fresh)
-    DESIRED.with_suffix(".js").write_text("window.__want = " + json.dumps(out) + ";", encoding="utf-8")
+    DESIRED.with_suffix(".js").write_text("window.__want = " + json.dumps(out) + ";\n'__want loaded';", encoding="utf-8")
     return doc
 
 

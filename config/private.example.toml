@@ -33,3 +33,17 @@ search_watchlist_url = ""   # <google_tv.search_watchlist_url>
 
 [jellyfin]
 user = ""   # the owner's Jellyfin user name
+
+[owner_profile]   # только для форм, которые владелец просит заполнить; чего нет — спросить, не выдумывать
+full_name = ""
+city = ""
+postcode = ""
+address = ""
+phone = ""
+birth_date = ""
+language = ""
+
+[accounts]   # остальные аккаунты Google в Chrome (все — владельца)
+google_work = ""
+google_extra_1 = ""
+google_extra_2 = ""
