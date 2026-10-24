@@ -165,3 +165,36 @@ def match_releases(conn, retry_issues: bool = False) -> dict:
         if i % 2000 == 0:
             print(f"  matched {i}/{len(pending)}", file=sys.stderr, flush=True)
     return stats
+
+
+def link_exact_names(conn) -> dict:
+    """Fallback for releases `match_releases` left unlinked (no IMDb link on the page): «RU / … / Original (year)» equal to
+    the RU or original name of exactly one film title, year ±1 (R144, 2026-10-24: «Наследники», «Джиперс Криперс 3» were
+    left without their releases). Films only (a series release needs its season); ambiguous names are not touched."""
+    names: dict[tuple[str, int], set[int]] = {}
+    for tid, ru, orig, y in conn.execute("SELECT id, title_ru, title_original, year FROM titles WHERE kind = 'movie' AND year IS NOT NULL"):
+        for n in (ru, orig):
+            if n:
+                names.setdefault((n.casefold().replace("ё", "е").strip(), y), set()).add(tid)
+    rows = conn.execute("""SELECT r.id, r.name FROM releases r LEFT JOIN release_titles x ON x.release_id = r.id
+                           WHERE x.release_id IS NULL AND r.category IN ('foreign_films', 'animation')""").fetchall()
+    st = {"unlinked": len(rows), "linked": 0, "ambiguous": 0}
+    with conn:
+        for rid, name in rows:
+            m = re.match(r"^(.*?)\((\d{4})\)", name or "")
+            if not m:
+                continue
+            y = int(m.group(2))
+            cand = set()
+            for part in (p.strip().casefold().replace("ё", "е") for p in m.group(1).split("/") if p.strip()):
+                for yy in (y, y - 1, y + 1):
+                    cand |= names.get((part, yy), set())
+            if len(cand) == 1:
+                tid = cand.pop()
+                conn.execute("UPDATE releases SET title_id = ? WHERE id = ? AND title_id IS NULL", (tid, rid))
+                conn.execute("INSERT OR IGNORE INTO release_titles (release_id, title_id, how) VALUES (?, ?, 'exact_name_year')",
+                             (rid, tid))
+                st["linked"] += 1
+            elif cand:
+                st["ambiguous"] += 1
+    return st

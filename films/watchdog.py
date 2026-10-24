@@ -3,7 +3,7 @@
 
 The session cron fires only while the session is idle, so during long busy turns nobody checked. This module is run
 by the PostToolUse hook `.claude/hooks/watchdog-tick.sh` at most every 30 minutes, also mid-turn, and by the cron.
-It reports: live project Python processes, the age of every log written in the last 3 h, and «STALLED» for a
+It reports: live project Python processes, the age of every log written in the last 12 h, and «STALLED» for a
 process whose log has had no new line for 30+ minutes. In-page Chrome loops (playlists, Google TV) keep their progress
 in the page — check them with javascript_tool (window.__plRun / window.__gRun), the report reminds to do it.
 
@@ -37,7 +37,7 @@ def report() -> str:
     lines = [f"Сторож {time.strftime('%H:%M')}: процессов проекта {len(procs)}"]
     for p in procs:
         lines.append("  ▶ " + p[-110:])
-    logs = sorted((f for f in LOGS.glob("*.log") if now - f.stat().st_mtime < 3 * 3600), key=lambda f: -f.stat().st_mtime)
+    logs = sorted((f for f in LOGS.glob("*.log") if now - f.stat().st_mtime < 12 * 3600), key=lambda f: -f.stat().st_mtime)
     running = " ".join(procs)
     for f in logs:
         age = (now - f.stat().st_mtime) / 60
@@ -45,7 +45,8 @@ def report() -> str:
         alive = any(re.search(re.escape(k) + r"(?![\w.])|" + re.escape(k) + r"\.py", running)
                     for k in (stem, stem.replace("_", "."), stem.replace("_", " ")))
         flag = " ⚠ ЗАВИС? (процесс жив, лог молчит ≥ 30 мин)" if alive and age >= STALL_MIN else ""
-        lines.append(f"  лог {f.name}: {age:.0f} мин назад{flag}")
+        if alive or age < 180:   # older finished logs are noise
+            lines.append(f"  лог {f.name}: {age:.0f} мин назад{flag}")
     lines.append("  Chrome-циклы (плейлисты __plRun, Google TV __gRun) — проверить в вкладке javascript_tool")
     return "\n".join(lines)
 

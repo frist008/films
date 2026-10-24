@@ -24,25 +24,45 @@ CUTOFF = "2026-10-24T06:45:00"   # messages before the hook existed were handled
 HEAD = "## Входящие (каждое сообщение владельца — сюда первым делом; разобрать в R-пункт или выполнить)"
 
 
-# scheduled prompts (cron watchdog, /loop) are not the owner's words
-NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|<<autonomous-loop)", re.I)
+# scheduled prompts (cron watchdog, /loop) and compaction summaries are not the owner's words
+NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|<<autonomous-loop|This session is being continued)", re.I)
+
+
+def _text(c) -> str:
+    """Message content → its text (a message with a screenshot is a list [image, text]: code review 2026-10-24)."""
+    if isinstance(c, str):
+        return c
+    if isinstance(c, list):
+        return " ".join(_text(b.get("text", "")) if isinstance(b, dict) and b.get("type") == "text" else
+                        (b if isinstance(b, str) else "") for b in c)
+    return ""
 
 
 def _key(text: str) -> str:
     return hashlib.sha1(re.sub(r"\s+", " ", text).strip().encode()).hexdigest()[:8]
 
 
-def _seen() -> set[str]:
+def _seen() -> dict[str, int]:
+    """text hash → how many times it is already in the plan (two identical «да» are two messages)."""
     try:
-        return set(json.loads(SEEN.read_text(encoding="utf-8")))
+        v = json.loads(SEEN.read_text(encoding="utf-8"))
+        return {k: 1 for k in v} if isinstance(v, list) else v
     except (OSError, ValueError):
-        return set()
+        return {}
 
 
-def _add(items: list[tuple[str, str]]) -> list[str]:
-    """items: (iso time, text) → new inbox lines appended under HEAD (top of the plan)."""
+def _add(items: list[tuple[str, str]], occurrences: bool = False) -> list[str]:
+    """items: (iso time, text) → new inbox lines under HEAD (top of the plan). occurrences=True (the transcript): add as
+    many copies as the transcript has beyond what is recorded; otherwise (the prompt hook) add one."""
     seen = _seen()
-    new = [(ts, t) for ts, t in items if _key(t) not in seen and t.strip() and not NOT_OWNER.search(t)]
+    items = [(ts, t) for ts, t in items if t.strip() and not t.lstrip().startswith("<") and not NOT_OWNER.search(t)]
+    new, count = [], {}
+    for ts, t in items:
+        k = _key(t)
+        count[k] = count.get(k, 0) + 1
+        if (count[k] if occurrences else seen.get(k, 0) + 1) > seen.get(k, 0):
+            new.append((ts, t))
+            seen[k] = count[k] if occurrences else seen.get(k, 0) + 1
     if not new:
         return []
     plan = PLAN.read_text(encoding="utf-8")
@@ -54,7 +74,7 @@ def _add(items: list[tuple[str, str]]) -> list[str]:
     plan = plan[:i] + "\n".join(lines) + "\n" + plan[i:]
     PLAN.write_text(plan, encoding="utf-8")
     SEEN.parent.mkdir(parents=True, exist_ok=True)
-    SEEN.write_text(json.dumps(sorted(seen | {_key(t) for _, t in new})), encoding="utf-8")
+    SEEN.write_text(json.dumps(seen), encoding="utf-8")
     return lines
 
 
@@ -70,15 +90,18 @@ def _human_messages(transcript: str) -> list[tuple[str, str]]:
         except ValueError:
             continue
         ts = d.get("timestamp") or ""
-        if ts < CUTOFF:
+        if ts < CUTOFF or d.get("isCompactSummary") or d.get("isMeta") or d.get("isSidechain"):
             continue
         a = d.get("attachment") or {}
         if d.get("type") == "attachment" and a.get("type") == "queued_command" and (a.get("origin") or {}).get("kind") == "human":
-            out.append((ts, a.get("prompt") or ""))
-        elif d.get("type") == "user" and not d.get("isMeta") and not d.get("isSidechain"):
+            out.append((ts, _text(a.get("prompt"))))
+        elif d.get("type") == "user" and (d.get("origin") or {}).get("kind", "human") == "human":
             c = (d.get("message") or {}).get("content")
-            if isinstance(c, str) and not c.lstrip().startswith("<"):
-                out.append((ts, c))
+            if isinstance(c, list) and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in c):
+                continue   # tool results (answers to questions are recorded with the question's item)
+            t = _text(c)
+            if t and not t.lstrip().startswith("<"):
+                out.append((ts, t))
     return out
 
 
@@ -87,12 +110,12 @@ def main(mode: str) -> None:
     if mode == "prompt":
         p = d.get("prompt") or ""
         if p.strip() and not p.lstrip().startswith("<") and not NOT_OWNER.search(p):
-            _add([(datetime.now().isoformat(timespec="seconds"), p)])
+            _add([(datetime.now().isoformat(timespec="seconds"), _text(p))])
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext":
                   "Сообщение владельца записано в PLAN.md → «Входящие». Первым делом: оформить R-пункт (или сделать), "
                   "по выполнении — проверить и перенести в PLAN-done.md."}}, ensure_ascii=False))
         return
-    new = _add(_human_messages(d.get("transcript_path") or ""))
+    new = _add(_human_messages(d.get("transcript_path") or ""), occurrences=True)
     plan = PLAN.read_text(encoding="utf-8")
     inbox = re.findall(r"^- \[ \] ВХ-\w+.*$", plan, re.M)
     done = re.findall(r"^- \[x\].*$", plan, re.M)

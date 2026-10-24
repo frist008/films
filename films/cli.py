@@ -39,6 +39,7 @@ def cmd_match(args):
     conn = db.connect()
     db.migrate(conn)
     print(json.dumps(match.match_releases(conn, retry_issues=args.retry_issues), ensure_ascii=False, indent=1))
+    print(json.dumps({"exact_name_year": match.link_exact_names(conn)}, ensure_ascii=False))   # R144
 
 
 def cmd_enrich(args):

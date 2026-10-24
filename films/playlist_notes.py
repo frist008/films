@@ -365,13 +365,27 @@ def _group_key(conn, t: dict) -> str | None:
 
 
 def _fits(conn, key: str, tid: int) -> bool:
-    """Can a moved title live in playlist `key`? Дима — comedy as 1st/2nd genre, Яна — a cartoon; the owner's lists — any."""
-    g, anim = conn.execute("SELECT genres, is_animation FROM titles WHERE id = ?", (tid,)).fetchone()
-    if key == "dima":
-        return "комедия" in json.loads(g or "[]")[:2]
-    if key == "yana":
-        return bool(anim)
-    return True
+    """Can a sequel move to playlist `key`, where the first film of its franchise is? The owner (2026-10-24): «приоритет у
+    первой части, чтобы всё лежало там, где она, и без дубликатов в других» — so yes, even outside the playlist's profile;
+    only the hard «never» of a responsible person stays (Яна: DC / Marvel / Star Wars / Mario …, feature films only)."""
+    from . import rank
+    d = rank.settings()["responsible"].get(key)
+    if not d:
+        return True
+    rt = conn.execute("SELECT runtime_min FROM titles WHERE id = ?", (tid,)).fetchone()[0]
+    if rt is not None and rt < d.get("min_runtime", 0):
+        return False
+    return tid not in _excluded_cache(conn, key, d)
+
+
+_EXCLUDED: dict[str, set[int]] = {}
+
+
+def _excluded_cache(conn, key: str, d: dict) -> set[int]:
+    from . import rank
+    if key not in _EXCLUDED:
+        _EXCLUDED[key] = rank.excluded_for(conn, d)
+    return _EXCLUDED[key]
 
 
 PRECEDENCE = ("dima", "yana", "kostya_want", "probably", "possible")
@@ -380,7 +394,8 @@ PRECEDENCE = ("dima", "yana", "kostya_want", "probably", "possible")
 def all_members(conn) -> dict[str, list[dict]]:
     """Every playlist, with the owner's franchise rules (2026-10-24):
     1) trailers of one franchise sit next to each other (at the place of its best-ranked title, oldest film first);
-    2) a franchise spread over several playlists lives where its first film is — sequels move there (if they fit)."""
+    2) a franchise spread over several playlists lives where its first film is — sequels move there, also from Дима /
+       Яна («приоритет у первой части», owner 2026-10-24); only a responsible person's hard exclusions stop a move."""
     lists = {k: members(conn, k)[0] for k in PLAYLISTS}
     # 0) one title — one playlist (owner, 2026-10-24: «в плейлистах не может быть повторений», «не может быть в Костя
     # хочет фильмов, которые есть у Димки или у Яны»): Дима / Яна first, then Костя Хочет → Вероятно → Возможно
@@ -445,6 +460,9 @@ def desired(conn) -> dict:
     rejected = {v["url"].split("v=")[-1] for v in json.loads(REJECTED.read_text(encoding="utf-8")).values()} if REJECTED.exists() else set()
     vis = visible_order()
     skip_imdb = _skip_imdb(conn)
+    from . import rank
+    rcfg = rank.settings()["responsible"]
+    resp_rules = {k: (rank.excluded_for(conn, rcfg[k]), rcfg[k].get("min_runtime", 0)) for k in ("dima", "yana") if k in rcfg}
     chosen = {cid for cid, tid, imdb in conn.execute("SELECT collection_id, id, imdb_id FROM titles WHERE collection_id IS NOT NULL")
               if tid in w or imdb in got}
     col_of = lambda tid: conn.execute("SELECT collection_id FROM titles WHERE id = ?", (tid,)).fetchone()[0]
@@ -463,6 +481,11 @@ def desired(conn) -> dict:
             if t["id"] in w: problems.append((k, t["id"], "watched"))
             if t["id"] not in vis: problems.append((k, t["id"], "hidden by the sheet filter"))
             if t["id"] in followed(): problems.append((k, t["id"], "followed franchise / top — no trailer"))
+            if k in resp_rules and t["id"] in resp_rules[k][0]:
+                problems.append((k, t["id"], "excluded for this responsible (exclude_franchises / exclude_title_patterns)"))
+            rt = conn.execute("SELECT runtime_min FROM titles WHERE id = ?", (t["id"],)).fetchone()[0]
+            if k in resp_rules and rt is not None and rt < resp_rules[k][1]:
+                problems.append((k, t["id"], f"shorter than {resp_rules[k][1]} min (feature films only)"))
             if r[1] in skip_imdb: problems.append((k, t["id"], "skip_imdb"))
             if col_of(t["id"]) in chosen: problems.append((k, t["id"], "collection chosen by a downloaded/watched part"))
             # the first of RU / fallback trailer that YouTube plays in UA and that is a trailer by length (1:30–5:00:
@@ -483,6 +506,12 @@ def desired(conn) -> dict:
                 tids.append(t["id"])
         out[k] = vids
         out_titles[k] = tids
+    for k, tids in out_titles.items():   # parts of one TMDB collection sit next to each other (owner, 2026-10-24)
+        cols = [col_of(tid) for tid in tids]
+        for cid in {c for c in cols if c}:
+            pos = [i for i, c in enumerate(cols) if c == cid]
+            if pos[-1] - pos[0] + 1 != len(pos):
+                problems.append((k, tids[pos[0]], f"collection {cid} is split"))
     seen_t, seen_v = {}, {}
     for k in out:   # no title and no video in two playlists
         for tid, v in zip(out_titles[k], out[k]):

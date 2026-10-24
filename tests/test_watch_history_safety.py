@@ -37,6 +37,13 @@ class GuardTest(unittest.TestCase):
             return FakeResp({})
         self.p = mock.patch.object(requests.Session, "request", fake)
         self.p.start()
+        # the test log must not land in the real data/cache/logs/plex_writes.jsonl (its fake «key: new» looked like a
+        # real write there — review 2026-10-24)
+        import tempfile
+        from pathlib import Path
+        self.log = mock.patch.object(g, "LOG", Path(tempfile.mkdtemp()) / "plex_writes.jsonl")
+        self.log.start()
+        self.addCleanup(self.log.stop)
         g._APPROVED.clear()
         self.s = g.GuardedSession(LOCAL, DISC)
 

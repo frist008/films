@@ -32,6 +32,21 @@ def imdb_ratings(conn) -> dict:
                                           imdb_votes  = (SELECT votes  FROM imdb_ratings r WHERE r.tconst = titles.series_imdb_id),
                                           ratings_checked_at = datetime('now')
                         WHERE season_number IS NOT NULL AND series_imdb_id IS NOT NULL""")
+    # titles of any year (watched / bought / franchise films, older releases): imdb_ratings holds only the loader's years
+    # (startYear ≥ 2022) → take the rest straight from the cached ratings file (plan audit 2026-10-24: 1630 of 2703
+    # pre-2024 titles with releases had no rating, so the «IMDb < 5» filter never applied to them)
+    need = {r[0]: r[1] for r in conn.execute(
+        "SELECT CASE WHEN season_number IS NULL THEN imdb_id ELSE series_imdb_id END, season_number IS NULL FROM titles "
+        "WHERE imdb_rating IS NULL AND (CASE WHEN season_number IS NULL THEN imdb_id ELSE series_imdb_id END) IS NOT NULL")}
+    found = {}
+    for tconst, rating, votes in _tsv("title.ratings.tsv.gz"):
+        if tconst in need:
+            found[tconst] = (float(rating), int(votes))
+    with conn:
+        for tconst, (rating, votes) in found.items():
+            conn.execute("UPDATE titles SET imdb_rating = ?, imdb_votes = ?, ratings_checked_at = datetime('now') "
+                         "WHERE imdb_rating IS NULL AND ((season_number IS NULL AND imdb_id = ?) OR "
+                         "(season_number IS NOT NULL AND series_imdb_id = ?))", (rating, votes, tconst, tconst))
     # per-season mean of episode ratings
     wanted = {(r[0], r[1]) for r in conn.execute(
         "SELECT series_imdb_id, season_number FROM titles WHERE season_number IS NOT NULL AND series_imdb_id IS NOT NULL")}

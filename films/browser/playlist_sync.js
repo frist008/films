@@ -23,7 +23,9 @@ window.__plRead = async (pid, params) => { let b = await __yti('browse', params 
 window.__plEdit = (pid, actions) => __yti('browse/edit_playlist', {playlistId: pid, actions});
 window.__plSync = async (pid, want) => {
   let cur = await __plRead(pid, 'wgYCCAA%3D'); const ws = new Set(want);
-  const drop = cur.filter(([v]) => !ws.has(v)).map(([v, s]) => ({action: 'ACTION_REMOVE_VIDEO', setVideoId: s}));
+  const once = new Set();   // a video twice in the playlist: the extra copies go too
+  const drop = cur.filter(([v]) => !ws.has(v) || (once.has(v) ? true : (once.add(v), false)))
+    .map(([v, s]) => ({action: 'ACTION_REMOVE_VIDEO', setVideoId: s}));
   for (let i = 0; i < drop.length; i += 50) await __plEdit(pid, drop.slice(i, i + 50));
   const have = new Set(cur.map(x => x[0])); const add = want.filter(v => !have.has(v)).map(v => ({action: 'ACTION_ADD_VIDEO', addedVideoId: v}));
   for (let i = 0; i < add.length; i += 50) await __plEdit(pid, add.slice(i, i + 50));
@@ -37,7 +39,7 @@ window.__plSync = async (pid, want) => {
   await __sleep(6000);
   const all = await __plRead(pid, 'wgYCCAA%3D'); const vis = new Set((await __plRead(pid)).map(x => x[0]));
   const hidden = all.filter(([v]) => !vis.has(v));
-  if (hidden.length) await __plEdit(pid, hidden.map(([v, s]) => ({action: 'ACTION_REMOVE_VIDEO', setVideoId: s})));
+  if (hidden.length) { await __plEdit(pid, hidden.map(([v, s]) => ({action: 'ACTION_REMOVE_VIDEO', setVideoId: s}))); await __sleep(6000); }
   const fin = (await __plRead(pid)).map(x => x[0]);
   return {removed: drop.length, added: add.length, moves, final: fin.length, want: want.length, hiddenRemoved: hidden.map(x => x[0]),
           notAdded: want.filter(v => !fin.includes(v)), extra: fin.filter(v => !ws.has(v)), orderOk: fin.join() === want.filter(v => fin.includes(v)).join()}; };
@@ -45,7 +47,9 @@ window.__plRunAll = ids => { window.__plRun = {started: new Date().toISOString()
   const save = () => { try { localStorage.setItem('plRun', JSON.stringify(window.__plRun)); } catch (e) {} };
   window.__plRunP = (async () => { for (const k of Object.keys(ids)) {
     window.__plRun.current = k; save();
-    try { window.__plRun.res[k] = await __plSync(ids[k], __want[k] || []); } catch (e) { window.__plRun.res[k] = {err: String(e)}; }
+    // a key missing from __want must not empty that playlist (code review 2026-10-24)
+    if (!Array.isArray(__want[k])) { window.__plRun.res[k] = {err: 'no list in __want — skipped'}; continue; }
+    try { window.__plRun.res[k] = await __plSync(ids[k], __want[k]); } catch (e) { window.__plRun.res[k] = {err: String(e)}; }
     save(); }
     window.__plRun.current = null; window.__plRun.done = new Date().toISOString(); save(); })();
   return 'started'; };

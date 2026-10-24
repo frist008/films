@@ -55,15 +55,14 @@ def hdr_rank(cls: str) -> int:
 
 
 def release_key(r: dict, cfg: dict) -> tuple:
-    """Smaller is better. Voice first only as a gate (any voice beats none), then HDR, 4K, voice, source, bitrate."""
+    """Smaller is better. Voice first — «дубляж важнее качества всегда» (owner, 2026-10-24): dub > MVO > … > none,
+    then HDR, 4K, source, bitrate."""
     voice_rank = cfg["sort"]["voice_rank"]
     source_rank = cfg["sort"]["source_rank"]
     v = r.get("best_voice") or "none"
-    has_voice = v not in ("none",)
-    return (0 if has_voice else 1,
+    return (voice_rank.index(v) if v in voice_rank else len(voice_rank),
             hdr_rank(hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))),
             0 if (r.get("resolution") or 0) >= 2160 else 1,
-            voice_rank.index(v) if v in voice_rank else len(voice_rank),
             source_rank.index(r["source_type"]) if r.get("source_type") in source_rank else len(source_rank),
             -(r.get("h264_equiv_kbps") or 0),
             -(r.get("seeders") or 0))
@@ -127,36 +126,50 @@ def upgrade_reasons(have: dict, best: dict, cfg: dict) -> list[str]:
 
 # ---------------------------------------------------------------------------------------------- Dima
 
+def excluded_for(conn, d: dict) -> set[int]:
+    """Titles a responsible person must not get: members of `exclude_franchises` (franchise_members) plus titles whose
+    RU / original name matches `exclude_title_patterns` — franchise_members misses many (code review 2026-10-24: «Лего
+    Звёздные войны: Мандалорец», «Бэтмен: Падение рыцаря» sat in Яна's playlist)."""
+    out = set()
+    if d.get("exclude_franchises"):
+        q = ",".join("?" * len(d["exclude_franchises"]))
+        out |= {r[0] for r in conn.execute(
+            f"""SELECT t.id FROM titles t JOIN franchise_members m ON m.imdb_id = coalesce(t.imdb_id, t.series_imdb_id)
+                WHERE m.franchise_key IN ({q}) AND m.confidence != 'review'""", d["exclude_franchises"])}
+    if d.get("exclude_title_patterns"):
+        rx = re.compile("|".join(d["exclude_title_patterns"]), re.I)
+        out |= {tid for tid, ru, orig in conn.execute("SELECT id, title_ru, title_original FROM titles")
+                if rx.search(f"{ru or ''} | {orig or ''}")}
+    return out
+
+
 def apply_responsible(conn, cfg: dict) -> dict:
-    from . import fresh
-    first_seen = fresh.first_seen(conn)
     """Automatic responsibility from [responsible.*] in settings: Дима — «комедия» among the first two genres, Яна — feature
     animation. Manual assignments (owner's lists, sheet edits) are never overwritten; for a title that fits
-    both rules the later entry (Яна) wins."""
+    both rules the later entry (Яна) wins. An excluded or short title loses an older automatic guess."""
+    from . import fresh
+    first_seen = fresh.first_seen(conn)
     stats = {}
     with conn:
         for key, d in cfg["responsible"].items():
-            st = stats.setdefault(key, {"auto": 0, "suggested": 0})
+            st = stats.setdefault(key, {"auto": 0, "suggested": 0, "removed": 0})
             if d.get("animation"):
                 rows = conn.execute("SELECT id, year FROM titles WHERE is_animation = 1 AND kind = 'movie'").fetchall()
-            if d.get("exclude_franchises"):   # Яна: no DC / Marvel (owner, 2026-10-24)
-                q = ",".join("?" * len(d["exclude_franchises"]))
-                skip = {r[0] for r in conn.execute(
-                    f"""SELECT t.id FROM titles t JOIN franchise_members m ON m.imdb_id = coalesce(t.imdb_id, t.series_imdb_id)
-                        WHERE m.franchise_key IN ({q}) AND m.confidence != 'review'""", d["exclude_franchises"])}
             else:   # Дима: comedy as the 1st or 2nd genre (owner, 2026-10-24; was the 1st only) — `genre_rank` in settings
                 top = d.get("genre_rank", 1)
                 rows = [(tid, y) for tid, y, g in conn.execute(   # films only: nobody is responsible for series (2026-10-24)
                     "SELECT id, year, genres FROM titles WHERE kind = 'movie' AND genres IS NOT NULL AND genres != '[]'")
                         if set(json.loads(g)[:top]) & set(d["genres"])]
+            skip = excluded_for(conn, d)
             short = {r[0] for r in conn.execute("SELECT id FROM titles WHERE runtime_min IS NOT NULL AND runtime_min < ?",
                                                 (d.get("min_runtime", 0),))}
+            # excluded / short: no automatic responsibility, an older guess goes away too (feature films only — a game
+            # trailer and a 23-minute adult special were «cartoons» on TMDB)
+            for tid in skip | short:
+                st["removed"] += conn.execute("DELETE FROM responsibility WHERE title_id = ? AND person = ? AND source != 'manual'",
+                                              (tid, d["name"])).rowcount
             for tid, year in rows:
-                if d.get("exclude_franchises") and tid in skip:   # an older automatic guess goes away too
-                    conn.execute("DELETE FROM responsibility WHERE title_id = ? AND person = ? AND source != 'manual'",
-                                 (tid, d["name"]))
-                    continue
-                if tid in short:   # feature films only (a game trailer was a «cartoon» on TMDB)
+                if tid in skip or tid in short:
                     continue
                 cur = conn.execute("SELECT source FROM responsibility WHERE title_id = ?", (tid,)).fetchone()
                 if cur and cur[0] == "manual":
@@ -185,6 +198,10 @@ def compute(conn) -> list[dict]:
     flt = cfg["filters"]
     today = date.today()
     apply_responsible(conn, cfg)
+    # owner's «не интересно» from the franchise survey (series of series_only franchises, old films / cartoons): applied on
+    # every build — it was run by hand once and the config edits after it never reached the sheet (review 2026-10-24)
+    from .franchise_seen import hide_excluded_series
+    hide_excluded_series(conn)
     people_name = {}
     people = {}  # credits come from TMDB without IMDb ids, so a person matches by IMDb id or by name
     for p in people_cfg():
@@ -252,6 +269,7 @@ def compute(conn) -> list[dict]:
     list_marker = kostya_list.markers_by_title()   # owner's 2021–2025 list: ❤️ / 💛 / 🔵 / 🧞‍♀ / 🧸 (R54)
     top_list = list(cfg.get("top", {}).get("imdb") or [])   # «в топ над всем» (owner): above even the urgent rows,
     top_imdb = set(top_list)                                # in the order the owner named them
+    qwatch = set(cfg.get("quality_watch", {}).get("imdb") or [])   # owner's rutor list: own them, want a better copy
     urgent = responsible.urgent_titles()           # 🟢 / 🧞‍♀ / unticked ❤️ → the very top (R54, R55)
     from . import fresh
     first_seen = fresh.first_seen(conn)
@@ -374,7 +392,7 @@ def compute(conn) -> list[dict]:
                          "quality": describe(r), "hidden_reasons": hidden, "upgrade": upgrade,
                          "have": have, "queued": queued.get(t["id"]), "wanted": t["id"] in wanted,
                          "list_marker": list_marker.get(t["id"]) or auto_mark.get(t["id"]), "auto_mark": auto_mark.get(t["id"]),
-                         "urgent": t["id"] in urgent, "top": is_top, "score": score, "score_parts": {k: v for k, v in parts.items() if v},
+                         "urgent": t["id"] in urgent, "top": is_top, "quality_watch": (t.get("imdb_id") or "") in qwatch, "score": score, "score_parts": {k: v for k, v in parts.items() if v},
                          "first_seen": first_seen.get(t["id"]),
                          "franchise": franchise,
                          "people_hits": sorted(person_hits),

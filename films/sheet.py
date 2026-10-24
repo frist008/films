@@ -437,6 +437,35 @@ PLAYLIST_ABOUT = {
 }
 
 
+QUALITY_COLUMNS = [("Название", 260), ("Год", 50), ("Статус", 90), ("У меня", 220), ("Лучшее доступное", 300),
+                   ("Что лучше", 260), ("Размер", 70), ("title_id", 60)]
+
+
+def _quality_rows(rows: list[dict]) -> list[list]:
+    """«Обновить качество» (owner, 2026-10-24): films from his rutor list that he owns (downloaded / queued) — the best
+    release vs his copy; «дубляж важнее качества всегда», so voice upgrades come first, then other upgrades, then the rest."""
+    out = []
+    for r in rows:
+        if not r.get("quality_watch") or r["variant_index"] or "видел" in r["hidden_reasons"]:
+            continue
+        t, rel, have = r["title"], r["release"], r["have"]
+        url = f"https://www.imdb.com/title/{t['imdb_id']}/" if t.get("imdb_id") else None
+        mine = (" ".join(str(x) for x in (have.get("resolution") or "?", have.get("source_type") or "",
+                                            ",".join(have.get("hdr") or []), have.get("voice") or
+                                            ("RU/UK" if have.get("has_ru_uk") else "без RU/UK" if have.get("has_ru_uk") is False else ""))
+                         if x) if have else ("в очереди" if r.get("queued") else "—"))
+        status = "скачано" if have else "в очереди" if r.get("queued") else "нет"
+        why = r["upgrade"] or []
+        voice_up = any(w.startswith(("вышла озвучка", "вышел дубляж")) for w in why)
+        size = rel.get("size_bytes")
+        key = (0 if voice_up else 1 if why else 2, -(t.get("imdb_rating") or 0))
+        out.append((key, [_cell(t["title_ru"] or t["title_original"], link=url), _cell(t.get("year")), _cell(status),
+                          _cell(mine), _cell(r["quality"] + (f" — {rel.get('name')}" if rel.get("name") else ""), link=rel.get("url")),
+                          _cell("; ".join(why) if why else "лучше нет"), _cell(f"{size / 2**30:.1f} ГБ" if size else None),
+                          _cell(t["id"])]))
+    return [row for _, row in sorted(out, key=lambda x: x[0])]
+
+
 SCORE_PARTS = ("твой список", "хочу (сериалы)", "апгрейд", "франшиза", "IMAX", "новинка RT", "новинка 2026", "люди", "HDR",
                "4K", "озвучка", "желаемое", "IMDb", "RT")
 SCORE_COLUMNS = [("№", 50), ("Лист", 100), ("Название", 260), ("Год", 50), ("Срочно", 60), ("Итого", 60),
@@ -465,12 +494,14 @@ def _playlist_rows(conn) -> list[list]:
     from . import playlist_notes
     yt = db.private().get("youtube", {})
     ro = playlist_notes.connect_ro()
+    desired = json.loads(playlist_notes.DESIRED.read_text(encoding="utf-8")) if playlist_notes.DESIRED.exists() else None
     rows = []
     for key, name in playlist_notes.PLAYLISTS.items():
         pid = yt.get(f"playlist_{key}")
         url = f"https://www.youtube.com/playlist?list={pid}" if pid else None
-        members, _ = playlist_notes.members(ro, key)
-        rows.append([_cell(name, bold=True), _cell(url or "ещё не создан", link=url), _cell(len(members)),
+        # the checked list that is in YouTube (desired), not members() before dedup / trailer checks (code review 2026-10-24)
+        n = len(desired.get("playlists", {}).get(key, [])) if desired else len(playlist_notes.members(ro, key)[0])
+        rows.append([_cell(name, bold=True), _cell(url or "ещё не создан", link=url), _cell(n),
                      _cell(PLAYLIST_ABOUT.get(key, ""))])
     return rows
 
@@ -482,12 +513,12 @@ MARK_TABS = ("Главная", "Сериалы", "Мультфильмы", "Му
 def owner_cartoons(conn) -> set[int]:
     """Cartoons of the franchises Яна dislikes and the owner likes (DC, Marvel, Mario, Star Wars…): «это ко мне из мультиков
     в фильмы перемести» (owner, 2026-10-24) → shown with the films / series, not on the cartoon tabs."""
-    keys = [k for d in rank.settings()["responsible"].values() if d.get("owner_cartoons") for k in d.get("exclude_franchises", [])]
-    if not keys:
-        return set()
-    return {r[0] for r in conn.execute(
-        f"""SELECT t.id FROM titles t JOIN franchise_members m ON m.imdb_id = coalesce(t.imdb_id, t.series_imdb_id)
-            WHERE t.is_animation = 1 AND m.franchise_key IN ({",".join("?" * len(keys))}) AND m.confidence != 'review'""", keys)}
+    out = set()
+    for d in rank.settings()["responsible"].values():
+        if d.get("owner_cartoons"):
+            ex = rank.excluded_for(conn, d)
+            out |= {r[0] for r in conn.execute("SELECT id FROM titles WHERE is_animation = 1") if r[0] in ex}
+    return out
 
 
 _OWNER_CARTOONS: set[int] = set()
@@ -519,13 +550,16 @@ def _rebuild(conn) -> dict:
     people = _people(conn)
     collections = {r[0]: r[1] for r in conn.execute("SELECT id, name_ru FROM collections")}
     tabs = {t: [] for t in MARK_TABS}
+    quality = _quality_rows(rows)
+    rows = [r for r in rows if not r.get("quality_watch")]   # those live only on «Обновить качество» (owner, 2026-10-24)
     for r in rows:
         if not r["hidden_reasons"]:
             tabs[_tab(r["title"])].append(_main_row(r, people, collections))
     # watched titles never appear outside «Просмотренные» (owner, 2026-10-23)
     everything = [_main_row(r, people, collections) for r in rows if "видел" not in r["hidden_reasons"]]
     watched = _watched_rows(conn)
-    order = [*((t, MAIN_COLUMNS, tabs[t], True) for t in MARK_TABS), ("Просмотренные", WATCHED_COLUMNS, watched, False),
+    order = [*((t, MAIN_COLUMNS, tabs[t], True) for t in MARK_TABS), ("Обновить качество", QUALITY_COLUMNS, quality, False),
+             ("Просмотренные", WATCHED_COLUMNS, watched, False),
              ("Купить", BUY_COLUMNS, _buy_rows(conn), False), ("Плейлисты", PLAYLIST_COLUMNS, _playlist_rows(conn), False),
              ("Баллы", SCORE_COLUMNS, _score_rows(rows), False), ("Все", MAIN_COLUMNS, everything, True)]
     for title, cols, data, marks in order:
