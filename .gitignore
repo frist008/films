@@ -13,3 +13,4 @@ config/private.toml
 data/*.db
 .claude/scheduled_tasks.lock
 .claude/settings.local.json
+data/logs/
