@@ -40,6 +40,19 @@ def is_new(fs: dict[int, str], tid: int) -> bool:
     return (fs.get(tid) or "0000") >= cutoff()
 
 
+def last_update(conn) -> str | None:
+    """Date (YYYY-MM-DD) of the last finished «обнови базу» (`films update --finish` → sync_state 'update_db', R99(в)):
+    the next report shows every title whose first rutor release is from that date on."""
+    return db.sync_cursor(conn, "update_db")
+
+
+def new_since_last_update(conn, fs: dict[int, str] | None = None) -> list[int]:
+    """Titles first seen on rutor since the last update (empty before the first finished run)."""
+    since = last_update(conn)
+    fs = fs if fs is not None else first_seen(conn)
+    return sorted(t for t, d in fs.items() if since and d >= since)
+
+
 def rt_score(t: dict) -> int | None:
     c = cfg()
     vals = []

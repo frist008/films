@@ -147,6 +147,19 @@ def cmd_disks(args):
     print(json.dumps(res, ensure_ascii=False, indent=1))
 
 
+def cmd_update(args):
+    """«обнови базу» (skill update-db): --start opens the run and snapshots the state, --finish writes events,
+    the update date (sync_state update_db, R99) and the owner's report (films/update.py)."""
+    import json
+    from . import update
+    conn = db.connect()
+    db.migrate(conn)
+    if args.start:
+        print(json.dumps(update.start(conn, force=args.force), ensure_ascii=False, indent=1))
+    else:
+        print(json.dumps(update.finish(conn, args.run_id), ensure_ascii=False, indent=1))
+
+
 def cmd_sync_status(_args):
     conn = db.connect()
     db.migrate(conn)
@@ -197,6 +210,13 @@ def main():
     p.add_argument("action", choices=["scan", "link", "report"])
     p.add_argument("--drives", help="comma-separated, default C,D,E,F,G")
     p.set_defaults(func=cmd_disks)
+    p = sub.add_parser("update", help="«обнови базу»: open (--start) / close (--finish) a run — events, update date, report")
+    g = p.add_mutually_exclusive_group(required=True)
+    g.add_argument("--start", action="store_true", help="open a run and snapshot the state the report compares against")
+    g.add_argument("--finish", action="store_true", help="events from the difference, sync_state update_db, report .md")
+    p.add_argument("--force", action="store_true", help="--start: close a run left open as abandoned and start anew")
+    p.add_argument("--run-id", type=int, help="--finish: this run instead of the open one")
+    p.set_defaults(func=cmd_update)
     sub.add_parser("sync-status", help="last sync time and cursor per source").set_defaults(func=cmd_sync_status)
     sub.add_parser("privacy-check", help="fail if anything personal/secret would be published").set_defaults(func=cmd_privacy)
     args = parser.parse_args()

@@ -60,7 +60,22 @@ def _redact(table: str, cols: list[str], row: tuple) -> tuple:
         for i, v in enumerate(r):
             if isinstance(v, str):
                 r[i] = _DRIVE_PATH.sub(lambda m: _hide(m.group(0).replace("\\\\", "\\")), v)
-        for c in ("plex_title", "original_title", "show_title", "name"):
+        # the names also sit inside JSON cells («files», «audio»: {"show": …}) — every occurrence of them in any cell
+        # is replaced (a project name leaked that way: review 2026-10-24)
+        names = {str(d[c]) for c in ("plex_title", "original_title", "show_title", "name") if d.get(c)}
+        for v in r:
+            if isinstance(v, str):
+                names |= set(re.findall(r'"show":\s*"((?:[^"\\]|\\.)+)"', v))
+        names = sorted((n for n in names if len(n) >= 3), key=len, reverse=True)
+        h = lambda s: "#" + hashlib.sha1(s.encode("utf-8")).hexdigest()[:12]
+        for i, v in enumerate(r):
+            if isinstance(v, str):
+                for n in names:
+                    v = v.replace(n, h(n))
+                r[i] = v
+    if table == "plex_history" and d.get("title_id") is None:
+        # a watch of an unrecognised item — often the owner's own video: its names become hashes too
+        for c in ("title", "grandparent_title"):
             if c in d and d[c]:
                 r[cols.index(c)] = "#" + hashlib.sha1(str(d[c]).encode("utf-8")).hexdigest()[:12]
     if table == "qbt_torrents" and d.get("title_id") is None:
