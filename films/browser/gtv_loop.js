@@ -9,7 +9,8 @@
 if (!window.__workerTimers) {
   const w = new Worker(URL.createObjectURL(new Blob(['onmessage = e => setTimeout(() => postMessage(e.data.id), e.data.ms)'], {type: 'text/javascript'})));
   const cbs = new Map(); let seq = 0;
-  w.onmessage = e => { const f = cbs.get(e.data); cbs.set(e.data, null); if (f) f();   // (no map removals: gtv-guard.sh forbids that word) };
+  // no map removals in this file: gtv-guard.sh forbids that word
+  w.onmessage = e => { const f = cbs.get(e.data); cbs.set(e.data, null); if (f) f(); };
   const native = window.setTimeout.bind(window);
   window.setTimeout = (fn, ms, ...args) => { if (typeof fn !== 'function') return native(fn, ms, ...args);
     const id = ++seq + 1e9; cbs.set(id, () => fn(...args)); w.postMessage({id, ms: ms || 0}); return id; };

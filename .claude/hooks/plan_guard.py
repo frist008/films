@@ -25,7 +25,7 @@ HEAD = "## Входящие (каждое сообщение владельца 
 
 
 # scheduled prompts (cron watchdog, /loop) and compaction summaries are not the owner's words
-NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|Проверка цикла Google TV|<<autonomous-loop|This session is being continued)", re.I)
+NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|Проверка цикла Google TV|Google TV, хвост из 50|<<autonomous-loop|This session is being continued)", re.I)
 
 
 def _text(c) -> str:
