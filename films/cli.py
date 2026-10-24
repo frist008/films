@@ -74,6 +74,8 @@ def cmd_link(args):
         print(json.dumps(link.link_plex(conn), ensure_ascii=False, indent=1))
     if args.what in ("stores", "all"):
         print(json.dumps(link.link_stores(conn), ensure_ascii=False, indent=1))
+    from . import personal   # the owner's own videos are not kept (owner, 2026-10-24)
+    print(json.dumps({"personal_purged": personal.purge(conn)}, ensure_ascii=False))
 
 
 def cmd_crew(_args):
@@ -135,6 +137,9 @@ def cmd_disks(args):
     elif args.action == "link":
         res = disks.link(conn) | {"report": str(disks.REPORT_PATH)}
         disks.report(conn)
+    if args.action in ("scan", "link"):
+        from . import personal   # the owner's own videos are not kept (owner, 2026-10-24)
+        res = dict(res, personal_purged=personal.purge(conn))
     else:
         r = disks.report(conn)
         res = {k: v for k, v in r.items() if k in ("per_drive", "linked_by", "titles_on_disk",
@@ -157,6 +162,8 @@ def cmd_update(args):
     if args.start:
         print(json.dumps(update.start(conn, force=args.force), ensure_ascii=False, indent=1))
     else:
+        from . import personal   # before the snapshot: the owner's own videos are not kept (owner, 2026-10-24)
+        personal.purge(conn)
         print(json.dumps(update.finish(conn, args.run_id), ensure_ascii=False, indent=1))
 
 

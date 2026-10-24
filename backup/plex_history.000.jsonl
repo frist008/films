@@ -1,6 +1,4 @@
 {"columns": ["id", "source", "plex_guid", "guids", "kind", "title", "year", "grandparent_title", "viewed_at", "title_id", "history_id", "view_type", "library_section_id", "device_id", "season", "episode"]}
-[1,"library","local://19703","[\"pms-history://1952\", \"pms-view://played\"]","episode-like","#7e3afa78c00f",null,"#ea0b103a0998","2026-09-28 22:10:26",null,null,null,null,null,null,null]
-[2,"library","local://19702","[\"pms-history://1951\", \"pms-view://played\"]","episode-like","#c6e6872d4790",null,"#ea0b103a0998","2026-09-26 23:03:51",null,null,null,null,null,null,null]
 [3,"library","com.plexapp.agents.none://8dac107324c415d6c255db64483620d259120d52?lang=xn","[\"pms-history://1950\", \"pms-view://played\"]","episode-like","#970734dcabd9",null,"#e12f6b336205","2026-09-26 22:23:09",null,null,null,null,null,null,null]
 [4,"library","com.plexapp.agents.none://1319be2aeff3daf89fc261e1891aeb2ac74fdccd?lang=xn","[\"pms-history://1947\", \"pms-view://played\"]","episode-like","#8eec3f260e2f",null,"#e12f6b336205","2026-09-20 21:11:41",null,null,null,null,null,null,null]
 [5,"library","com.plexapp.agents.none://95c02f29678ec25beeeb4056fe6eb7d9a32018ca?lang=xn","[\"pms-history://1946\", \"pms-view://played\"]","episode-like","#131367289ed8",null,"#e12f6b336205","2026-09-20 20:18:32",null,null,null,null,null,null,null]
@@ -24,7 +22,6 @@
 [23,"library","plex://movie/613b69464d1516c90af83633","[\"imdb://tt15398776\", \"tmdb://872585\", \"tvdb://287533\", \"pms-history://1893\", \"pms-view://played\"]","movie","Оппенгеймер",2023,null,"2026-09-06 01:41:48",4330,null,null,null,null,null,null]
 [24,"library","plex://movie/6534344f8ca101e8b9eac71a","[\"imdb://tt29544253\", \"tmdb://1205229\", \"tvdb://362318\", \"pms-history://1892\", \"pms-view://played\"]","movie","Ночь в зоопарке",2025,null,"2026-09-05 21:30:56",2893,null,null,null,null,null,null]
 [25,"library","tv.plex.agents.none://19116","[\"pms-history://1887\", \"pms-view://played\"]","episode-like","#f34ec1c99a9b",null,"#dcaed11ea1af","2026-09-05 18:54:04",null,null,null,null,null,null,null]
-[26,"library","com.plexapp.agents.none://3382a6e9be740942f903c1fbe7276053d3ce4da9?lang=xn","[\"pms-history://1884\", \"pms-view://played\"]","episode-like","#79fdfc34f83b",null,"#1fd6e0178608","2026-08-31 20:46:37",null,null,null,null,null,null,null]
 [27,"library","tv.plex.agents.none://19190","[\"pms-history://1881\", \"pms-view://played\"]","episode-like","#579e75d2cf0b",null,"#1aef80251fd9","2026-08-30 20:39:46",null,null,null,null,null,null,null]
 [28,"library","tv.plex.agents.none://19190","[\"pms-history://1879\", \"pms-view://played\"]","episode-like","#883aa64dd4d4",null,"#1aef80251fd9","2026-08-30 20:04:33",null,null,null,null,null,null,null]
 [29,"library","tv.plex.agents.none://19190","[\"pms-history://1878\", \"pms-view://played\"]","episode-like","#498a39d484ac",null,"#1aef80251fd9","2026-08-30 19:16:09",null,null,null,null,null,null,null]
