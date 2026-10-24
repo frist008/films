@@ -2012,3 +2012,5 @@
 [4372,44768,null,"no_imdb_not_found","[{\"tmdb_id\": 25523, \"title\": \"Призрак Лорда Фаркуада (Шрэк 4D)\", \"original_title\": \"Shrek 3-D\", \"year\": 2004, \"score\": 0.5625, \"vote_count\": 299}]",null]
 [4373,44905,null,"no_imdb_not_found",null,null]
 [4374,45250,null,"collection_pack","{\"page_imdb\": null, \"years\": [2001, 2003]}",null]
+[4375,null,null,"rt_ambiguous","{\"title_id\": 7899, \"candidates\": [{\"url\": \"https://www.rottentomatoes.com/tv/stealth_and_beyond\", \"title\": \"Stealth and Beyond\", \"year\": 2004, \"score\": 0.49}]}",null]
+[4376,null,null,"rt_ambiguous","{\"title_id\": 7878, \"candidates\": [{\"url\": \"https://www.rottentomatoes.com/m/my_love_will_make_you_disappear\", \"title\": \"My Love Will Make You Disappear\", \"year\": 2025, \"score\": 0.525}]}",null]
