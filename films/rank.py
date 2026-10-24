@@ -54,13 +54,26 @@ def hdr_rank(cls: str) -> int:
     return order.index(cls) if cls in order else len(order)
 
 
-def release_key(r: dict, cfg: dict) -> tuple:
-    """Smaller is better. Voice first — «дубляж важнее качества всегда» (owner, 2026-10-24): dub > MVO > … > none,
-    then HDR, 4K, source, bitrate."""
+def preferred_studios(cfg: dict, t: dict) -> list[str]:
+    """[voice_preference]: the owner's voice studios for one series («Для Рика и Морти озвучка «Кубик в Кубе» или
+    «Сыендук» — приоритет», 2026-10-25) — names in lower case, aliases included."""
+    for p in cfg.get("voice_preference", {}).get("series", []):
+        if t.get("series_tmdb_id") == p.get("tmdb") or t.get("tmdb_id") == p.get("tmdb"):
+            return [x.lower() for x in p.get("studios", [])]
+    return []
+
+
+def release_key(r: dict, cfg: dict, studios: list[str] | None = None) -> tuple:
+    """Smaller is better. A studio the owner prefers for this series first (studios), then voice — «дубляж важнее
+    качества всегда» (owner, 2026-10-24): dub > MVO > … > none, then HDR, 4K, source, bitrate."""
     voice_rank = cfg["sort"]["voice_rank"]
+    pref = 0
+    if studios:
+        names = " ".join(str(a.get("studio") or "") + " " + str(a.get("title") or "") for a in _j(r.get("audio"), [])).lower()
+        pref = 0 if any(s in names for s in studios) else 1
     source_rank = cfg["sort"]["source_rank"]
     v = r.get("best_voice") or "none"
-    return (voice_rank.index(v) if v in voice_rank else len(voice_rank),
+    return (pref, voice_rank.index(v) if v in voice_rank else len(voice_rank),
             hdr_rank(hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))),
             0 if (r.get("resolution") or 0) >= 2160 else 1,
             source_rank.index(r["source_type"]) if r.get("source_type") in source_rank else len(source_rank),
@@ -294,7 +307,8 @@ def compute(conn) -> list[dict]:
             rels = [_qbt_release(queued[t["id"]])]   # queued from another tracker: its torrent is the row
         if not rels:
             continue  # watched-only / store-only titles appear on «Просмотренные», not here
-        rels.sort(key=lambda r: release_key(r, cfg))
+        studios = preferred_studios(cfg, t)
+        rels.sort(key=lambda r: release_key(r, cfg, studios))
         best = rels[0]
         variants = [("Лучшее", best)]
         for label, pred in (("Open Matte", lambda r: "open_matte" in _j(r.get("edition"), [])),

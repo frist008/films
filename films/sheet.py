@@ -8,6 +8,7 @@ Scope is drive.file: the app sees only files it created itself (the films spread
 rebuild(): read the owner's marks back into the DB first (never lose them), then rewrite every sheet.
 """
 import json
+from datetime import date
 import tomllib
 
 from . import db, rank
@@ -466,6 +467,50 @@ def _quality_rows(rows: list[dict]) -> list[list]:
     return [row for _, row in sorted(out, key=lambda x: x[0])]
 
 
+NOT_FOUND_COLUMNS = [("Франшиза", 200), ("Название", 280), ("Оригинал", 220), ("Год", 50), ("Тип", 110), ("Где искали", 160),
+                     ("Ссылка", 70)]
+
+
+def _not_found_rows(conn) -> list[list]:
+    """«Нет на трекерах» (owner, 2026-10-25: «вынести отдельным листом список того, что ты не нашёл по франшизам в источниках,
+    но так-то оно существует в мире по твоим данным»): members of the followed franchises (Wikidata / Wikipedia / TMDB,
+    not marked review) that have no release on the trackers, are not watched and not hidden by the owner's franchise rules."""
+    import tomllib
+    with open(db.ROOT / "config" / "franchises.toml", "rb") as f:
+        fr = {x["key"]: x for x in tomllib.load(f)["franchise"]}
+    with_rel = set()
+    for imdb, simdb, tmdb, stmdb in conn.execute(
+            "SELECT t.imdb_id, t.series_imdb_id, t.tmdb_id, t.series_tmdb_id FROM titles t WHERE t.id IN (SELECT title_id FROM release_titles)"):
+        with_rel |= {x for x in (imdb, simdb, f"tmdb:{tmdb}" if tmdb else None, f"tmdb:{stmdb}" if stmdb else None) if x}
+    seen = set()
+    for imdb, simdb, tmdb, stmdb in conn.execute(
+            "SELECT t.imdb_id, t.series_imdb_id, t.tmdb_id, t.series_tmdb_id FROM titles t JOIN watched w ON w.title_id = t.id "
+            "WHERE substr(w.source, -8) != '_partial'"):
+        seen |= {x for x in (imdb, f"tmdb:{tmdb}" if tmdb else None) if x}
+    out = []
+    for key, imdb, tmdb, ttype, kind, title, title_ru, year in conn.execute(
+            "SELECT franchise_key, imdb_id, tmdb_id, tmdb_type, kind, title, title_ru, year FROM franchise_members "
+            "WHERE confidence != 'review'"):
+        f = fr.get(key)
+        if not f or f.get("scope") == "none":
+            continue
+        ids = {x for x in (imdb, f"tmdb:{tmdb}" if tmdb else None) if x}
+        if ids & with_rel or ids & seen or imdb in set(f.get("hide") or []):
+            continue
+        series = ttype == "tv" or "series" in (kind or "")
+        before = f.get("hide_series_before" if series else "hide_films_before")
+        if year and before and year < before:
+            continue
+        if year and f.get("scope") == "2024-2026" and year < 2024:
+            continue
+        url = f"https://www.imdb.com/title/{imdb}/" if imdb else (f"https://www.themoviedb.org/{ttype or 'movie'}/{tmdb}" if tmdb else None)
+        out.append(((f.get("name") or key), year or 0, [_cell(f.get("name") or key), _cell(title_ru or title), _cell(title if title_ru else None),
+                    _cell(year), _cell(kind),
+                    _cell("анонс — ещё не вышел" if not year or year > date.today().year else "rutor (rutracker — при обновлении)"),
+                    _cell("IMDb" if imdb else "TMDB" if tmdb else None, link=url)]))
+    return [row for _, _, row in sorted(out, key=lambda x: (x[0], x[1]))]
+
+
 SCORE_PARTS = ("твой список", "хочу (сериалы)", "апгрейд", "франшиза", "IMAX", "новинка RT", "новинка 2026", "люди", "HDR",
                "4K", "озвучка", "желаемое", "IMDb", "RT")
 SCORE_COLUMNS = [("№", 50), ("Лист", 100), ("Название", 260), ("Год", 50), ("Срочно", 60), ("Итого", 60),
@@ -561,6 +606,7 @@ def _rebuild(conn) -> dict:
     order = [*((t, MAIN_COLUMNS, tabs[t], True) for t in MARK_TABS), ("Обновить качество", QUALITY_COLUMNS, quality, False),
              ("Просмотренные", WATCHED_COLUMNS, watched, False),
              ("Купить", BUY_COLUMNS, _buy_rows(conn), False), ("Плейлисты", PLAYLIST_COLUMNS, _playlist_rows(conn), False),
+             ("Нет на трекерах", NOT_FOUND_COLUMNS, _not_found_rows(conn), False),
              ("Баллы", SCORE_COLUMNS, _score_rows(rows), False), ("Все", MAIN_COLUMNS, everything, True)]
     for title, cols, data, marks in order:
         ws = _ws(sh, title, len(data) + 1, len(cols))
