@@ -71,7 +71,10 @@ def release_key(r: dict, cfg: dict) -> tuple:
 def describe(r: dict) -> str:
     hdr = hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))
     parts = [str(r.get("resolution") or "SD"), r.get("source_type") or "?"]
-    if hdr != "SDR":
+    if hdr == "DV*":   # R31: DV not from the studio — rebuilt from HDR10 (1) or converted from HDR10+ (2)
+        parts.append("DV" + (f" P{r['dv_profile']}" if r.get("dv_profile") else "")
+                     + (" (DV: из HDR10+)" if r.get("dv_static_md") == 2 else " (DV: статические метаданные)"))
+    elif hdr != "SDR":
         parts.append(hdr + (f" P{r['dv_profile']}" if hdr.startswith("DV") and r.get("dv_profile") else ""))
     if r.get("best_voice"):
         parts.append(r["best_voice"])
@@ -104,7 +107,7 @@ def upgrade_reasons(have: dict, best: dict, cfg: dict) -> list[str]:
     why = []
     if (best.get("resolution") or 0) > (have.get("resolution") or 0):
         why.append(f"разрешение {have.get('resolution')}→{best.get('resolution')}")
-    hb, hh = hdr_class(_j(best.get("hdr"), [])), hdr_class(have["hdr"])
+    hb, hh = hdr_class(_j(best.get("hdr"), []), best.get("dv_static_md")), hdr_class(have["hdr"])
     if hdr_rank(hb) < hdr_rank(hh):
         why.append(f"{hh}→{hb}")
     if have.get("dv_profile") == 5 and hb != "SDR" and best.get("dv_profile") != 5:
@@ -226,7 +229,9 @@ def compute(conn) -> list[dict]:
 
     rel_by_title: dict[int, list[dict]] = {}
     for r in conn.execute(
-            """SELECT rt.title_id, r.* FROM release_titles rt JOIN releases r ON r.id = rt.release_id"""):
+            """SELECT rt.title_id, r.* FROM release_titles rt JOIN releases r ON r.id = rt.release_id
+               WHERE NOT EXISTS (SELECT 1 FROM excluded_releases e      -- DV5-only etc. (R8): kept, never shown
+                                 WHERE e.source = r.source AND e.source_id = r.source_id)"""):
         rel_by_title.setdefault(r["title_id"], []).append(dict(r))
     plex_by_title: dict[int, list[dict]] = {}
     for p in conn.execute("SELECT * FROM plex_items WHERE title_id IS NOT NULL AND present = 1"):
@@ -297,9 +302,14 @@ def compute(conn) -> list[dict]:
             cand = [r for r in rels if pred(r)]
             if cand and cand[0] is not best:
                 variants.append((label, cand[0]))
-        studio_upscale = t.get("upscale_verdict") == "upscaled" or (t.get("di_resolution") in ("2K", "HD", "SD"))
+        # R32: a 4K release of a title mastered below 4K (IMDb Digital Intermediate 2K / HD, or another source's
+        # «upscaled») is a studio upscale → also show the best release at the native resolution. An explicit verdict
+        # (upscale_verdict, films.sources.imdb_specs / blu-ray.com) wins over the raw DI value.
+        verdict = t.get("upscale_verdict")
+        studio_upscale = (verdict == "upscaled") if verdict in ("upscaled", "native")             else t.get("di_resolution") in ("2K", "HD", "SD")
         if studio_upscale and (best.get("resolution") or 0) >= 2160:
             orig = [r for r in rels if (r.get("resolution") or 0) < 2160 and not r.get("is_ai_upscale")]
+            orig = [r for r in orig if (r.get("resolution") or 0) >= 1080] or orig   # «лучший 1080p», 720p only if nothing else
             if orig:
                 variants.append(("Оригинал без апскейла", orig[0]))
         ai = [r for r in rels if r.get("is_ai_upscale")]

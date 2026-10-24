@@ -277,6 +277,27 @@ processes → `titles.di_resolution`), опционально blu-ray.com `Resol
 | realorfake4k.com | нет (сайт мёртв с ~2019) | — | не использовать |
 | Анализ кадров (resdet/SRDM) | любая раздача, нужен файл | средняя–высокая | дорого, только ручная проверка |
 
+### 2.5. Реализация (R31 / R32, 2026-10-24)
+
+- **Вердикт тайтла** — `titles.upscale_verdict` (`upscaled` / `native` / `unknown`) + `upscale_source`:
+  1. `imdb_di` — `films.sources.imdb_specs` пишет при каждом прогоне из `di_resolution` (2K / HD / SD → `upscaled`,
+     ≥ 4K → `native`, иначе `unknown`); вердикт из другого источника не перезаписывается. Первый прогон: 772 строки
+     `upscaled`, 1519 `native`, 5676 `unknown`; из тайтлов с 4K-раздачей — 129 / 579 / 390.
+  2. `bluray_com` — `python -X utf8 -m films.sources.bluray_com run`: только фильмы с 4K-раздачей и `unknown`.
+     Поиск — **не** страница `/search/?quicksearch=…` (её результаты рисует JS, отсюда «не найдено 16 из 56» в 2.2),
+     а `POST /search/quicksearch.php` (`userid=-1&country=all&section=4kbluraymovies&keyword=…`) → `var urls = new Array(…)`.
+     Диск засчитывается только если на его странице ссылка `imdb.com/title/<тот же tt>`; читаются до 2 таких дисков
+     (не больше 4 страниц на фильм), разные вердикты → `conflict` (не пишется). Доступ — обычный HTTP без WAF, но гостя
+     режут: два запроса подряд → тело «Error42» примерно на минуту → общий интервал 7 с (`locks.pace('bluray_com')`),
+     при «Error42» пауза 60…360 с. Сырые ответы — `data/cache/bluray_com/`, отчёт — `last_run.json` там же.
+- **Таблица** (`rank.compute`): `upscale_verdict` решает, `di_resolution` — только если вердикта нет; при апскейле и 4K
+  в «Лучшем» строка «Оригинал без апскейла» — лучший не-AI релиз < 2160p, из них 1080p+ (720p — только если другого нет).
+- **Пересобранный DV** (R31) — `releases.dv_static_md`: 1 — DV собран из HDR10 (сгенерированный RPU / статические
+  метаданные), 2 — сконвертирован из HDR10+, 0 — признаков нет. MediaInfo этого не показывает (нет L1 / версии CM) —
+  только слова релизера; сигналы и примеры — `films/parse/rutor.py` (`dv_rebuild`), пересчёт по кэшу —
+  `python -X utf8 -m films.sources.rutor dv-flags`. В таблице: «DV P8 (DV: статические метаданные)» / «(DV: из HDR10+)»,
+  в сортировке такой DV — между HDR10+ и HDR10 (`rank.hdr_rank`, класс `DV*`).
+
 ---
 
 ## Источники

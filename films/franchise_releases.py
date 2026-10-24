@@ -7,7 +7,8 @@ For each confirmed member of a `scope = "all"` franchise that has no release yet
 are kept — a short title would otherwise drag in thousands of foreign releases. Then the usual chain:
 `films rutor pages` → `films rutor parse` → `films match` (IMDb link on the release page decides the title).
 
-Run: python -X utf8 -m films.franchise_releases [--dry]
+Run: python -X utf8 -m films.franchise_releases [--dry] [--only KEY[,KEY...]] [--with-single]
+    --with-single: also single_source members (e.g. game adaptations confirmed by films.sources.games only)
 """
 from __future__ import annotations
 
@@ -30,7 +31,7 @@ def _norm(s: str | None) -> str:
     return re.sub(r"\s+", " ", re.sub(r"[^\w]+", " ", s)).strip()
 
 
-def todo(conn) -> list[dict]:
+def todo(conn, only: set[str] | None = None, with_single: bool = False) -> list[dict]:
     from .seen_survey import have
     with open(db.ROOT / "config" / "franchises.toml", "rb") as f:
         frs = {fr["key"]: fr for fr in tomllib.load(f)["franchise"]}
@@ -40,8 +41,11 @@ def todo(conn) -> list[dict]:
     out = []
     for key, imdb, kind, title, title_ru, year, tmdb_id, tmdb_type in conn.execute(
             """SELECT franchise_key, imdb_id, kind, title, title_ru, year, tmdb_id, tmdb_type FROM franchise_members m
-               WHERE confidence = 'confirmed' AND NOT EXISTS (SELECT 1 FROM titles t JOIN release_titles rt ON rt.title_id = t.id
-                     WHERE t.imdb_id = m.imdb_id OR t.series_imdb_id = m.imdb_id)"""):
+               WHERE confidence IN (?, ?) AND NOT EXISTS (SELECT 1 FROM titles t JOIN release_titles rt ON rt.title_id = t.id
+                     WHERE t.imdb_id = m.imdb_id OR t.series_imdb_id = m.imdb_id)""",
+            ("confirmed", "single_source" if with_single else "confirmed")):
+        if only and key not in only:
+            continue
         fr = frs.get(key)
         if not fr or fr.get("scope") != "all" or not imdb or imdb in watched or imdb in got:
             continue
@@ -63,8 +67,8 @@ def _names(conn, w: dict) -> list[str]:
     return [n for n in dict.fromkeys(n for n in names if n and len(_norm(n)) >= 2)]
 
 
-def collect(conn, dry: bool = False, log=print) -> dict:
-    works = todo(conn)
+def collect(conn, dry: bool = False, log=print, only: set[str] | None = None, with_single: bool = False) -> dict:
+    works = todo(conn, only, with_single)
     st = {"works": len(works), "queries": 0, "rows": 0, "kept": 0, "new": 0, "with_hits": 0}
     for i, w in enumerate(works, 1):
         names = _names(conn, w)
@@ -105,4 +109,7 @@ def collect(conn, dry: bool = False, log=print) -> dict:
 if __name__ == "__main__":
     c = db.connect()
     db.migrate(c)
-    print(json.dumps(collect(c, dry="--dry" in sys.argv, log=lambda m: print(m, file=sys.stderr, flush=True)), ensure_ascii=False))
+    only = set(sys.argv[sys.argv.index("--only") + 1].split(",")) if "--only" in sys.argv else None
+    print(json.dumps(collect(c, dry="--dry" in sys.argv, log=lambda m: print(m, file=sys.stderr, flush=True), only=only,
+                             with_single="--with-single" in sys.argv),
+                     ensure_ascii=False))

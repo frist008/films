@@ -32,9 +32,9 @@ def imdb_ratings(conn) -> dict:
                                           imdb_votes  = (SELECT votes  FROM imdb_ratings r WHERE r.tconst = titles.series_imdb_id),
                                           ratings_checked_at = datetime('now')
                         WHERE season_number IS NOT NULL AND series_imdb_id IS NOT NULL""")
-    # titles of any year (watched / bought / franchise films, older releases): imdb_ratings holds only the loader's years
-    # (startYear ≥ 2022) → take the rest straight from the cached ratings file (plan audit 2026-10-24: 1630 of 2703
-    # pre-2024 titles with releases had no rating, so the «IMDb < 5» filter never applied to them)
+    # titles of any year (watched / bought / franchise films, older releases): since R5 the loader also loads every
+    # tconst linked in titles, so imdb_ratings normally has them; this pass over the cached ratings file stays as a
+    # safety net for titles linked after the last `imdb load` (same file → same numbers as the loader would give)
     need = {r[0]: r[1] for r in conn.execute(
         "SELECT CASE WHEN season_number IS NULL THEN imdb_id ELSE series_imdb_id END, season_number IS NULL FROM titles "
         "WHERE imdb_rating IS NULL AND (CASE WHEN season_number IS NULL THEN imdb_id ELSE series_imdb_id END) IS NOT NULL")}
@@ -95,12 +95,23 @@ def _store_page(conn, page: dict, url: str, kind: str, season: int | None, paren
          json.dumps(page.get("info"), ensure_ascii=False, default=str) if page.get("info") else None, title_id))
 
 
-def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30) -> dict:
-    rows = conn.execute(
-        """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
-           FROM titles WHERE tmdb_checked_at IS NOT NULL
-             AND (rt_checked_at IS NULL OR rt_checked_at < datetime('now', ?))
-           ORDER BY year DESC""", (f"-{recheck_days} days",)).fetchall()
+def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30, never_checked: bool = False,
+               stop_on_block: bool = False) -> dict:
+    """never_checked: every title with rt_checked_at NULL, TMDB-checked or not (R5).
+    stop_on_block: the first 403/429 stops the run (stats['blocked'] = the error), nothing is retried around it."""
+    if never_checked:
+        rows = conn.execute(
+            """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
+               FROM titles WHERE rt_checked_at IS NULL
+                 AND coalesce(title_original, title_latin, title_ru, title_uk) IS NOT NULL
+               ORDER BY year DESC""").fetchall()
+    else:
+        rows = conn.execute(
+            """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
+               FROM titles WHERE tmdb_checked_at IS NOT NULL
+                 AND (rt_checked_at IS NULL OR rt_checked_at < datetime('now', ?))
+               ORDER BY year DESC""", (f"-{recheck_days} days",)).fetchall()
+    rt.STOP_ON_BLOCK = stop_on_block
     if limit:
         rows = rows[:limit]
     stats = {"titles": len(rows), "matched": 0, "with_scores": 0, "ambiguous": 0, "not_found": 0, "errors": 0}
@@ -146,6 +157,11 @@ def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30) -> dict
             stats["matched"] += 1
             if src.get("critics") is not None or src.get("audience") is not None:
                 stats["with_scores"] += 1
+        except rt.RTBlocked as e:
+            stats["blocked"] = str(e)
+            stats["stopped_at"] = i
+            print(f"  RT BLOCKED at {i}/{len(rows)} (title {tid}): {e} -- stopping", file=sys.stderr, flush=True)
+            break
         except Exception as e:  # noqa: BLE001 — one bad page must not stop a 4000-title run; counted and logged
             stats["errors"] += 1
             print(f"  RT ERROR title {tid}: {e!r}", file=sys.stderr, flush=True)

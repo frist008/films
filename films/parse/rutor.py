@@ -1316,6 +1316,46 @@ def _hdr_from_mi_video(v: dict) -> dict:
     return out
 
 
+# ---- R31: Dolby Vision rebuilt from HDR10 / HDR10+ (not the studio's RPU) ----
+# MediaInfo cannot tell a generated RPU from a studio one (no L1 / CM version in its output; checked on all 1013 cached
+# DV pages, 2026-10-24) — only the uploader's own words do. Signals seen in cached rutor descriptions:
+#   «DV metadata is generated in DaVinci Resolve» (10767)                       -> 1 (rebuilt from the HDR10 grade)
+#   «Dolby vision RPU from dynamic HDR+ metadata» (16578),
+#   «Dolby vision RPU converted from dynamic HDR10+ metadata» (39388)          -> 2 (converted from HDR10+)
+# The remaining patterns are the usual wordings of the same thing (dovi_tool generate, CM v2.9/v4.0 from static
+# metadata, «DV из HDR10», «сгенерированный DV», «статические метаданные»): none occurs in the cache yet.
+# Not signals: hybrid releases «Web-DL HDR + Web-DL Dolby vision RPU» (a real RPU from another source), «Blu-ray
+# compatible» on Profile 8 (P7 -> P8.1 conversion keeps the studio RPU).
+_DV_WORD = r"\b(?:DV|DoVi|Dolby\s*Vision|RPU)\b"
+_DV_FROM_HDR10P_RE = re.compile(
+    _DV_WORD + r"\W{0,3}(?:[\w-]+\W+){0,4}?(?:from|из|на\s+основе|based\s+on)\s+(?:the\s+)?(?:dynamic\s+|динамическ\w*\s+)?"
+    r"(?:метадан\w*\s+)?HDR\s*(?:10)?\s*(?:\+|plus\b)"
+    r"|HDR\s*10\s*(?:\+|plus\b)\s*(?:->|→|=>|>|\bto\b|\bв\b)\s*" + _DV_WORD, re.I)
+_DV_FROM_HDR10_RE = re.compile(
+    _DV_WORD + r"\W{0,3}(?:[\w-]+\W+){0,4}?(?:from|из|на\s+основе|based\s+on)\s+(?:the\s+)?(?:static\s+|статическ\w*\s+)?"
+    r"(?:метадан\w*\s+)?HDR\s*(?:10)?(?!\s*(?:\+|plus\b))(?![\w+])"
+    r"|HDR\s*10(?!\s*(?:\+|plus\b))\s*(?:->|→|=>|>|\bto\b|\bв\b)\s*" + _DV_WORD +
+    r"|" + _DV_WORD + r"\W{0,3}(?:[\w-]+\W+){0,3}?(?:is\s+|was\s+)?(?:generated|сгенерир\w*|синтезир\w*)\b"
+    r"|(?:generated|сгенерир\w*|синтезир\w*|fake|фейков\w*|псевдо)[\s-]+(?:[\w-]+\s+){0,2}?" + _DV_WORD +
+    r"|dovi[_\s-]?tool\s+generate|\bCM\s*v?\s*(?:2\.9|4\.0)\b[^\n]{0,40}(?:static|статическ|generat|сгенерир)"
+    r"|" + _DV_WORD + r"[^\n]{0,40}(?:static\s+metadata|статическ\w*\s+метадан\w*)"
+    r"|(?:static\s+metadata|статическ\w*\s+метадан\w*)[^\n]{0,40}" + _DV_WORD, re.I)
+
+
+def dv_rebuild(text: str) -> tuple[int | None, str | None]:
+    """(dv_static_md, evidence): 2 — DV converted from HDR10+, 1 — DV rebuilt from HDR10 (static metadata / generated
+    RPU), None — no sign (the RPU is presumed the studio's)."""
+    if not text:
+        return None, None
+    m = _DV_FROM_HDR10P_RE.search(text)
+    if m:
+        return 2, _norm_space(m.group(0))[:160]
+    m = _DV_FROM_HDR10_RE.search(text)
+    if m:
+        return 1, _norm_space(m.group(0))[:160]
+    return None, None
+
+
 _TEXT_HDR_PATTERNS = [
     (re.compile(r"hdr10\s*\+|hdr10\s*plus|hdr\+10|hdr10plus", re.I), "HDR10+"),
     (re.compile(r"dolby\s*vision|(?<![\w])dv(?![\w])|dovi", re.I), "DV"),
@@ -1950,7 +1990,13 @@ def parse_release_page(html: str) -> dict:
                 "" if ok else "; HDR10 layer not proven (only a generic 'HDR' tag or none) — could be Profile 5"))
         else:
             out["dv_fallback"] = "HDR10" if "HDR10" in out["hdr"] else (comp or "unknown")
-        out["dv5_only"] = out["dv_profile"] == 5 and not any(h in out["hdr"] for h in ("HDR10", "HDR10+", "HLG"))
+        # Profile 5 base layer is IPTPQc2: HDR10+ SEI on it (release 35004, «dvhe.05.06, BL+RPU / SMPTE ST 2094 App 4»)
+        # does not make it playable as HDR10 on a non-DV screen — only a real HDR10 / HLG layer is a fallback (R8)
+        fallbacks = ("HDR10", "HLG") if mi and mi["video"] else ("HDR10", "HDR10+", "HLG")
+        out["dv5_only"] = out["dv_profile"] == 5 and not any(h in out["hdr"] for h in fallbacks)
+        # R31: DV that is not the studio's — rebuilt from the HDR10 grade (1) or converted from HDR10+ (2)
+        dv_texts = [main_text] + [b for _, b in spoilers]
+        out["dv_static_md"], out["dv_rebuild_evidence"] = dv_rebuild(" \n".join(dv_texts))
     out.pop("_dv_compat", None)
 
     # resolution

@@ -317,5 +317,25 @@ class TestReleasePage(unittest.TestCase):
         self.assertEqual(r["audio"][0]["voices"], 2)
 
 
+class DvRebuildTest(unittest.TestCase):
+    """R31: DV rebuilt from HDR10 (1) / converted from HDR10+ (2); wordings from cached rutor pages."""
+
+    def test_signals(self):
+        from films.parse.rutor import dv_rebuild
+        cases = {
+            "HYBRID WEB-DL HDR + DV metadata is generated in DaVinci Resolve, Dolby Vision": 1,   # rutor 10767
+            "Web-DL 2160p HDR + Web-DL 2160p Dolby vision RPU converted from dynamic HDR10+ metadata": 2,  # 39388
+            "UHD WebDL 2160p + Dolby vision RPU from dynamic HDR+ metadata": 2,                   # 16578
+            "Dolby Vision из HDR10": 1, "HDR10 -> DV": 1, "DV P8 (CM v4.0, static metadata)": 1,
+            # not rebuilt: hybrid with a real RPU, plain MediaInfo, an audio studio name
+            "Гибридный релиз получен слиянием UHD BDRemux HDR + Web-DL 2160p Dolby vision RPU": None,
+            "Dolby Vision, Version 1.0, Profile 8.1, dvhe.08.06, BL+RPU, HDR10 compatible / SMPTE ST 2094 App 4, "
+            "Version 1, HDR10+ Profile B compatible": None,
+            "Аудио 2: AC3, 2 ch, 192 Kbps | русский (DVO RealFake)": None,
+        }
+        for text, want in cases.items():
+            self.assertEqual(dv_rebuild(text)[0], want, text)
+
+
 if __name__ == "__main__":
     unittest.main()

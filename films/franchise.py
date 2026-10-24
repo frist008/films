@@ -1005,6 +1005,62 @@ EXTRA: dict[str, dict] = {
     "alan_wake": {"seeds": ["Q575505", "Q21010056"],                         # Alan Wake (game), the character
                   "anchors_qids": ["Q11339166"],                             # Bright Falls (2010 web series)
                   "fandom": ["alanwake"]},
+    # экранизации игр, круг 2 (R36/R62, 2026-10-24): группы game_adaptations с подтверждёнными экранизациями,
+    # у которых не было ни одного члена франшизы; fandom — из подсказок Wikidata P6262 (только вики своей серии)
+    "alone_in_the_dark": {"game_groups": ["Q776174"]},
+    "among_us": {"game_groups": ["Q96417649"], "fandom": ["among-us"]},
+    "ark": {"game_groups": ["Q20031747"]},
+    "battlefield": {"game_groups": ["Q474587"]},
+    "bayonetta": {"game_groups": ["Q20062305"]},
+    "borderlands": {"game_groups": ["Q16820462"]},
+    "castlevania": {"game_groups": ["Q2515184"], "fandom": ["castlevania"]},
+    "company_of_heroes": {"game_groups": ["Q28959835"]},
+    "final_fantasy": {"game_groups": ["Q99416119", "Q952649", "Q1343367"], "fandom": ["finalfantasy"]},
+    "cuphead": {"game_groups": ["Q18149495"]},
+    "cyberpunk": {"game_groups": ["Q123017171"], "fandom": ["cyberpunk"]},
+    "dead_by_daylight": {"game_groups": ["Q24514682"]},
+    "dead_or_alive": {"game_groups": ["Q1180890"]},
+    "dragon_age": {"game_groups": ["Q1766436"]},
+    "dragon_ball": {"game_groups": ["Q16515147"], "fandom": ["dragonball"]},
+    "dragons_dogma": {"game_groups": ["Q108370830"]},
+    "drakengard_nier": {"game_groups": ["Q16000078"]},
+    "fallout": {"game_groups": ["Q167835"], "fandom": ["fallout"]},
+    "far_cry": {"game_groups": ["Q2667817"], "fandom": ["farcry"]},
+    "fatal_frame": {"game_groups": ["Q586400"]},
+    "gears_of_war": {"game_groups": ["Q3100030"]},
+    "hatsune_miku": {"game_groups": ["Q553201"], "fandom": ["projectsekai"]},
+    "mini_ninjas": {"game_groups": ["Q2529074"]},
+    "need_for_speed": {"game_groups": ["Q55679"]},
+    "persona": {"game_groups": ["Q1083352"], "fandom": ["megamitensei"]},
+    "prince_of_persia": {"game_groups": ["Q157387"], "fandom": ["princeofpersia"]},
+    "quake": {"game_groups": ["Q902784"], "fandom": ["quake"]},
+    "ratchet_clank": {"game_groups": ["Q5170139"]},
+    "shenmue": {"game_groups": ["Q7238655"], "fandom": ["shenmue"]},
+    "street_fighter": {"game_groups": ["Q288035"], "fandom": ["streetfighter"]},
+    "streets_of_rage": {"game_groups": ["Q8216664"]},
+    "team_fortress": {"game_groups": ["Q18396192"]},
+    "the_exit_8": {"game_groups": ["Q124042357"]},
+    "king_of_fighters": {"game_groups": ["Q340517"]},
+    "the_last_of_us": {"game_groups": ["Q28062624"], "fandom": ["thelastofus"]},
+    "mortuary_assistant": {"game_groups": ["Q114968540"]},
+    "the_sims": {"game_groups": ["Q4897444"], "fandom": ["sims"]},
+    "uncharted": {"game_groups": ["Q1064135"]},
+    "until_dawn": {"game_groups": ["Q108371663"]},
+    "watch_dogs": {"game_groups": ["Q29919397"]},
+    "white_day": {"game_groups": ["Q108371713"]},
+    "yakuza": {"game_groups": ["Q2594935"]},
+    "monster_hunter": {"game_groups": ["Q13822229", "Q107611460"]},
+    # франшизы без членов (R65/R78, 2026-10-24): сиды — элементы Wikidata, проверены вручную (wbsearchentities)
+    "star_trek": {"seeds": ["Q1092", "Q18043309"], "fandom": ["memory-alpha"]},       # media franchise, universe
+    "men_in_black": {"seeds": ["Q6816260", "Q3305670"], "anchors_qids": ["Q2557243"],  # franchise, film series
+                     "fandom": ["meninblack"]},                                       # + The Series (animated)
+    "buffyverse": {"seeds": ["Q2524381"], "fandom": ["buffy"]},                       # Buffyverse (universe)
+    "highlander": {"seeds": ["Q1990805"], "anchors_qids": ["Q156539", "Q1520493"],     # franchise; 1986 film, series
+                   "fandom": ["highlander"]},
+    "stargate": {"seeds": ["Q11927", "Q17486229"], "fandom": ["stargate"]},           # franchise, universe
+    "lost": {"anchors_qids": ["Q23567"], "fandom": ["lostpedia"]},                    # Lost (TV series)
+    "are_you_afraid": {"anchors_qids": ["Q1418462", "Q107208800"]},                   # 1990 series, 2019 series
+    "godfather": {"seeds": ["Q3225260"]},                                             # The Godfather film series
 }
 
 # franchise / series items that are a studio's catalogue, not a universe («Walt Disney Animation Studios feature
@@ -1070,7 +1126,7 @@ def families(sources) -> set[str]:
 
 
 REVIEW_FLAGS = {"weak_link_only", "imprint", "documentary_unofficial", "pilot", "title_match_only", "stale",
-                "one_wikipedia_only", "fandom_only", "parody", "unverified"}
+                "one_wikipedia_only", "fandom_only", "parody", "unverified", "listed_review"}
 
 
 def confidence(c: Cand) -> str:
@@ -1879,6 +1935,8 @@ class Resolver:
             members.append(m)
         self.tmdb_enrich(members)
         out = []
+        review_list = set(self.fr.get("review", []))
+        confirm_list = set(self.fr.get("confirm", []))
         for m in members:
             if from_year and m["year"] and m["year"] < from_year:
                 self.dropped_years.append({"imdb_id": m["imdb_id"], "title": m["title"], "year": m["year"]})
@@ -1886,6 +1944,10 @@ class Resolver:
             flags = set(m["flags"])
             if m["kind"] == "documentary" and not ("strong" in m["strength"] or "tmdb_collection" in m["sources"]):
                 flags.add("documentary_unofficial")
+            if m["imdb_id"] in review_list:      # franchises.toml `review`: fan works / unofficial — never raised
+                flags.add("listed_review")
+            elif m["imdb_id"] in confirm_list:   # franchises.toml `confirm`: canon work a doubt flag misjudged
+                flags -= {"parody", "weak_link_only", "one_wikipedia_only", "fandom_only", "title_match_only"}
             m["flags"] = sorted(flags)
             c = Cand(key=m["imdb_id"], sources={s: [] for s in m["sources"]}, flags=flags)
             m["confidence"] = confidence(c)

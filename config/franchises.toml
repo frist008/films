@@ -5,6 +5,8 @@
 # и fandom-вики; tmdb_collections — только отправная точка.
 # scope: "all" — собирать за все годы; "2024-2026" — только наш диапазон; "none" — без приоритета;
 #        from_year — нижняя граница для "all".
+# review = ["tt…"] — члены, которые не поднимать (фан-фильмы, неофициальные документалки): confidence = review (films.franchise).
+# confirm = ["tt…"] — канон, который автоматический флаг сомнения (parody / weak link …) зря отправил в review.
 # При каждом «обнови базу» новые произведения этих вселенных подтягиваются и идут наверх таблицы.
 
 [[franchise]]
@@ -1753,6 +1755,330 @@ scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
 
+# ---- экранизации игр владельца, круг 2 (R36/R62, 2026-10-24): группы game_adaptations с подтверждёнными экранизациями,
+# у которых не было членов ни в одной франшизе; правило владельца — «Все годы» без опроса; anime = true — экранизации-аниме ----
+
+[[franchise]]
+key = "alone_in_the_dark"
+name = "Alone in the Dark"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "among_us"
+name = "Among Us"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["wd:Q141757627"]   # 2026-10-25 агент: «Among Us Logic» — фанатский веб-сериал
+
+[[franchise]]
+key = "ark"
+name = "ARK: Survival Evolved"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "battlefield"
+name = "Battlefield"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt2354667"]   # 2026-10-25 агент: «Battlefield Friends» — фанатский анимационный веб-сериал
+
+[[franchise]]
+key = "bayonetta"
+name = "Bayonetta"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "borderlands"
+name = "Borderlands"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "castlevania"
+name = "Castlevania"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "company_of_heroes"
+name = "Company of Heroes"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "final_fantasy"
+name = "Final Fantasy (вкл. Compilation of FFVII, Fabula Nova Crystallis)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "cuphead"
+name = "Cuphead"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "cyberpunk"
+name = "Cyberpunk (2077, Edgerunners)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "dead_by_daylight"
+name = "Dead by Daylight"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dead_or_alive"
+name = "Dead or Alive"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dragon_age"
+name = "Dragon Age"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dragon_ball"
+name = "Dragon Ball — вся вселенная"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+review = ["tt1608208", "tt0122050", "wd:Q115940570", "tt0081852", "tt10838374", "tt1189033", "tt0157222"]   # 2026-10-25 агент: нелицензионные фильмы (Корея 1990, Тайвань 1991), валенсийский дубляж, «Доктор Сламп» — другая франшиза Ториямы
+
+[[franchise]]
+key = "dragons_dogma"
+name = "Dragon's Dogma"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "drakengard_nier"
+name = "Drakengard / NieR"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "fallout"
+name = "Fallout"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt2056910"]   # 2026-10-25 агент: «Fallout: Nuka Break» — фанатский веб-сериал
+
+[[franchise]]
+key = "far_cry"
+name = "Far Cry"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "fatal_frame"
+name = "Fatal Frame (Project Zero)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "gears_of_war"
+name = "Gears of War"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "hatsune_miku"
+name = "Hatsune Miku (Project DIVA / Project SEKAI)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "mini_ninjas"
+name = "Mini Ninjas"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "need_for_speed"
+name = "Need for Speed"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "persona"
+name = "Persona (Shin Megami Tensei)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+review = ["tt0284043", "tt0266106", "tt0929419", "tt0108914", "tt0425637", "tt0882978", "tt1514753", "tt7587604"]   # 2026-10-25 агент: экранизации «Троецарствия» / Dynasty Warriors попали из game_adaptations по ошибке — к Persona не относятся
+
+[[franchise]]
+key = "prince_of_persia"
+name = "Prince of Persia"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "quake"
+name = "Quake"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt37751900", "tt26900526"]   # 2026-10-25 агент: машинима «Diary of a Camper» и фан-фильм TF2 «Emesis Blue»
+
+[[franchise]]
+key = "ratchet_clank"
+name = "Ratchet & Clank"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "shenmue"
+name = "Shenmue"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "street_fighter"
+name = "Street Fighter"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+review = ["tt1156102", "tt1696187"]   # 2026-10-25 агент: пародия «The Later Years» (CollegeHumor), фан-короткометражка «Legacy» (2010)
+
+[[franchise]]
+key = "streets_of_rage"
+name = "Streets of Rage"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "team_fortress"
+name = "Team Fortress"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt26900526", "tt35625327", "wd:Q60302060"]   # 2026-10-25 агент: фан-фильмы TF2 (Emesis Blue, Spy"s Disguise, Player"s Portrait); Meet the … и Expiration Date — официальные ролики Valve
+
+[[franchise]]
+key = "the_exit_8"
+name = "The Exit 8"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "king_of_fighters"
+name = "The King of Fighters"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+
+[[franchise]]
+key = "the_last_of_us"
+name = "The Last of Us"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "mortuary_assistant"
+name = "The Mortuary Assistant"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "the_sims"
+name = "The Sims"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "uncharted"
+name = "Uncharted"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt8707436"]   # 2026-10-25 агент: «Uncharted Live Action Fan Film» (2018)
+
+[[franchise]]
+key = "until_dawn"
+name = "Until Dawn"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "watch_dogs"
+name = "Watch Dogs"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "white_day"
+name = "White Day"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "yakuza"
+name = "Yakuza / Like a Dragon"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "monster_hunter"
+name = "Monster Hunter"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
 [[franchise]]
 key = "hunger_games"
 name = "Голодные игры — вся франшиза"
@@ -1765,12 +2091,15 @@ key = "star_trek"
 name = "Звёздный путь (Star Trek) — вся вселенная"
 scope = "all"
 note = "владелец 2026-10-23 в ❤️-опросе: «вселенная стартрека нужна» — фильмы, сериалы, мультсериалы; состав — Wikidata/Википедия/Memory Alpha"
+review = ["tt0467491", "tt0458122", "tt2074442", "tt2732442"]   # 2026-10-25 агент: фанатские сериалы (Hidden Frontier, New Voyages, Odyssey, Continues)
+confirm = ["tt9184820"]   # «Нижние палубы» — канон Paramount+, флаг parody ошибочен
 
 [[franchise]]
 key = "men_in_black"
 name = "Люди в чёрном"
 scope = "all"
 note = "владелец 2026-10-23: «Люди в чёрном добавить франшизу, это не Marvel» — фильмы 1997–2019 и мультсериал"
+review = ["tt0156789"]   # 2026-10-25 агент: «Men in White» (1998) — пародийный телефильм
 
 [[franchise]]
 key = "spider_verse"

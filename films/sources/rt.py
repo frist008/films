@@ -67,6 +67,13 @@ class RTError(Exception):
     pass
 
 
+class RTBlocked(RTError):
+    """403 / 429 while STOP_ON_BLOCK is set: the caller stops the run and reports (never bypass)."""
+
+
+STOP_ON_BLOCK = False       # True -> raise RTBlocked on the first 403/429 instead of backing off and retrying
+
+
 # ----------------------------------------------------------------------------------------------
 # HTTP + cache
 # ----------------------------------------------------------------------------------------------
@@ -110,6 +117,9 @@ def _request(method: str, url: str, **kw) -> requests.Response | None:
             if r.status_code == 200:
                 return r
             err = f"HTTP {r.status_code}"
+            if STOP_ON_BLOCK and r.status_code in (403, 429):
+                stats["errors"] += 1
+                raise RTBlocked(f"{url}: {err}")
             if r.status_code not in (403, 429) and r.status_code < 500:
                 stats["errors"] += 1
                 raise RTError(f"{url}: {err}")

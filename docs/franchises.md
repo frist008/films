@@ -60,7 +60,15 @@ python -X utf8 -m unittest tests.test_franchise
   - `fandom_only` — знает только fandom (категории фильмов на fandom включают и фильмы с камео/отсылками);
   - `one_wikipedia_only` — знает только Википедия на одном языке (кроме кураторских списков);
   - `unverified` — IMDb id неизвестен ни Wikidata, ни TMDB (тип не проверить);
-  - `stale: …` — строку прошлого прогона новый прогон не нашёл.
+  - `stale: …` — строку прошлого прогона новый прогон не нашёл;
+  - `listed_review` — IMDb id в `review = [...]` франшизы в `config/franchises.toml` (фан-фильмы, машинима,
+    нелицензионные фильмы, чужие экранизации, попавшие из `game_adaptations`) — переживает повторный `resolve`.
+- `confirm = [...]` в `config/franchises.toml` снимает ошибочный флаг сомнения (`parody`, `weak_link_only`,
+  `one_wikipedia_only`, `fandom_only`, `title_match_only`) с канона (пример: «Звёздный путь: Нижние палубы»).
+- fandom-вики используются только кураторские (`EXTRA[key]["fandom"]`); подсказки Wikidata P6262 видны в
+  `resolved/<key>.json` → `info.fandom_suggested` — после первого прогона внести вики своей серии и прогнать ещё раз.
+- `python -X utf8 -m films.franchise_releases --only KEY[,KEY] [--with-single]` — раздачи только для этих франшиз;
+  `--with-single` берёт и `single_source` (экранизации игр часто знает только `game_adaptations` + один источник).
 
 Таблицу ранжирования (`films/rank.py`) строки `review` не поднимают — их решает владелец.
 

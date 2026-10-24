@@ -48,6 +48,8 @@ python -X utf8 -m unittest tests.test_imdb_specs
 Фильм — `titles.imdb_id`; сезон — `titles.series_imdb_id` (у IMDb нет сущности «сезон»: тех. характеристики,
 постер — уровня сериала и пишутся в каждую строку сезона). Пишутся только колонки:
 `di_resolution`, `aspect_ratios`, `sound_mix`, `is_imax`, `imax_source` (перезаписываются при каждом прогоне);
+`upscale_verdict` / `upscale_source = 'imdb_di'` из `di_resolution` (R32; не трогается, если вердикт дал другой источник —
+см. `docs/research-codecs-upscale.md` §2.5);
 `poster_url`/`poster_source='imdb'`/`poster_checked_at` — только где `poster_url IS NULL`;
 `budget_usd`/`box_office_usd` — только где NULL, только USD, только фильмы. `updated_at` не трогается.
 Каждая группа строк одного tconst — отдельная короткая транзакция (`BEGIN IMMEDIATE`, busy_timeout из `db.connect()`).

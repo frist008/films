@@ -363,6 +363,14 @@ def di_resolution(specs: dict | None) -> tuple[str | None, str]:
     return None, "di_without_resolution"
 
 
+def upscale_verdict(di: str | None) -> str:
+    """titles.upscale_verdict from di_resolution: 'upscaled' (master 2K / HD / SD — every 4K release is a studio
+    upscale), 'native' (4K or more), 'unknown' (no DI entry / no resolution / conflicting entries)."""
+    if di in ("2K", "HD", "SD"):
+        return "upscaled"
+    return "native" if di else "unknown"
+
+
 # --- IMAX -----------------------------------------------------------------------------------
 
 # "IMAX" as a word, not preceded by "non-"/"non " (e.g. "non-IMAX scenes")
@@ -510,7 +518,7 @@ def _targets(conn, limit: int | None = None, ids: list[str] | None = None) -> di
     """{tconst: [title rows]} -- movies by imdb_id, seasons by series_imdb_id."""
     rows = conn.execute(
         "SELECT id, kind, season_number, imdb_id, series_imdb_id, title_original, title_uk, year, "
-        "poster_url, poster_source, budget_usd, box_office_usd FROM titles "
+        "poster_url, poster_source, budget_usd, box_office_usd, upscale_source FROM titles "
         "WHERE COALESCE(imdb_id, series_imdb_id) IS NOT NULL ORDER BY id").fetchall()
     by: dict[str, list] = {}
     for r in rows:
@@ -530,7 +538,8 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
     st = {k: 0 for k in ("tconsts", "rows", "rows_not_found", "rows_suspect_link", "rows_no_record", "di_set", "imax_1", "imax_0",
                          "imax_null", "aspect_set", "sound_set", "budget_filled", "gross_filled",
                          "budget_non_usd", "gross_non_usd", "budget_skipped_series", "gross_skipped_series",
-                         "budget_disagree_kept", "gross_disagree_kept", "poster_set", "poster_missing_on_imdb", "poster_kept")}
+                         "budget_disagree_kept", "gross_disagree_kept", "poster_set", "poster_missing_on_imdb", "poster_kept",
+                         "upscale_upscaled", "upscale_native", "upscale_unknown")}
     lists = {"not_found": [], "redirects": [], "non_usd": [], "di_conflicts": [], "imax_notes": [],
              "spec_truncated": [], "uk_candidates": [], "year_mismatch": [], "money_disagree": []}
     for t, rows in targets.items():
@@ -578,6 +587,12 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                     "imax_source": s["imax_source"],
                 }
                 st["di_set"] += s["di_resolution"] is not None
+                # R32: upscale verdict from the master format — a 4K release of a 2K / HD master is a studio upscale.
+                # A verdict from another source (blu-ray.com, manual) is never overwritten.
+                if r["upscale_source"] in (None, "imdb_di"):
+                    sets["upscale_verdict"] = upscale_verdict(s["di_resolution"])
+                    sets["upscale_source"] = "imdb_di"
+                    st["upscale_" + sets["upscale_verdict"]] += 1
                 st["aspect_set"] += bool(s["aspect_ratios"])
                 st["sound_set"] += bool(s["sound_mix"])
                 st[{1: "imax_1", 0: "imax_0", None: "imax_null"}[s["is_imax"]]] += 1
@@ -632,7 +647,8 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                 cur = conn.execute(f"UPDATE titles SET {cols} WHERE id = ?{guard}", [*sets.values(), r["id"]])
                 if cur.rowcount == 0 and guard:
                     # a concurrent writer filled one of the guarded columns meanwhile: write only the spec columns
-                    base = {k: sets[k] for k in ("di_resolution", "aspect_ratios", "sound_mix", "is_imax", "imax_source")}
+                    base = {k: sets[k] for k in ("di_resolution", "aspect_ratios", "sound_mix", "is_imax", "imax_source",
+                                                 "upscale_verdict", "upscale_source") if k in sets}
                     conn.execute(f"UPDATE titles SET {', '.join(f'{k} = ?' for k in base)} WHERE id = ?",
                                  [*base.values(), r["id"]])
                     log(f"    title {r['id']}: guarded column changed concurrently, wrote specs only")

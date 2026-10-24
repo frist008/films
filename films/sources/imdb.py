@@ -12,6 +12,9 @@ What is loaded (see docs/ratings.md for the reasoning):
   * years: startYear 2022..2027, OR endYear >= 2024, OR (series only) the series has at least one
     episode with startYear >= 2024 according to title.episode -- this catches long-running shows
     whose endYear is empty (still running), e.g. a show started in 2019 with a 2025 season.
+  * plus every tconst already linked in `titles` (imdb_id / series_imdb_id), whatever its year, type or
+    isAdult flag (R5, 2026-10-24: watched / bought / franchise / quality-watch titles of any year got no
+    rating with the year window alone).  Only those tconsts are added, not the whole older dataset.
   * ratings: every loaded tconst that has a rating.
   * akas: every row (all regions / languages) of every loaded tconst.
 
@@ -138,9 +141,15 @@ def load(conn, download_files: bool = True, force_download: bool = False, log=pr
         if not (CACHE_DIR / name).exists():
             raise FileNotFoundError(f"{CACHE_DIR / name} missing; run without --no-download")
 
+    # tconsts linked in titles: loaded whatever the year window says (R5)
+    linked = {r[0] for r in conn.execute(
+        "SELECT imdb_id FROM titles WHERE imdb_id LIKE 'tt%' "
+        "UNION SELECT series_imdb_id FROM titles WHERE series_imdb_id LIKE 'tt%'")}
+
     # ---- pass 1: basics (selection + recent episodes)
     t0 = time.time()
     keep: dict[str, tuple] = {}         # tconst -> row for imdb_basics
+    by_link: dict[str, tuple] = {}      # linked in titles, outside the year selection
     old_series: dict[str, tuple] = {}   # series not selected by year (decided after title.episode)
     recent_episodes: set[str] = set()
     c = {"rows": 0, "bad_lines": 0, "adult_skipped": 0, "no_start_year_skipped": 0}
@@ -150,6 +159,8 @@ def load(conn, download_files: bool = True, force_download: bool = False, log=pr
             c["bad_lines"] += 1
             continue
         tconst, ttype, primary, original, is_adult, sy, ey, runtime, genres = row
+        if tconst in linked:
+            by_link[tconst] = (tconst, ttype, primary, original, _int(sy), _int(ey), _int(runtime), genres)
         if ttype == "tvEpisode":
             y = _int(sy)
             if y is not None and y >= EPISODE_YEAR_FROM:
@@ -191,6 +202,13 @@ def load(conn, download_files: bool = True, force_download: bool = False, log=pr
     log(f"title.episode: +{by_episodes:,} older open-ended series with episodes in {EPISODE_YEAR_FROM}+ "
         f"({time.time() - t0:.0f} s)")
     del recent_episodes, old_series
+    added = {t: rec for t, rec in by_link.items() if t not in keep}
+    keep.update(added)
+    stats["added_from_titles"] = {"linked": len(linked), "found_in_basics": len(by_link), "added": len(added),
+                                  "not_in_dataset": sorted(linked - set(by_link))[:50]}
+    log(f"titles: {len(linked):,} linked tconsts, {len(by_link):,} in basics, +{len(added):,} outside the year "
+        f"selection, {len(linked) - len(by_link)} not in the dataset")
+    del by_link
 
     seen = set(keep)
     conn.execute("DROP TABLE IF EXISTS temp.imdb_seen")

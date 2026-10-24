@@ -260,9 +260,10 @@ def h264_equiv(codec: str | None, bit_depth: int | None, height: int | None, kbp
     return round(kbps * f["uhd" if (height or 0) >= 1440 else "hd"])
 
 
-def parse_pages(conn, reparse: bool = False) -> dict:
+def parse_pages(conn, reparse: bool = False, delete_dv5: bool = True, ids: list[int] | None = None) -> dict:
     """Run films.parse.rutor over cached pages and fill release columns. DV-profile-5-only releases are
-    removed and remembered in excluded_releases (owner: never store them)."""
+    remembered in excluded_releases (owner: never store them) and removed — or, with delete_dv5=False, kept with
+    their parsed columns (rank.compute skips every release listed in excluded_releases). ids: only these releases."""
     import json
     from ..parse import rutor as parser
 
@@ -271,6 +272,9 @@ def parse_pages(conn, reparse: bool = False) -> dict:
     rows = conn.execute(
         f"""SELECT r.id, r.source_id, r.name FROM releases r JOIN release_raw w ON w.release_id = r.id
             WHERE r.source='rutor' {'' if reparse else 'AND r.parsed IS NULL'}""").fetchall()
+    if ids is not None:
+        want = set(ids)
+        rows = [r for r in rows if r[0] in want]
     stats = {"parsed": 0, "dv5_excluded": 0, "failed": 0}
     for i, (rid, sid, name) in enumerate(rows, 1):
         try:
@@ -283,18 +287,19 @@ def parse_pages(conn, reparse: bool = False) -> dict:
             if d.get("dv5_only"):
                 conn.execute("INSERT OR IGNORE INTO excluded_releases (source, source_id, reason, name) "
                              "VALUES ('rutor', ?, 'dv5_only', ?)", (sid, name))
+                stats["dv5_excluded"] += 1
+            if d.get("dv5_only") and delete_dv5:
                 conn.execute("DELETE FROM release_raw WHERE release_id=?", (rid,))
                 conn.execute("DELETE FROM release_titles WHERE release_id=?", (rid,))
                 conn.execute("DELETE FROM releases WHERE id=?", (rid,))
-                stats["dv5_excluded"] += 1
                 continue
             np = d.get("name_parsed") or {}
             js = lambda v: json.dumps(v, ensure_ascii=False) if v is not None else None  # noqa: E731
             conn.execute(
                 """UPDATE releases SET season=?, episodes=?, resolution=?, source_type=?, source_detail=?,
                        video_codec=?, video_bit_depth=?, video_kbps=?, h264_equiv_kbps=?, hdr=?, dv_profile=?,
-                       dv_profile_full=?, dv_fallback=?, is_imax_cut=?, edition=?, is_upscale=?, is_ai_upscale=?,
-                       audio=?, best_voice=?, forced_subs=?, parsed=?, parsed_version=?,
+                       dv_profile_full=?, dv_fallback=?, dv_static_md=?, is_imax_cut=?, edition=?, is_upscale=?,
+                       is_ai_upscale=?, audio=?, best_voice=?, forced_subs=?, parsed=?, parsed_version=?,
                        details_parsed_at=datetime('now')
                    WHERE id=?""",
                 (d.get("season"), d.get("episodes"), d.get("resolution"), d.get("source_type"),
@@ -302,7 +307,7 @@ def parse_pages(conn, reparse: bool = False) -> dict:
                  h264_equiv(d.get("video_codec"), d.get("video_bit_depth"),
                             d.get("video_height") or d.get("resolution"), d.get("video_kbps"), factors),
                  js(d.get("hdr")), d.get("dv_profile"), d.get("dv_profile_full"), d.get("dv_fallback"),
-                 d.get("is_imax_cut"), js(d.get("edition")), d.get("is_upscale"),
+                 d.get("dv_static_md"), d.get("is_imax_cut"), js(d.get("edition")), d.get("is_upscale"),
                  1 if d.get("is_upscale") else None,  # trackers only ever label fan upscales
                  js(d.get("audio")), d.get("best_voice"), js(d.get("forced_subs")),
                  js(d), version, rid))
@@ -310,6 +315,36 @@ def parse_pages(conn, reparse: bool = False) -> dict:
         if i % 1000 == 0:
             print(f"  parsed {i}/{len(rows)}", file=sys.stderr, flush=True)
     return stats
+
+
+def dv_flags(conn) -> dict:
+    """Re-check the Dolby Vision of every cached rutor page without a full re-parse (R31 / R8):
+    releases.dv_static_md = 1 (DV rebuilt from HDR10: generated RPU / static metadata), 2 (converted from HDR10+),
+    0 (DV, no sign of a rebuild); DV-profile-5-only releases (no HDR10 / HLG layer) go to excluded_releases —
+    the row stays, rank.compute skips it."""
+    from ..parse import rutor as parser
+    rows = conn.execute(
+        """SELECT r.id, r.source_id, r.name, r.dv_static_md FROM releases r JOIN release_raw w ON w.release_id = r.id
+           WHERE r.source = 'rutor' AND (r.hdr LIKE '%"DV"%' OR r.dv_profile IS NOT NULL)""").fetchall()
+    st = {"dv_pages": len(rows), "static_1": 0, "hdr10plus_2": 0, "changed": 0, "dv5_only": 0, "evidence": []}
+    for rid, sid, name, cur in rows:
+        d = parser.parse_release_page(raw_page(conn, rid))
+        if "DV" not in d["hdr"]:
+            continue
+        flag = d.get("dv_static_md") or 0
+        st["static_1"] += flag == 1
+        st["hdr10plus_2"] += flag == 2
+        if flag:
+            st["evidence"].append({"release_id": rid, "flag": flag, "evidence": d.get("dv_rebuild_evidence"), "name": name})
+        with conn:
+            if cur != flag:
+                conn.execute("UPDATE releases SET dv_static_md = ? WHERE id = ?", (flag, rid))
+                st["changed"] += 1
+            if d.get("dv5_only"):
+                st["dv5_only"] += 1
+                conn.execute("INSERT OR IGNORE INTO excluded_releases (source, source_id, reason, name) "
+                             "VALUES ('rutor', ?, 'dv5_only', ?)", (sid, name))
+    return st
 
 
 def collect(conn, incremental: bool = False) -> dict:
@@ -335,3 +370,5 @@ if __name__ == "__main__":
         print(json.dumps(collect(conn, incremental="--incremental" in sys.argv), ensure_ascii=False, indent=1))
     elif cmd == "pages":
         print(fetch_pages(conn, int(sys.argv[2]) if len(sys.argv) > 2 else None))
+    elif cmd == "dv-flags":
+        print(json.dumps(dv_flags(conn), ensure_ascii=False, indent=1))
