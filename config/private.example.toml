@@ -1,0 +1,35 @@
+# ЛИЧНОЕ: скопируй в config/private.toml и заполни (значения — в заметке Google Keep «films — секреты»).
+# config/private.toml в git не попадает.
+
+[owner]
+name = ""
+
+[google]
+main = ""          # <google.main>: таблица, магазины (YouTube/Google TV), TMDB-вход
+cloud = ""      # <google.cloud>: проект GCP films-db (OAuth для таблицы), заметка Keep с секретами
+
+[plex]
+user = ""                   # <plex.user>
+machine_id = ""   # <plex.machine_id>
+
+[rutracker]
+user = ""                   # <rutracker.user>
+
+[tmdb]
+user = ""                   # <tmdb.user>
+
+[youtube]
+channel = ""           # <youtube.channel>
+channel_name = ""      # <youtube.channel_name>
+playlist_kostya_want = ""   # id плейлистов трейлеров (доступ по ссылке)
+playlist_probably = ""
+playlist_possible = ""
+playlist_dima = ""
+playlist_yana = ""
+
+[google_tv]
+watchlist_url = ""          # <google_tv.watchlist_url>
+search_watchlist_url = ""   # <google_tv.search_watchlist_url>
+
+[jellyfin]
+user = ""   # the owner's Jellyfin user name

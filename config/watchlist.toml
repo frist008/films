@@ -1,0 +1,160 @@
+# Список «хочу посмотреть» владельца с высоким приоритетом (R48, 2026-10-23).
+# Показ в таблице: строка зелёная (светлее, чем «В очереди»), статус «Хочу»; сортировка обычная.
+# Каждый пункт — вся вселенная/все сезоны, кроме того, что владелец уже видел (опросить, где сказано).
+# kind: series / anime / film; tmdb — id TMDB (заполняет films.watchlist после сопоставления), note — слова владельца.
+
+[[item]]
+name = "Разделение"
+kind = "series"
+[[item]]
+name = "Одни из нас / The Last of Us"
+kind = "series"
+note = "S02; первый сезон владелец видел — отмечен 2026-10-23"
+[[item]]
+name = "Скрежет металла / Twisted Metal"
+kind = "series"
+note = "S02 и первый сезон (может, уже скачан)"
+[[item]]
+name = "Чужой: Земля"
+kind = "series"
+[[item]]
+name = "Призраки дома на холме / The Haunting of Hill House"
+kind = "series"
+[[item]]
+name = "Devil May Cry"
+kind = "series"
+note = "сериал (Netflix 2025)"
+[[item]]
+name = "The Witcher: Sirens of the Deep"
+kind = "anime"
+note = "Ведьмак: Сирены глубин (2025)"
+[[item]]
+name = "Проиграйте, чтобы разбогатеть с самого начала игры"
+kind = "anime"
+note = "ссылка владельца: animego.online/4965"
+[[item]]
+name = "Провожающая в последний путь Фрирен / Sousou no Frieren"
+kind = "anime"
+note = "myanimelist 52991"
+[[item]]
+name = "Re:Zero. Жизнь с нуля в альтернативном мире"
+kind = "anime"
+[[item]]
+name = "Sword Art Online (Мастера меча онлайн)"
+kind = "anime"
+note = "опросить, что видел; невиденное — наверх"
+[[item]]
+name = "Царство падальщиков"
+kind = "series"
+[[item]]
+name = "Пацаны / The Boys"
+kind = "series"
+[[item]]
+name = "Готэм"
+kind = "series"
+[[item]]
+name = "Аватар: Легенда об Аанге"
+kind = "series"
+note = "сериал Netflix 2024 (уточнено владельцем)"
+[[item]]
+name = "Звёздные войны: Войны клонов"
+kind = "series"
+note = "по ЗВ — опрос, что видел"
+[[item]]
+name = "Звёздные войны: Повстанцы"
+kind = "series"
+[[item]]
+name = "Асока"
+kind = "series"
+[[item]]
+name = "Поднятие уровня в одиночку"
+kind = "anime"
+[[item]]
+name = "Легион"
+kind = "series"
+[[item]]
+name = "Одарённые"
+kind = "series"
+[[item]]
+name = "Король-шаман (2021)"
+kind = "anime"
+[[item]]
+name = "NieR:Automata Ver1.1a"
+kind = "anime"
+[[item]]
+name = "Человек-бензопила"
+kind = "anime"
+[[item]]
+name = "Ингресс (аниме)"
+kind = "anime"
+[[item]]
+name = "Атака титанов"
+kind = "anime"
+[[item]]
+name = "Бог обмана"
+kind = "anime"
+note = "найдено: китайский анимационный сериал 嗜谎之神 / God of Deception (2020) — подтвердить у владельца"
+[[item]]
+name = "Monster"
+kind = "anime"
+[[item]]
+name = "One Outs"
+kind = "anime"
+[[item]]
+name = "Эхо террора (2014)"
+kind = "anime"
+note = "владелец назвал «Эхо войны (2014)», уточнил: «Эхо террора» (Zankyou no Terror)"
+[[item]]
+name = "Боец Баки"
+kind = "anime"
+[[item]]
+name = "Очень странные дела"
+kind = "series"
+[[item]]
+name = "Доктор Стоун"
+kind = "anime"
+[[item]]
+name = "Игра в кальмара"
+kind = "series"
+[[item]]
+name = "Мандалорец"
+kind = "series"
+[[item]]
+name = "Флэш"
+kind = "series"
+[[item]]
+name = "Чёрный клевер"
+kind = "anime"
+[[item]]
+name = "Игра короля"
+kind = "anime"
+note = "уточнить: «Ousama Game» (2017)?"
+[[item]]
+name = "Тьма"
+kind = "series"
+note = "Dark (Netflix)"
+[[item]]
+name = "В подземелье я пойду, там красавицу найду"
+kind = "anime"
+[[item]]
+name = "Семь смертных грехов"
+kind = "anime"
+[[item]]
+name = "Клинок, рассекающий демонов"
+kind = "anime"
+[[item]]
+name = "Моя геройская академия"
+kind = "anime"
+[[item]]
+name = "Ангел кровопролития"
+kind = "anime"
+[[item]]
+name = "Интерны"
+kind = "series"
+russian = true
+note = "владелец 2026-10-23: «добавь отслеживание Интернов, раз объявили, что они вернутся» — наш сериал (ТНТ, 2010–2016, S01–S14); ждём новый сезон; rutor «Наши сериалы» (категория 16)"
+[[item]]
+name = "Универ"
+kind = "series"
+russian = true
+note = "владелец 2026-10-23: «Универ — следить»: «Универ» (2008–2011), «Новая общага» (2011–2018), «10/13/15 лет спустя», «Универ. Молодые» — вся вселенная; rutor «Наши сериалы» (16)"

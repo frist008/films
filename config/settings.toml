@@ -1,0 +1,122 @@
+# Общие настройки. Правится через скил film-prefs или вручную.
+
+year_from = 2024   # без верхней границы: база ведётся «всю жизнь» — 2027, 2028… (владелец, 2026-10-23)
+# фактический диапазон в коде: year_from … текущий год + 1 (анонсы)
+
+[rutor]
+base = "http://rutor.info"   # https-сертификат rutor просрочен
+# id категории rutor -> имя в БД
+categories = { 1 = "foreign_films", 4 = "foreign_series", 7 = "animation" }
+search_limit = 2000
+
+[rutracker]
+base = "https://rutracker.org/forum"
+search_limit = 500
+
+[filters]
+min_imdb = 5.0
+fresh_days = 30            # свежее этого — не фильтруем по рейтингу
+excluded_dv_profiles = [5] # такие раздачи не сохраняем (если у раздачи нет другого HDR-слоя)
+hide_watched = true
+hide_without_voice = true  # кроме titles.no_dub_needed = 1
+hide_downloaded = true     # кроме тайтлов с доступным апгрейдом
+
+[sort]
+# Порядок ключей сортировки Главной (сверху — важнее)
+order = ["upgrade", "franchise", "imax", "people", "hdr", "uhd", "voice", "wishlist", "imdb"]
+# franchise = владелец видел прошлые части / связанные фильмы / ту же вселенную (R34)
+hdr_rank = ["DV", "HDR10+", "HDR10", "HLG", "SDR"]
+voice_rank = ["dub", "mvo", "dvo", "svo", "avo", "amateur", "original", "none"]
+# дубляж > проф. многоголосый > двухголосый > одноголосый (svo, ждёт подтверждения) > авторский > любительский;
+# original = RU/UK оригинальная дорожка (не считается «без озвучки»)
+source_rank = ["BDRemux", "Blu-ray", "Hybrid", "BDRip", "WEB-DL", "WEB-DLRip", "WEBRip", "HDTV", "HDTVRip", "IPTV",
+               "SATRip", "DVB", "HDRip", "DVDRemux", "DVD", "DVDRip", "TVRip", "DCPRip", "VHSRip", "Screener", "TC", "TS", "CAMRip"]
+
+[sort.weights]
+# Баллы за признаки (владелец, 2026-10-24: «баллы за каждый признак»); сортировка — по сумме, «срочно» всегда сверху.
+# Начальные веса — из его порядка: свой список > апгрейд > франшиза > IMAX > новинки 2026 с высоким RT > люди > качество > IMDb.
+owner_want = 300
+owner_maybe = 200
+owner_possible = 100
+watchlist = 250
+upgrade = 150
+franchise = 120
+imax = 100
+auto_want = 90
+auto_maybe = 70
+new_since = 40
+people_per_point = 15
+people_max = 90
+hdr = { "DV" = 40, "HDR10+" = 30, "DV*" = 25, "HDR10" = 25, "HLG" = 10 }
+uhd = 25
+voice = { dub = 30, mvo = 22, dvo = 15, svo = 10, avo = 6, amateur = 3 }
+wishlist = 15
+imdb_per_point_over_5 = 10
+rt_per_point_over_50 = 0.3
+
+
+[responsible.dima]
+name = "Дима"
+genres = ["комедия"]
+genre_rank = 2                  # комедия — 1-й или 2-й жанр (владелец, 2026-10-24)
+auto_confirm_years = [2026]     # комедия среди первых двух жанров -> сразу Дима
+min_runtime = 60                # только полнометражное
+suggest_years = [2024, 2025]    # комедия -> предположение до списка владельца
+list = "config/dima.toml"        # ручной список владельца (подтверждено, любые годы)
+
+[responsible.yana]
+name = "Яна"
+animation = true                 # полнометражные мультфильмы (не мультсериалы)
+exclude_franchises = ["dc", "marvel", "spider_verse", "tmdb_1434561"]   # + Супер Марио: «Яне не нравится Марио» (2026-10-24)
+min_runtime = 60                 # полнометражные (GTA VI «Extended Look» числился «мультфильмом» 2026)   # владелец 2026-10-24: «DC и Marvel — не Яна, она ими не увлекается»
+auto_confirm_years = [2026]
+suggest_years = [2024, 2025]
+list = "config/yana.toml"        # ручной список владельца 2026-10-23 (мультфильмы любых лет)
+
+[sheet]
+# аккаунт-владелец таблицы — [google] main в config/private.toml
+spreadsheet_id = ""             # заполнится при первом создании
+
+[youtube]
+# канал — [youtube] channel в config/private.toml
+# id плейлистов — личные (доступ по ссылке): config/private.toml [youtube] playlist_<key> (созданы 2026-10-24)
+dima_playlist_id = ""
+yana_playlist_id = ""           # плейлист «Для Яны» (доступ по ссылке), заполнится при создании
+
+[codec_efficiency]
+# h264_equiv_kbps = video_kbps × factor. Обоснование и источники — docs/research-codecs-upscale.md (2026-10-23).
+# Два значения: hd = кадр по высоте < 1440, uhd = ≥ 1440 (у HEVC/AV1 выигрыш на 4K больше).
+# Новый кодек — добавить сюда с обоснованием в том же документе.
+AVC     = { hd = 1.0,  uhd = 1.0 }
+AVC10   = { hd = 1.1,  uhd = 1.1 }   # Hi10P
+HEVC    = { hd = 1.6,  uhd = 1.8 }   # 10-bit
+HEVC8   = { hd = 1.5,  uhd = 1.7 }
+AV1     = { hd = 2.0,  uhd = 2.2 }
+VP9     = { hd = 1.4,  uhd = 1.5 }
+VVC     = { hd = 2.4,  uhd = 2.7 }
+"MPEG-4 ASP" = { hd = 0.6, uhd = 0.6 }   # XviD / DivX
+"VC-1"  = { hd = 0.75, uhd = 0.75 }
+"MPEG-2" = { hd = 0.5, uhd = 0.5 }
+
+[jellyfin]
+# second local media server; its SQLite DB is copied and read (films/sources/jellyfin.py)
+data_dir = 'D:\Media Server\Jellyfin\Server\data'
+
+[playlists]
+# не класть в плейлисты трейлеров (владелец): «Крёстный отец» — франшиза, которую он не видел; ей — приоритет сортировки, не плейлист (2026-10-24)
+skip_imdb = ["tt0068646"]
+# франшизы без трейлеров в плейлистах, но с приоритетом сортировки (владелец): Супер Марио — «нравится мне для приоритета, трейлер не нужен»
+skip_franchises = ["tmdb_1434561", "godfather"]
+
+[fresh]
+# R99 (владелец, 2026-10-24): ручной список владельца сделан до 1 января 2026; дальше «новое» = первая раздача тайтла на rutor
+# не раньше этой даты (дубли и пересборки в лучшем качестве — не новое)
+since = "2026-01-01"
+want_rt = 90                # больший из двух баллов RT ≥ 90 → ❤️ («Костя Хочет»)
+maybe_rt = 80               # 80–89 → 💛 («Вероятно хочу»)
+min_critics_reviews = 20
+min_audience_ratings = 250
+
+[not_interested]
+# скрыть совсем (владелец): «Леди Баг и Щенячий патруль не интересны вообще» (2026-10-24); регулярные выражения по RU/оригинальному названию
+title_patterns = ["Леди Баг", "Miraculous", "Щенячий патруль", "PAW Patrol"]

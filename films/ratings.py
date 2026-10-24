@@ -1,0 +1,139 @@
+"""Ratings onto titles: IMDb (datasets) and Rotten Tomatoes (both scores; per season for series).
+
+IMDb: movie rating = the title's rating; a season gets the series rating plus the mean of its episodes'
+ratings (title.episode + title.ratings datasets). RT: films.sources.rt.find with titles, year, people and
+the series' start year; only clear matches are written, ambiguous ones go to match_issues.
+"""
+import csv
+import gzip
+import json
+import sys
+
+from . import db
+from .sources import imdb, rt
+
+IMDB_CACHE = db.ROOT / "data" / "cache" / "imdb"
+
+
+def _tsv(name: str):
+    with gzip.open(IMDB_CACHE / name, "rt", encoding="utf-8", newline="") as f:
+        reader = csv.reader(f, delimiter="\t", quoting=csv.QUOTE_NONE)
+        next(reader)
+        yield from reader
+
+
+def imdb_ratings(conn) -> dict:
+    with conn:
+        conn.execute("""UPDATE titles SET imdb_rating = (SELECT rating FROM imdb_ratings r WHERE r.tconst = titles.imdb_id),
+                                          imdb_votes  = (SELECT votes  FROM imdb_ratings r WHERE r.tconst = titles.imdb_id),
+                                          ratings_checked_at = datetime('now')
+                        WHERE season_number IS NULL AND imdb_id IS NOT NULL""")
+        conn.execute("""UPDATE titles SET imdb_rating = (SELECT rating FROM imdb_ratings r WHERE r.tconst = titles.series_imdb_id),
+                                          imdb_votes  = (SELECT votes  FROM imdb_ratings r WHERE r.tconst = titles.series_imdb_id),
+                                          ratings_checked_at = datetime('now')
+                        WHERE season_number IS NOT NULL AND series_imdb_id IS NOT NULL""")
+    # per-season mean of episode ratings
+    wanted = {(r[0], r[1]) for r in conn.execute(
+        "SELECT series_imdb_id, season_number FROM titles WHERE season_number IS NOT NULL AND series_imdb_id IS NOT NULL")}
+    parents = {p for p, _ in wanted}
+    ep_season: dict[str, tuple[str, int]] = {}
+    for tconst, parent, season, _ep in _tsv("title.episode.tsv.gz"):
+        if parent in parents and season != "\\N" and (parent, int(season)) in wanted:
+            ep_season[tconst] = (parent, int(season))
+    acc: dict[tuple[str, int], list] = {}
+    for tconst, rating, votes in _tsv("title.ratings.tsv.gz"):
+        key = ep_season.get(tconst)
+        if key:
+            acc.setdefault(key, []).append((float(rating), int(votes)))
+    with conn:
+        for (parent, season), vals in acc.items():
+            conn.execute("UPDATE titles SET imdb_season_rating = ?, imdb_season_votes = ? "
+                         "WHERE series_imdb_id = ? AND season_number = ?",
+                         (round(sum(r for r, _ in vals) / len(vals), 2), sum(v for _, v in vals), parent, season))
+    return {"movies_rated": conn.execute("SELECT count(*) FROM titles WHERE season_number IS NULL AND imdb_rating IS NOT NULL").fetchone()[0],
+            "seasons_series_rated": conn.execute("SELECT count(*) FROM titles WHERE season_number IS NOT NULL AND imdb_rating IS NOT NULL").fetchone()[0],
+            "seasons_episode_mean": len(acc), "episodes_used": sum(len(v) for v in acc.values())}
+
+
+def _people(conn, title_id: int) -> list[str]:
+    rows = conn.execute("""SELECT p.name FROM credits c JOIN people p ON p.id = c.person_id WHERE c.title_id = ?
+                           ORDER BY CASE c.role WHEN 'director' THEN 0 WHEN 'actor' THEN 1 ELSE 2 END, c.ord LIMIT 5""",
+                        (title_id,)).fetchall()
+    return [r[0] for r in rows]
+
+
+def _store_page(conn, page: dict, url: str, kind: str, season: int | None, parent: str | None, title_id: int):
+    conn.execute(
+        """INSERT OR REPLACE INTO rt_pages (url, kind, parent_url, season, title, year, critics, critics_reviews,
+               critics_liked, critics_not_liked, critics_certified, critics_top, audience, audience_type,
+               audience_ratings, audience_banded, audience_liked, audience_not_liked, audience_all, audience_verified,
+               poster_url, ems_id, rt_id, info, fetched_at, title_id)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)""",
+        (url, kind, parent, season, page.get("title"), page.get("year"), page.get("critics"), page.get("critics_reviews"),
+         page.get("critics_liked"), page.get("critics_not_liked"), page.get("critics_certified"), page.get("critics_top"),
+         page.get("audience"), page.get("audience_type"), page.get("audience_ratings"),
+         json.dumps(page.get("audience_banded"), ensure_ascii=False) if page.get("audience_banded") is not None else None,
+         page.get("audience_liked"), page.get("audience_not_liked"),
+         json.dumps(page.get("audience_all"), ensure_ascii=False, default=str) if isinstance(page.get("audience_all"), (dict, list)) else page.get("audience_all"),
+         json.dumps(page.get("audience_verified"), ensure_ascii=False, default=str) if isinstance(page.get("audience_verified"), (dict, list)) else page.get("audience_verified"),
+         page.get("poster_url"), page.get("ems_id"), page.get("rt_id"),
+         json.dumps(page.get("info"), ensure_ascii=False, default=str) if page.get("info") else None, title_id))
+
+
+def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30) -> dict:
+    rows = conn.execute(
+        """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
+           FROM titles WHERE tmdb_checked_at IS NOT NULL
+             AND (rt_checked_at IS NULL OR rt_checked_at < datetime('now', ?))
+           ORDER BY year DESC""", (f"-{recheck_days} days",)).fetchall()
+    if limit:
+        rows = rows[:limit]
+    stats = {"titles": len(rows), "matched": 0, "with_scores": 0, "ambiguous": 0, "not_found": 0, "errors": 0}
+    for i, (tid, kind, season, series_imdb, t_orig, t_lat, t_ru, t_uk, year) in enumerate(rows, 1):
+        try:
+            series_start = None
+            if kind == "series" and series_imdb:
+                b = conn.execute("SELECT start_year FROM imdb_basics WHERE tconst = ?", (series_imdb,)).fetchone()
+                series_start = b[0] if b else None
+            res = rt.find([t_orig, t_lat, t_ru, t_uk], year, kind, people=_people(conn, tid), series_start=series_start)
+            if res["status"] != "matched":
+                with conn:
+                    if res["status"] == "ambiguous":
+                        conn.execute("INSERT INTO match_issues (problem, candidates) VALUES ('rt_ambiguous', ?)",
+                                     (json.dumps({"title_id": tid, "candidates": [
+                                         {k: c.get(k) for k in ("url", "title", "year", "score")} for c in res["candidates"][:5]]},
+                                         ensure_ascii=False),))
+                    conn.execute("UPDATE titles SET rt_checked_at = datetime('now') WHERE id = ?", (tid,))
+                stats[res["status"]] += 1
+                continue
+            url = res["match"]["url"]
+            page = rt.fetch(url, season_pages=[season] if kind == "series" and season else False)
+            if page is None:
+                stats["not_found"] += 1
+                with conn:
+                    conn.execute("UPDATE titles SET rt_checked_at = datetime('now') WHERE id = ?", (tid,))
+                continue
+            src, src_url, parent = page, url, None
+            if kind == "series" and season:
+                s = next((s for s in page.get("seasons") or [] if s.get("season") == season), None)
+                src = s or {}
+                src_url = (s or {}).get("url")
+                parent = url
+            with conn:
+                _store_page(conn, page, url, page.get("kind"), None, None, tid if not season else None)
+                if src_url and src is not page:
+                    _store_page(conn, src, src_url, "season", season, parent, tid)
+                conn.execute(
+                    """UPDATE titles SET rt_url = ?, rt_critics = ?, rt_audience = ?, rt_critics_reviews = ?,
+                           rt_audience_ratings = ?, rt_audience_type = ?, rt_checked_at = datetime('now') WHERE id = ?""",
+                    (src_url, src.get("critics"), src.get("audience"), src.get("critics_reviews"),
+                     src.get("audience_ratings"), page.get("audience_type"), tid))
+            stats["matched"] += 1
+            if src.get("critics") is not None or src.get("audience") is not None:
+                stats["with_scores"] += 1
+        except Exception as e:  # noqa: BLE001 — one bad page must not stop a 4000-title run; counted and logged
+            stats["errors"] += 1
+            print(f"  RT ERROR title {tid}: {e!r}", file=sys.stderr, flush=True)
+        if i % 100 == 0:
+            print(f"  rt {i}/{len(rows)} {stats}", file=sys.stderr, flush=True)
+    return stats

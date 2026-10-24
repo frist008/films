@@ -1,0 +1,1824 @@
+# Франшизы и вселенные владельца (R34). Ответы опроса 2026-10-23 (круг 1 — то, что владелец уже смотрел).
+#
+# Франшиза = ВСЯ вселенная: фильмы, спин-оффы, сериалы по фильмам и фильмы по сериалам, мультфильмы.
+# Состав определяется по Wikidata («медиафраншиза» P8345 / «часть серии» P179), сверяется с Википедией (en/ru/uk)
+# и fandom-вики; tmdb_collections — только отправная точка.
+# scope: "all" — собирать за все годы; "2024-2026" — только наш диапазон; "none" — без приоритета;
+#        from_year — нижняя граница для "all".
+# При каждом «обнови базу» новые произведения этих вселенных подтягиваются и идут наверх таблицы.
+
+[[franchise]]
+key = "marvel"
+name = "Marvel — всё"
+scope = "all"
+tmdb_collections = [131296, 284433, 618529, 529892, 623911, 422834, 531241, 448150, 748, 453993, 556, 125574, 573436, 558216, 635362]
+note = "MCU, Люди Икс (Fox), Человек-паук и Веном (Sony), Каратель, Блэйд, Призрачный гонщик, Сорвиголова, Фантастическая четвёрка, сериалы Netflix/Disney+ (survey 1, 8, 9, 43 + владелец: «Каратель — это Марвел»)"
+# 2026-10-23 владелец: мультфильмы/мультсериалы Marvel — как сериалы DC: только то, что относится к киновселенной Marvel (MCU),
+# остальное не спрашивать и скрыть. Disney-мультфильмы («Город героев», «Бэймакс») — это не Marvel; «Люди в чёрном» — отдельная франшиза.
+# 2026-10-23 владелец: старое Marvel — фильмы и сериалы до 1990 — скрыть, как у DC
+hide_films_before = 1990
+hide_series_before = 1990
+hide = ["tt0283203", "tt0099387", "tt0128886"]  # владелец 2026-10-23: «Мутанты Икс», «Смерть невероятного Халка» (1990), «Найтмэн» — скрыть
+animation_only = ["tt10168312", "tt13968252", "tt16027014"]  # Что, если…?, Глаза Ваканды, Зомби Marvel (MCU, Marvel Studios Animation)
+
+[[franchise]]
+key = "dc"
+name = "DC — всё"
+scope = "all"
+tmdb_collections = [209131, 1540907, 948485, 573693, 724848, 468552, 531242, 987044, 248534, 256287, 334996, 466894, 876125, 1025281]
+note = "DCEU/DCU, Бэтмен, Джокер, анимация DC, Константин, Хранители (survey 2, 3)"
+# 2026-10-23 владелец: сериалы DC — только новая киновселенная DC (DCU Ганна) и то, что он сам прислал (config/watchlist.toml);
+# остальные сериалы/мультсериалы DC — «смотреть не буду»: не спрашивать, скрыть (user_marks not_interested). Фильмы DC — как обычно.
+# 2026-10-23 владелец: полнометражные мультфильмы DC до 2009 и фильмы DC до 1990 — не спрашивать и скрыть из таблицы (в БД остаются)
+hide_animated_films_before = 2009
+hide_films_before = 1990
+series_only = ["tt26545355", "tt13146488", "tt26545992", "tt19891732", "tt26546001", "tt5716028"]  # Монстры-коммандос, Миротворец, Фонари, Уоллер, Paradise Lost, Бустер Голд
+
+[[franchise]]
+key = "conjuring"
+name = "Вселенная «Заклятия»"
+scope = "all"
+tmdb_collections = [313086, 402074, 968052]
+note = "survey 4"
+
+[[franchise]]
+key = "wizarding_world"
+name = "Волшебный мир (Гарри Поттер)"
+scope = "all"
+tmdb_collections = [1241, 435259]
+note = "survey 5, вкл. сериал HBO"
+
+[[franchise]]
+key = "star_wars"
+name = "Звёздные войны"
+scope = "all"
+tmdb_collections = [10, 1797552]
+note = "survey 6, вкл. сериалы"
+# 2026-10-23 владелец: «по ЗВ оставить только то, что сейчас считается официальным каноном» — Legends (Holiday Special, эвоки, «Дроиды»,
+# «Войны клонов» 2003), LEGO, «Видения», пародии и фан-ролики скрыть (в БД остаются)
+hide = ["tt0193524", "tt15311622", "tt0344288", "tt0087225", "tt0088510", "tt0088515", "tt0089110", "tt0094029", "tt0824442", "tt0361243", "tt2008565", "tt1024938", "tt1509637", "tt1773310", "tt2402600", "tt4855868", "tt5459566", "tt6343680", "tt8352934", "tt12885438", "tt13622982", "tt14573402", "tt15164924", "tt20784210", "tt32306451"]
+
+[[franchise]]
+key = "alien_predator"
+name = "Чужой / Хищник"
+scope = "all"
+tmdb_collections = [8091, 399, 115762, 135416]
+note = "survey 7"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "middle_earth"
+name = "Средиземье"
+scope = "all"
+tmdb_collections = [119, 121938]
+note = "survey 10, вкл. Война Рохирримов, Кольца власти"
+# 2026-10-23 владелец: мультфильмы 1978 и 1980 — не надо
+hide = ["tt0077869", "tt0079802", "tt2563662", "tt14358016"]  # + советские «Бильбо» 1985 и «Хранители» 1991 — «исключить»
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "godzilla"
+name = "Годзилла / Монстрверс"
+scope = "all"
+tmdb_collections = [535313, 1474814]
+note = "survey 11, вкл. японские"
+# 2026-10-23 владелец: «скрыть старое до 2000, остальное спрашивать» (японские Годзиллы 1954–1999, старые Кинг-Конги)
+hide_films_before = 2000
+hide_series_before = 2000
+hide_animated_films_before = 2000
+# 2026-10-23 владелец: «японские Годзиллы до «Минус один» и «Минус ноль» скрыть» (японские работы < 2023)
+hide = ["tt0047034", "tt0048127", "tt0049782", "tt0050251", "tt0051512", "tt0055198", "tt0056709", "tt0057215", "tt0058379", "tt0058544", "tt0058698", "tt0059205", "tt0059346", "tt0060440", "tt0060464", "tt0061856", "tt0061868", "tt0063172", "tt0064373", "tt0065776", "tt0067148", "tt0068371", "tt0069625", "tt0070122", "tt0071565", "tt0073373", "tt0087344", "tt0097444", "tt0101962", "tt0104352", "tt0107027", "tt0109916", "tt0113187", "tt0117089", "tt0133104", "tt0157898", "tt0188640", "tt0189764", "tt0197521", "tt0255198", "tt0279112", "tt0293728", "tt0314111", "tt0366526", "tt0399102", "tt13229934", "tt13364334", "tt3345858", "tt3629390", "tt3741700", "tt4262980", "tt5462936", "tt5979874", "tt8015080", "tt8478602", "tt9015178"]
+# 2026-10-23 владелец: «мультики по Годзилле исключи»
+hide_animation = true
+
+[[franchise]]
+key = "league_of_legends"
+name = "League of Legends (Рунтерра)"
+scope = "all"
+tmdb_collections = []
+note = "владелец: Аркейн и другие экранизации игры"
+
+[[franchise]]
+key = "tmdb_2602"
+name = "Крик"
+scope = "all"
+tmdb_collections = [2602]
+survey = 12
+
+[[franchise]]
+key = "tmdb_87359"
+name = "Миссия невыполнима"
+scope = "all"
+tmdb_collections = [87359]
+# 2026-10-23 владелец: «Миссия невыполнима интересны только с Томом Крузом», сериалы скрыть — всё прочее скрыть (в БД остаётся)
+keep_only = ["tt0117060", "tt0120755", "tt0317919", "tt1229238", "tt2381249", "tt4912910", "tt9603212", "tt9603208"]
+survey = 13
+
+[[franchise]]
+key = "tmdb_645"
+name = "Джеймс Бонд"
+scope = "all"
+tmdb_collections = [645]
+# 2026-10-23 владелец: «и Казино 1954» — скрыть
+hide = ["tt0310853"]
+survey = 14
+# 2026-10-23 владелец: «Охотники за привидениями», «Джуманджи», «Бонд-младший» — мультсериалы не интересны
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_8650"
+name = "Трансформеры"
+scope = "all"
+tmdb_collections = [8650]
+survey = 15
+# 2026-10-23 владелец: «не надо мультики по Трансформерам, скрой их» (кроме уже просмотренных)
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_328"
+name = "Парк Юрского периода"
+scope = "all"
+tmdb_collections = [328]
+survey = 16
+# 2026-10-23 владелец: «Юрский период мультсериалы не интересно» — скрыть
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_173710"
+name = "Планета обезьян (Перезапуск)"
+scope = "all"
+from_year = 2011
+tmdb_collections = [173710]
+survey = 17
+note = "с 2011 года (перезапуск), классику не собирать"
+
+[[franchise]]
+key = "tmdb_680435"
+name = "Код Гиас: Восставший Лелуш"
+scope = "all"
+tmdb_collections = [680435]
+survey = 18
+note = "аниме — собирать точечно, хотя категорию «Аниме» не собираем"
+
+[[franchise]]
+key = "tmdb_2344"
+name = "Матрица"
+scope = "all"
+tmdb_collections = [2344]
+survey = 19
+# 2026-10-23: «Маркс: Перезагрузка» — не «Матрица» (немецкий док-мульт), скрыть
+hide = ["tt1884351"]
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tmdb_126125"
+name = "Неудержимые"
+scope = "all"
+tmdb_collections = [126125]
+survey = 20
+
+[[franchise]]
+key = "tmdb_228446"
+name = "Астрал"
+scope = "all"
+tmdb_collections = [228446]
+survey = 21
+
+[[franchise]]
+key = "tmdb_495527"
+name = "Джуманджи"
+scope = "all"
+tmdb_collections = [495527]
+survey = 22
+# 2026-10-23 владелец: «Охотники за привидениями», «Джуманджи», «Бонд-младший» — мультсериалы не интересны
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_9743"
+name = "Ганнибал Лектор"
+scope = "all"
+tmdb_collections = [9743]
+survey = 23
+# 2026-10-23 владелец: «Ганнибал сериал исключи»
+hide = ["tt2243973", "tt0091474"]
+
+[[franchise]]
+key = "tmdb_2326"
+name = "Другой мир"
+scope = "all"
+tmdb_collections = [2326]
+survey = 24
+
+[[franchise]]
+key = "tmdb_9518"
+name = "Перевозчик"
+scope = "all"
+tmdb_collections = [9518]
+survey = 25
+# 2026-10-23 владелец: «Перевозчик сериал исключить»
+hide = ["tt1885102"]
+
+[[franchise]]
+key = "tmdb_656"
+name = "Пила"
+scope = "all"
+tmdb_collections = [656]
+survey = 26
+
+[[franchise]]
+key = "tmdb_2794"
+name = "Хроники Риддика"
+scope = "all"
+tmdb_collections = [2794]
+survey = 27
+
+[[franchise]]
+key = "tmdb_91361"
+name = "Хэллоуин + Хэллоуин"
+scope = "all"
+tmdb_collections = [91361, 126209]
+# 2026-10-23 владелец: «убери Хэллоуины до нулевых»
+hide_films_before = 2000
+survey = 28
+note = "оригинальная серия + версия Роба Зомби (survey 58)"
+
+[[franchise]]
+key = "tmdb_90863"
+name = "Час пик"
+scope = "all"
+tmdb_collections = [90863]
+survey = 29
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt4085584"]
+
+[[franchise]]
+key = "tmdb_87096"
+name = "Аватар"
+scope = "all"
+tmdb_collections = [87096]
+survey = 30
+
+[[franchise]]
+key = "tmdb_726871"
+name = "Дюна"
+scope = "all"
+tmdb_collections = [726871]
+survey = 31
+# 2026-10-23 владелец: старые фильмы до 2000 не нужны
+hide_films_before = 2000
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0142032", "tt0287839"]
+
+[[franchise]]
+key = "tmdb_8945"
+name = "Безумный Макс"
+scope = "all"
+tmdb_collections = [8945]
+survey = 32
+# 2026-10-23 владелец: старые фильмы до 2000 не нужны
+hide_films_before = 2000
+
+[[franchise]]
+key = "tmdb_14890"
+name = "Плохие парни"
+scope = "all"
+tmdb_collections = [14890]
+survey = 33
+
+[[franchise]]
+key = "tmdb_1100788"
+name = "Улыбка"
+scope = "all"
+tmdb_collections = [1100788]
+survey = 34
+
+[[franchise]]
+key = "tmdb_9485"
+name = "Форсаж"
+scope = "all"
+tmdb_collections = [9485]
+survey = 35
+# 2026-10-23 владелец: детские мульт-ответвления франшиз (LEGO, «Лагерь Мелового периода», «Шпионские гонки»…) — Яне, его не спрашивать
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+
+[[franchise]]
+key = "tmdb_135468"
+name = "G.I. Joe: Бросок кобры"
+scope = "all"
+tmdb_collections = [135468]
+# 2026-10-23 владелец: «G.I. Joe интересно только фильмы» — сериалы и мультфильмы скрыть
+hide_animation = true
+hide_all_series = true
+survey = 36
+
+[[franchise]]
+key = "tmdb_422837"
+name = "Бегущий по лезвию"
+scope = "all"
+tmdb_collections = [422837]
+survey = 37
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-23 владелец: «не надо Солдата»
+hide = ["tt0120157"]
+
+[[franchise]]
+key = "tmdb_519457"
+name = "Босс-молокосос"
+scope = "all"
+tmdb_collections = [519457]
+survey = 38
+
+[[franchise]]
+key = "tmdb_1431054"
+name = "Вайолет Эвергарден"
+scope = "all"
+tmdb_collections = [1431054]
+survey = 39
+note = "аниме — собирать точечно"
+
+[[franchise]]
+key = "tmdb_135179"
+name = "Город грехов"
+scope = "all"
+tmdb_collections = [135179]
+survey = 40
+
+[[franchise]]
+key = "tmdb_404609"
+name = "Джон Уик"
+scope = "all"
+tmdb_collections = [404609]
+survey = 41
+
+[[franchise]]
+key = "tmdb_929336"
+name = "Загадочное убийство"
+scope = "all"
+tmdb_collections = [929336]
+survey = 42
+
+[[franchise]]
+key = "tmdb_769423"
+name = "Клаустрофобы"
+scope = "all"
+tmdb_collections = [769423]
+survey = 44
+
+[[franchise]]
+key = "tmdb_165369"
+name = "Коллекционер"
+scope = "all"
+tmdb_collections = [165369]
+survey = 45
+
+[[franchise]]
+key = "tmdb_137696"
+name = "Корпорация монстров"
+scope = "all"
+tmdb_collections = [137696]
+survey = 46
+
+[[franchise]]
+key = "tmdb_848690"
+name = "Легенды «Смертельной битвы» + Мортал Комбат (Перезапуск)"
+scope = "all"
+tmdb_collections = [848690, 931431]
+survey = 47
+note = "анимация MK Legends + игровые фильмы MK (survey 79)"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tmdb_325470"
+name = "Лего Фильм"
+scope = "all"
+tmdb_collections = [325470]
+survey = 48
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_742536"
+name = "Мег"
+scope = "all"
+tmdb_collections = [742536]
+survey = 49
+
+[[franchise]]
+key = "tmdb_748919"
+name = "Не дыши"
+scope = "all"
+tmdb_collections = [748919]
+survey = 50
+
+[[franchise]]
+key = "tmdb_179919"
+name = "Перси Джексон"
+scope = "all"
+tmdb_collections = [179919]
+survey = 51
+
+[[franchise]]
+key = "tmdb_589755"
+name = "Последний богатырь"
+scope = "all"
+tmdb_collections = [589755]
+survey = 52
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt28143089"]
+
+[[franchise]]
+key = "tmdb_1974"
+name = "Проклятие"
+scope = "all"
+tmdb_collections = [1974]
+survey = 53
+# 2026-10-23 владелец: «Проклятие японские до 2020» — скрыть
+hide_country = {JP = 2020}
+
+[[franchise]]
+key = "tmdb_256322"
+name = "Судная ночь"
+scope = "all"
+tmdb_collections = [256322]
+survey = 54
+
+[[franchise]]
+key = "tmdb_608101"
+name = "Телохранитель киллера"
+scope = "all"
+tmdb_collections = [608101]
+survey = 55
+
+[[franchise]]
+key = "tmdb_528"
+name = "Терминатор"
+scope = "all"
+tmdb_collections = [528]
+survey = 56
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tmdb_363369"
+name = "Тихоокеанский рубеж"
+scope = "all"
+tmdb_collections = [363369]
+survey = 57
+
+[[franchise]]
+key = "tmdb_1565"
+name = "28 дней"
+scope = "all"
+tmdb_collections = [1565]
+survey = 59
+
+[[franchise]]
+key = "tmdb_1679129"
+name = "Longlegs Collection"
+scope = "all"
+tmdb_collections = [1679129]
+survey = 60
+
+[[franchise]]
+key = "tmdb_1531466"
+name = "Орудия"
+scope = "all"
+tmdb_collections = [1531466]
+survey = 61
+
+[[franchise]]
+key = "tmdb_8864"
+name = "Пункт назначения"
+scope = "all"
+tmdb_collections = [8864]
+survey = 62
+
+[[franchise]]
+key = "tmdb_720879"
+name = "Соник в Кино"
+scope = "all"
+tmdb_collections = [720879]
+survey = 63
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+# 2026-10-24 владелец: «Соник бум не интересен», «Соник Прайм не интересен»
+hide = ["tt3232262", "tt13961348"]
+
+[[franchise]]
+key = "tmdb_1738564"
+name = "KPop Demon Hunters Collection"
+scope = "all"
+tmdb_collections = [1738564]
+survey = 64
+
+[[franchise]]
+key = "tmdb_1262937"
+name = "Sisu Collection"
+scope = "all"
+tmdb_collections = [1262937]
+survey = 65
+
+[[franchise]]
+key = "tmdb_1180834"
+name = "Troll (2022) Collection"
+scope = "all"
+tmdb_collections = [1180834]
+survey = 66
+
+[[franchise]]
+key = "tmdb_1078456"
+name = "Violent Night Collection"
+scope = "all"
+tmdb_collections = [1078456]
+survey = 67
+
+[[franchise]]
+key = "tmdb_1239686"
+name = "Woody Woodpecker Collection"
+scope = "all"
+tmdb_collections = [1239686]
+survey = 68
+
+[[franchise]]
+key = "tmdb_950289"
+name = "X Коллекция"
+scope = "all"
+tmdb_collections = [950289]
+survey = 69
+
+[[franchise]]
+key = "tmdb_945475"
+name = "Битлджюс"
+scope = "all"
+tmdb_collections = [945475]
+survey = 70
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: «старый Битлджус смотреть не буду, скрыть»
+hide = ["tt0094721"]
+
+[[franchise]]
+key = "tmdb_1102372"
+name = "Вышка"
+scope = "all"
+tmdb_collections = [1102372]
+survey = 71
+
+[[franchise]]
+key = "tmdb_86066"
+name = "Гадкий я + Миньоны"
+scope = "all"
+tmdb_collections = [86066, 544669]
+survey = 72
+note = "Гадкий я + Миньоны (survey 78)"
+
+[[franchise]]
+key = "tmdb_1069584"
+name = "Гладиатор"
+scope = "all"
+tmdb_collections = [1069584]
+survey = 73
+
+[[franchise]]
+key = "tmdb_1084247"
+name = "Зверополис"
+scope = "all"
+tmdb_collections = [1084247]
+survey = 74
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_382685"
+name = "Иллюзия обмана"
+scope = "all"
+tmdb_collections = [382685]
+survey = 75
+
+[[franchise]]
+key = "tmdb_1119879"
+name = "Ледяной драйв"
+scope = "all"
+tmdb_collections = [1119879]
+survey = 76
+
+[[franchise]]
+key = "tmdb_1071588"
+name = "М3ГАН"
+scope = "all"
+tmdb_collections = [1071588]
+survey = 77
+
+[[franchise]]
+key = "tmdb_1129084"
+name = "Никто"
+scope = "all"
+tmdb_collections = [1129084]
+survey = 80
+
+[[franchise]]
+key = "tmdb_1449595"
+name = "Нэчжа"
+scope = "all"
+tmdb_collections = [1449595]
+survey = 81
+
+[[franchise]]
+key = "tmdb_2980"
+name = "Охотники за привидениями"
+scope = "all"
+tmdb_collections = [2980]
+survey = 82
+# 2026-10-23 владелец: «Охотники за привидениями», «Джуманджи», «Бонд-младший» — мультсериалы не интересны
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_8580"
+name = "Парень-каратист"
+scope = "all"
+tmdb_collections = [8580]
+survey = 83
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: старые «Парни-каратисты» (1984–1994) — исключить; знает «Каратэ-пацан» (2010) с Джеки Чаном
+hide_films_before = 2000
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt7221388"]
+
+[[franchise]]
+key = "tmdb_1126392"
+name = "Платформа"
+scope = "all"
+tmdb_collections = [1126392]
+survey = 84
+
+[[franchise]]
+key = "tmdb_1240438"
+name = "Пять ночей с Фредди"
+scope = "all"
+tmdb_collections = [1240438]
+survey = 85
+
+[[franchise]]
+key = "tmdb_870339"
+name = "Расплата"
+scope = "all"
+tmdb_collections = [870339]
+survey = 86
+
+[[franchise]]
+key = "tmdb_64748"
+name = "Сайлент Хилл"
+scope = "all"
+tmdb_collections = [64748]
+survey = 87
+
+[[franchise]]
+key = "tmdb_1434561"
+name = "Супер Марио"
+scope = "all"
+tmdb_collections = [1434561]
+survey = 88
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_468222"
+name = "Суперсемейка"
+scope = "all"
+tmdb_collections = [468222]
+survey = 89
+
+[[franchise]]
+key = "tmdb_521226"
+name = "Тихое место"
+scope = "all"
+tmdb_collections = [521226]
+survey = 90
+
+[[franchise]]
+key = "tmdb_63043"
+name = "Трон"
+scope = "all"
+tmdb_collections = [63043]
+survey = 91
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+
+[[franchise]]
+key = "tmdb_727761"
+name = "Ужасающий Коллекция"
+scope = "all"
+tmdb_collections = [727761]
+survey = 92
+# 2026-10-24: «Фигня» (Bupkis, 2023, Пит Дэвидсон) — не «Ужасающий», ошибка состава
+hide = ["tt19853604"]
+
+[[franchise]]
+key = "tmdb_945803"
+name = "刺殺小說家（系列）"
+scope = "all"
+tmdb_collections = [945803]
+survey = 93
+
+# ---- круг 2 (2026-10-23): франшизы скачанного-но-не-просмотренного и популярные непросмотренные с новинками ----
+
+[[franchise]]
+key = "tmdb_4246"
+name = "Очень страшное кино"
+scope = "all"
+tmdb_collections = [4246]
+survey = "r2-94"
+
+[[franchise]]
+key = "tmdb_37139"
+name = "Голый пистолет"
+scope = "all"
+tmdb_collections = [37139]
+survey = "r2-95"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0083466"]
+
+[[franchise]]
+key = "tmdb_77816"
+name = "Кунг-фу Панда"
+scope = "all"
+tmdb_collections = [77816]
+survey = "r2-96"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_934765"
+name = "Мятежная Луна"
+scope = "all"
+tmdb_collections = [934765]
+survey = "r2-97"
+
+[[franchise]]
+key = "tmdb_1421776"
+name = "熊猫计划（系列）"
+scope = "none"
+tmdb_collections = [1421776]
+survey = "r2-98"
+
+[[franchise]]
+key = "tmdb_1440784"
+name = "Пчеловод"
+scope = "all"
+tmdb_collections = [1440784]
+survey = "r2-99"
+
+[[franchise]]
+key = "tmdb_1197140"
+name = "Чёрный телефон"
+scope = "all"
+tmdb_collections = [1197140]
+survey = "r2-100"
+
+[[franchise]]
+key = "tmdb_1439129"
+name = "퇴마록 시리즈"
+scope = "all"
+tmdb_collections = [1439129]
+survey = "r2-101"
+
+[[franchise]]
+key = "tmdb_1311628"
+name = "100% Wolf Collection"
+scope = "all"
+tmdb_collections = [1311628]
+survey = "r2-102"
+
+[[franchise]]
+key = "tmdb_1510620"
+name = "Гарфилд в Кино"
+scope = "all"
+tmdb_collections = [1510620]
+survey = "r2-103"
+
+[[franchise]]
+key = "tmdb_1022790"
+name = "Головоломка"
+scope = "all"
+tmdb_collections = [1022790]
+survey = "r2-104"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_1458864"
+name = "Как приручить дракона"
+scope = "all"
+tmdb_collections = [1458864]
+survey = "r2-105"
+# 2026-10-23 владелец: «мультсериалы не интересны по Дракону» — скрыть сериалы
+hide_all_series = true
+# 2026-10-23: ТВ-фильмы детского «Драконы: Спасатели» — как мультсериалы Дракона (не интересно)
+hide = ["tt11875456", "tt12599350", "tt13353508"]
+
+[[franchise]]
+key = "tmdb_1504372"
+name = "Лило и Стич"
+scope = "all"
+tmdb_collections = [1504372]
+survey = "r2-106"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+
+[[franchise]]
+key = "tmdb_722971"
+name = "Достать ножи"
+scope = "all"
+tmdb_collections = [722971]
+survey = "r2-107"
+
+[[franchise]]
+key = "tmdb_1802110"
+name = "Obsession Collection"
+scope = "all"
+tmdb_collections = [1802110]
+survey = "r2-108"
+
+[[franchise]]
+key = "tmdb_1633433"
+name = "F1 Collection"
+scope = "all"
+tmdb_collections = [1633433]
+survey = "r2-109"
+
+[[franchise]]
+key = "tmdb_968080"
+name = "Злая"
+scope = "none"
+tmdb_collections = [968080]
+survey = "r2-110"
+
+[[franchise]]
+key = "tmdb_1370345"
+name = "Дикий робот"
+scope = "all"
+tmdb_collections = [1370345]
+survey = "r2-111"
+
+[[franchise]]
+key = "tmdb_1611146"
+name = "The Housemaid Collection"
+scope = "all"
+tmdb_collections = [1611146]
+survey = "r2-112"
+
+[[franchise]]
+key = "tmdb_1062948"
+name = "Смерч"
+scope = "all"
+tmdb_collections = [1062948]
+survey = "r2-113"
+
+[[franchise]]
+key = "tmdb_1687197"
+name = "Майкл"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1687197]
+survey = "r2-114"
+
+[[franchise]]
+key = "tmdb_1290597"
+name = "Road House (Remake) Collection"
+scope = "none"
+tmdb_collections = [1290597]
+survey = "r2-115"
+
+[[franchise]]
+key = "tmdb_1461530"
+name = "Minecraft в кино"
+scope = "all"
+tmdb_collections = [1461530]
+survey = "r2-116"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+
+[[franchise]]
+key = "tmdb_1241984"
+name = "Моана"
+scope = "all"
+tmdb_collections = [1241984]
+survey = "r2-117"
+
+[[franchise]]
+key = "tmdb_1263259"
+name = "Счастливчик Гилмор"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1263259]
+survey = "r2-118"
+
+[[franchise]]
+key = "tmdb_1707178"
+name = "Военная машина"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1707178]
+survey = "r2-119"
+
+[[franchise]]
+key = "tmdb_1314623"
+name = "Дьявол носит Prada"
+scope = "all"
+tmdb_collections = [1314623]
+survey = "r2-120"
+
+[[franchise]]
+key = "tmdb_10194"
+name = "История игрушек"
+scope = "all"
+tmdb_collections = [10194]
+survey = "r2-121"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+
+[[franchise]]
+key = "tmdb_85861"
+name = "Полицейский из Беверли-Хиллз"
+scope = "none"
+tmdb_collections = [85861]
+survey = "r2-122"
+
+[[franchise]]
+key = "tmdb_762512"
+name = "Король Лев (Перезапуск)"
+scope = "all"
+tmdb_collections = [762512]
+survey = "r2-123"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+# 2026-10-24 владелец: «Хранитель Лев» — «Лев не интересен»
+hide = ["tt3793630"]
+
+[[franchise]]
+key = "tmdb_1267164"
+name = "Я иду искать"
+scope = "all"
+tmdb_collections = [1267164]
+survey = "r2-124"
+
+[[franchise]]
+key = "tmdb_1310970"
+name = "కల్కి సినిమాటిక్ యూనివర్స్"
+scope = "none"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1310970]
+survey = "r2-125"
+# 2026-10-24 владелец: «не помню, чтобы я их вообще просил» — не следить
+
+[[franchise]]
+key = "tmdb_10919"
+name = "Омен"
+scope = "all"
+tmdb_collections = [10919]
+survey = "r2-126"
+# 2026-10-24 владелец: «не нужны Омены до 2006»
+hide_films_before = 2006
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt4337944"]
+
+[[franchise]]
+key = "tmdb_3601"
+name = "Я знаю, что вы сделали прошлым летом"
+scope = "all"
+tmdb_collections = [3601]
+survey = "r2-127"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt10937180"]
+
+[[franchise]]
+key = "tmdb_840465"
+name = "Гренландия"
+scope = "all"
+tmdb_collections = [840465]
+survey = "r2-128"
+
+[[franchise]]
+key = "tmdb_847029"
+name = "Бессмертная гвардия"
+scope = "all"
+tmdb_collections = [847029]
+survey = "r2-129"
+
+[[franchise]]
+key = "tmdb_933989"
+name = "Охота на воров Коллекция"
+scope = "all"
+tmdb_collections = [933989]
+survey = "r2-130"
+
+[[franchise]]
+key = "tmdb_1125292"
+name = "Чумовая Пятница"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1125292]
+survey = "r2-131"
+
+[[franchise]]
+key = "tmdb_1679123"
+name = "Heart Eyes - Colección"
+scope = "all"
+tmdb_collections = [1679123]
+survey = "r2-132"
+
+[[franchise]]
+key = "tmdb_1630649"
+name = "Sous la Seine - Saga"
+scope = "all"
+tmdb_collections = [1630649]
+survey = "r2-133"
+
+[[franchise]]
+key = "tmdb_488924"
+name = "Приключения Паддингтона"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [488924]
+survey = "r2-134"
+
+[[franchise]]
+key = "tmdb_8936"
+name = "Бриджит Джонс"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [8936]
+survey = "r2-135"
+
+[[franchise]]
+key = "tmdb_1802417"
+name = "Upgraded Collection"
+scope = "all"
+tmdb_collections = [1802417]
+survey = "r2-136"
+
+[[franchise]]
+key = "tmdb_975201"
+name = "Простая просьба"
+scope = "all"
+tmdb_collections = [975201]
+survey = "r2-137"
+
+[[franchise]]
+key = "tmdb_1321891"
+name = "In a Violent Nature Collection"
+scope = "all"
+tmdb_collections = [1321891]
+survey = "r2-138"
+
+[[franchise]]
+key = "tmdb_1231053"
+name = "Плохие парни (Коллекция мультфильмов)"
+scope = "all"
+tmdb_collections = [1231053]
+survey = "r2-139"
+
+[[franchise]]
+key = "tmdb_1172926"
+name = "Незнакомцы"
+scope = "all"
+tmdb_collections = [1172926]
+survey = "r2-140"
+
+[[franchise]]
+key = "tmdb_1136366"
+name = "Avatar Aang: The Last Airbender Collection"
+scope = "none"
+tmdb_collections = [1136366]
+survey = "r2-141"
+
+[[franchise]]
+key = "tmdb_1507701"
+name = "Apocalipsis Z - Colección"
+scope = "none"
+tmdb_collections = [1507701]
+survey = "r2-142"
+# 2026-10-24 владелец: «не следить»
+
+[[franchise]]
+key = "tmdb_1187990"
+name = "దేవర Collection"
+scope = "none"
+tmdb_collections = [1187990]
+survey = "r2-143"
+# 2026-10-24 владелец: «не помню, чтобы я их вообще просил» — не следить
+
+[[franchise]]
+key = "tmdb_264338"
+name = "Ребенок Розмари"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [264338]
+survey = "r2-144"
+
+[[franchise]]
+key = "tmdb_1370659"
+name = "Border Collection"
+scope = "none"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1370659]
+survey = "r2-145"
+# 2026-10-24 владелец: «не следить»
+
+[[franchise]]
+key = "tmdb_1492780"
+name = "One of Them Days Collection"
+scope = "all"
+tmdb_collections = [1492780]
+survey = "r2-146"
+
+[[franchise]]
+key = "tmdb_1156666"
+name = "Вина | Коллекция + Коллекция фильмов \"Вина\""
+scope = "all"
+tmdb_collections = [1156666, 1477387]
+survey = "r2-147"
+
+[[franchise]]
+key = "tmdb_925006"
+name = "Аббатство Даунтон"
+scope = "all"
+tmdb_collections = [925006]
+survey = "r2-148"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt1606375"]
+
+[[franchise]]
+key = "tmdb_1354706"
+name = "Practical Magic Collection"
+scope = "all"
+tmdb_collections = [1354706]
+survey = "r2-149"
+
+
+# ---- названы владельцем напрямую ----
+
+[[franchise]]
+key = "sherlock_holmes"
+name = "Шерлок Холмс — все экранизации"
+scope = "all"
+tmdb_collections = [829314]
+note = "владелец: «Шерлок весь интересен, все года, все вариации» — BBC Шерлок, Гай Ричи, Элементарно, Ливанов, Мистер Холмс, Энола Холмс…"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: старые экранизации до 2000 — скрыть («советское цветное я видел» — отмечено)
+hide_films_before = 2000
+# 2026-10-24 владелец: ТВ-фильмы 2000–2007 скрыть; «после 2000 хочу отвечать всё вручную» — остальное после 2000 спрашивать
+hide = ["tt0337593", "tt0322622", "tt0429032", "tt0264695", "tt0310851", "tt0270645", "tt0281173", "tt0892743"]
+# 2026-10-24: то же правило владельца «старые экранизации до 2000 — скрыть» для сериалов (советские цветные — видел)
+hide_series_before = 2000
+
+[[franchise]]
+key = "little_mermaid"
+name = "Русалочка (Disney)"
+scope = "all"
+tmdb_collections = []
+note = "владелец: «Русалочка вся интересна» — 1989, продолжения, мультсериал, фильм 2023"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+
+[[franchise]]
+key = "enchanted"
+name = "Зачарованная"
+scope = "all"
+tmdb_collections = [531799]
+note = "владелец: «и зачарованная» — 2007 и Расколдованная 2022"
+
+[[franchise]]
+key = "101_dalmatians"
+name = "101 далматинец + Круэлла"
+scope = "all"
+tmdb_collections = []
+note = "владелец: «101 далматинец интересен и Круэлла» — мультфильмы, фильмы 1996/2000, сериалы, Круэлла 2021 и продолжение"
+
+# ---- круг 4 + купленное (2026-10-23): старая таблица владельца и коллекции купленных фильмов; все ответы «Все годы» ----
+# 2026-10-24 владелец: «61 года скрыть»
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0055254", "tt0144700", "tt7019028"]
+
+[[franchise]]
+key = "tmdb_14563"
+name = "Звонок (США)"
+scope = "all"
+tmdb_collections = [14563]
+survey = "r4-1"
+# 2026-10-23 владелец: «Звонок японский исключить», «и сериалы по Звонку японские исключить»
+hide_country = {JP = 9999}
+
+[[franchise]]
+key = "tmdb_391860"
+name = "Kingsman"
+scope = "all"
+tmdb_collections = [391860]
+survey = "r4-2"
+
+[[franchise]]
+key = "tmdb_86027"
+name = "Аладдин (Disney) + фильм 2019"
+scope = "all"
+tmdb_collections = [86027]
+survey = "r4-3"
+# 2026-10-23 владелец: «сериал 2013 про Алису исключи»
+hide = ["tt2802008"]
+# 2026-10-23 владелец: «Аладдин — мультики 3 я видел, сериал не интересно»
+hide_all_series = true
+
+[[franchise]]
+key = "tmdb_52749"
+name = "Эффект бабочки"
+scope = "all"
+tmdb_collections = [52749]
+survey = "r4-4"
+
+[[franchise]]
+key = "tmdb_64751"
+name = "Адреналин"
+scope = "all"
+tmdb_collections = [64751]
+survey = "r4-5"
+
+[[franchise]]
+key = "cloverfield"
+name = "Кловерфилд (вселенная, коллекции TMDB нет)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-6"
+
+[[franchise]]
+key = "evil_dead"
+name = "Зловещие мертвецы (вся вселенная: фильмы, сериал)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-7"
+# 2026-10-23 владелец: старые фильмы до 2000 не нужны
+hide_films_before = 2000
+
+[[franchise]]
+key = "tmdb_809185"
+name = "Армия мертвецов"
+scope = "all"
+tmdb_collections = [809185]
+survey = "r4-8"
+watch = "владелец 2026-10-23: следить за анимационным сериалом Army of the Dead: Lost Vegas (Netflix) — ждать раздачу на rutor и rutracker"
+
+[[franchise]]
+key = "tmdb_124949"
+name = "Всемогущий"
+scope = "all"
+tmdb_collections = [124949]
+survey = "r4-9"
+
+[[franchise]]
+key = "tmdb_945984"
+name = "Я — легенда"
+scope = "all"
+tmdb_collections = [945984]
+survey = "r4-10"
+
+[[franchise]]
+key = "tmdb_731067"
+name = "Птичий короб"
+scope = "all"
+tmdb_collections = [731067]
+survey = "r4-11"
+
+[[franchise]]
+key = "tmdb_718551"
+name = "Побег из курятника"
+scope = "all"
+tmdb_collections = [718551]
+survey = "r4-12"
+
+[[franchise]]
+key = "tmdb_1601866"
+name = "Три идиота"
+scope = "all"
+tmdb_collections = [1601866]
+survey = "r4-13"
+
+[[franchise]]
+key = "eastrail_177"
+name = "Неуязвимый / Сплит / Стекло (трилогия Шьямалана)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-14"
+
+[[franchise]]
+key = "the_gentlemen"
+name = "Джентльмены (фильм 2019 + сериал 2024)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-15"
+
+[[franchise]]
+key = "tmdb_386382"
+name = "Холодное сердце"
+scope = "all"
+tmdb_collections = [386382]
+survey = "r4-16"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_2150"
+name = "Шрек + Кот в сапогах"
+scope = "all"
+tmdb_collections = [2150, 94602]
+survey = "r4-17"
+# 2026-10-23 владелец: «мультсериалы не интересны по Шреку» — скрыть сериалы
+hide_all_series = true
+
+[[franchise]]
+key = "tmdb_43072"
+name = "Маска"
+scope = "all"
+tmdb_collections = [43072]
+survey = "r4-18"
+
+[[franchise]]
+key = "tmdb_722961"
+name = "Космический джем"
+scope = "all"
+tmdb_collections = [722961]
+survey = "r4-19"
+
+[[franchise]]
+key = "tmdb_295"
+name = "Пираты Карибского моря"
+scope = "all"
+tmdb_collections = [295]
+survey = "r4-20"
+
+[[franchise]]
+key = "tmdb_1733"
+name = "Мумия (+2017, Царь скорпионов)"
+scope = "all"
+tmdb_collections = [1733]
+survey = "r4-21"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: «до 70 скрыть Мумию»
+hide_films_before = 1970
+# 2026-10-24 владелец: «убрать Мумию 71»
+hide = ["tt0068290"]
+
+[[franchise]]
+key = "tmdb_2806"
+name = "Американский пирог (+ Presents)"
+scope = "all"
+tmdb_collections = [2806]
+survey = "r4-22"
+
+[[franchise]]
+key = "tmdb_8354"
+name = "Ледниковый период (+ Скрат, Бак)"
+scope = "all"
+tmdb_collections = [8354]
+survey = "r4-23"
+
+[[franchise]]
+key = "tmdb_9888"
+name = "Один дома (+ телефильмы, Дома без никого)"
+scope = "all"
+tmdb_collections = [9888]
+survey = "r4-24"
+
+[[franchise]]
+key = "tmdb_14740"
+name = "Мадагаскар (+ Пингвины, сериалы)"
+scope = "all"
+tmdb_collections = [14740]
+survey = "r4-25"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0892700", "tt11714912", "tt3807022", "tt6865906"]
+
+[[franchise]]
+key = "tmdb_86055"
+name = "Люди в чёрном (+ Интернэшнл, мультсериал)"
+scope = "all"
+tmdb_collections = [86055]
+survey = "r4-26"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+
+[[franchise]]
+key = "tmdb_87014"
+name = "Кошки против собак"
+scope = "all"
+tmdb_collections = [87014]
+survey = "r4-27"
+
+[[franchise]]
+key = "tmdb_133352"
+name = "Обитель зла — вся вселенная (фильмы, сериалы, анимация)"
+scope = "all"
+tmdb_collections = [133352]
+survey = "r4-28"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tmdb_137697"
+name = "В поисках Немо"
+scope = "all"
+tmdb_collections = [137697]
+survey = "r4-29"
+
+[[franchise]]
+key = "tmdb_185103"
+name = "Монстры на каникулах"
+scope = "all"
+tmdb_collections = [185103]
+survey = "r4-30"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_229932"
+name = "Рио"
+scope = "all"
+tmdb_collections = [229932]
+survey = "r4-31"
+
+[[franchise]]
+key = "tmdb_427084"
+name = "Тайная жизнь домашних животных"
+scope = "all"
+tmdb_collections = [427084]
+survey = "r4-32"
+
+[[franchise]]
+key = "tmdb_464577"
+name = "Семейка Крудс"
+scope = "all"
+tmdb_collections = [464577]
+survey = "r4-33"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_530064"
+name = "Сияние / Доктор Сон (+ Отель Сияние)"
+scope = "all"
+tmdb_collections = [530064]
+survey = "r4-34"
+
+[[franchise]]
+key = "tmdb_531315"
+name = "Angry Birds в кино (+ мультсериалы)"
+scope = "all"
+tmdb_collections = [531315]
+survey = "r4-35"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt12027896", "tt3012598", "tt3674118", "tt4168666", "tt6613034", "tt27977716"]
+
+[[franchise]]
+key = "tmdb_531331"
+name = "Малефисента"
+scope = "all"
+tmdb_collections = [531331]
+survey = "r4-36"
+
+[[franchise]]
+key = "tmdb_634390"
+name = "Doom (экранизации игры)"
+scope = "all"
+tmdb_collections = [634390]
+survey = "r4-37"
+
+[[franchise]]
+key = "tmdb_737031"
+name = "Хитмэн (+ сериал)"
+scope = "all"
+tmdb_collections = [737031]
+survey = "r4-38"
+
+[[franchise]]
+key = "tmdb_830781"
+name = "Кладбище домашних животных (1989/1992 + ремейк)"
+scope = "all"
+tmdb_collections = [830781]
+survey = "r4-39"
+
+[[franchise]]
+key = "tmdb_1458846"
+name = "Однажды в… Голливуде (+ Приключения Клиффа Бута 2026)"
+scope = "all"
+tmdb_collections = [1458846]
+survey = "r4-40"
+
+[[franchise]]
+key = "tmdb_125570"
+name = "300 спартанцев (+ сериал)"
+scope = "all"
+tmdb_collections = [125570]
+survey = "r4-41"
+
+[[franchise]]
+key = "south_park"
+name = "Южный парк"
+scope = "all"
+tmdb_collections = []
+note = "Южный парк — вся вселенная (сериал, фильмы, спецвыпуски) — назван владельцем (2026-10-23)"
+
+[[franchise]]
+key = "rick_and_morty"
+name = "Рик и Морти"
+scope = "all"
+tmdb_collections = []
+note = "Рик и Морти — вся вселенная — назван владельцем (есть в Plex) (2026-10-23)"
+# 2026-10-24 владелец (развилка «аниме вообще интересно?»): «Рик и Морти: Аниме» (2024) — нет
+hide = ["tt28466465"]
+
+[[franchise]]
+key = "pokemon"
+name = "Покемоны"
+scope = "all"
+tmdb_collections = []
+note = "Покемоны — вся вселенная (сериалы, фильмы, Детектив Пикачу) — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "death_note"
+name = "Тетрадь смерти"
+scope = "all"
+tmdb_collections = []
+note = "Тетрадь смерти — вся вселенная — назван владельцем (видел) (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "psycho_pass"
+name = "Психопаспорт"
+scope = "all"
+tmdb_collections = []
+note = "Психопаспорт — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "gantz"
+name = "Ганц (Gantz)"
+scope = "all"
+tmdb_collections = []
+note = "Ганц (Gantz) — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "naruto"
+name = "Наруто + Боруто"
+scope = "all"
+tmdb_collections = []
+note = "Наруто + Боруто — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+# 2026-10-24 владелец: из фильмов видел только «Боруто» (2015) и «Последний» (2014, Наруто на Луне); прошлые фильмы не интересны
+hide = ["tt0476680", "tt0791188", "tt1071815", "tt0988982", "tt1160524", "tt1481363", "tt1703048", "tt1999167", "tt2290828"]
+
+[[franchise]]
+key = "bleach"
+name = "Блич"
+scope = "all"
+tmdb_collections = []
+note = "Блич — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+# 2026-10-24 владелец: «фильмы не буду по Блич смотреть»
+hide = ["tt1105263", "tt1148261", "tt1339302", "tt1785394"]
+
+[[franchise]]
+key = "one_piece"
+name = "Ван-Пис"
+scope = "all"
+tmdb_collections = []
+note = "Ван-Пис — вся вселенная (аниме, фильмы, сериал Netflix) — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+# ---- экранизации игр владельца (R36, 2026-10-23): правило владельца — экранизации его игр всегда «Все годы», без опроса ----
+
+[[franchise]]
+key = "assassins_creed"
+name = "Assassin's Creed (+ Captain Laserhawk)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "bloodborne"
+name = "Bloodborne"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dead_space"
+name = "Dead Space"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "death_stranding"
+name = "Death Stranding"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "devil_may_cry"
+name = "Devil May Cry"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# 2026-10-24 владелец: аниме Devil May Cry 2007 — не интересно (Netflix 2025 — в «хочу», не трогать)
+hide = ["tt1048049"]
+
+[[franchise]]
+key = "ghost_of_tsushima"
+name = "Ghost of Tsushima"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "god_of_war"
+name = "God of War"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "half_life_portal"
+name = "Half-Life / Portal (Valve)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# 2026-10-24: фанатские веб-сериалы (правило: фан-работы не поднимать)
+hide = ["tt16390594", "tt13004192"]
+
+[[franchise]]
+key = "halo"
+name = "Halo"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+# 2026-10-24 владелец: «Красные против Синих» — «ничего из этого не хочу»
+hide = ["tt0401747"]
+
+[[franchise]]
+key = "life_is_strange"
+name = "Life Is Strange"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "mass_effect"
+name = "Mass Effect"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "max_payne"
+name = "Max Payne"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "metal_gear"
+name = "Metal Gear"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "postal"
+name = "Postal"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "tekken"
+name = "Tekken"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "the_witcher"
+name = "Ведьмак (The Witcher) — вся вселенная Сапковского"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tomb_raider"
+name = "Tomb Raider"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+# 2026-10-24 владелец: «Переосмысление: Расхитительница гробниц» 2007 — мультсериал не интересен
+hide = ["tt1124308"]
+
+[[franchise]]
+key = "twisted_metal"
+name = "Twisted Metal"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "alan_wake"
+name = "Alan Wake (+ Bright Falls)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "hunger_games"
+name = "Голодные игры — вся франшиза"
+scope = "all"
+tmdb_collections = [131635]
+note = "владелец 2026-10-23: «Голодные игры (фильм) — следить за франшизой» (вкл. приквелы: Баллада о змеях и певчих птицах, Восход жатвы)"
+
+[[franchise]]
+key = "star_trek"
+name = "Звёздный путь (Star Trek) — вся вселенная"
+scope = "all"
+note = "владелец 2026-10-23 в ❤️-опросе: «вселенная стартрека нужна» — фильмы, сериалы, мультсериалы; состав — Wikidata/Википедия/Memory Alpha"
+
+[[franchise]]
+key = "men_in_black"
+name = "Люди в чёрном"
+scope = "all"
+note = "владелец 2026-10-23: «Люди в чёрном добавить франшизу, это не Marvel» — фильмы 1997–2019 и мультсериал"
+
+[[franchise]]
+key = "spider_verse"
+name = "Человек-паук: Вселенные (Spider-Verse)"
+scope = "all"
+note = "владелец 2026-10-23: «Паук через вселенные крутой, оставить и следить отдельно» — анимационная трилогия Sony + спин-оффы (Spider-Punk, Spider-Women); из «Marvel — всё» скрыт как анимация вне MCU"
+
+[[franchise]]
+key = "buffyverse"
+name = "Баффи — вселенная (Buffyverse)"
+scope = "all"
+note = "«Баффи — истребительница вампиров» (1997–2003), «Ангел» (1999–2004), фильм 1992, новый «Баффи» (Hulu). Владелец 2026-10-23: «Баффи и Ангела по вселенной я видел. Франшизу в отслеживание добавь»"
+
+[[franchise]]
+key = "highlander"
+name = "Горец"
+scope = "all"
+note = "фильмы 1986–2007, «Горец» (1992–1998), «Ворон», мультсериал, перезапуск с Генри Кавиллом. Владелец 2026-10-23: «Горец 92–98 я видел, за франшизой хочу следить»"
+
+[[franchise]]
+key = "stargate"
+name = "Звёздные врата — вселенная"
+scope = "all"
+note = "фильм 1994, SG-1, «Атлантида», «Вселенная», «Бесконечность» (мульт), «Начало», фильмы «Ковчег истины» и «Континуум», новый сериал Amazon. Владелец 2026-10-23: «Атлантиду, фильм и полнометражный мультик видел; хочу следить за вселенной»"
+
+[[franchise]]
+key = "lost"
+name = "Остаться в живых (Lost)"
+scope = "all"
+note = "владелец 2026-10-23: «Lost видел весь, следить за вселенной»"
+
+[[franchise]]
+key = "are_you_afraid"
+name = "Боишься ли ты темноты?"
+scope = "all"
+note = "владелец 2026-10-23: оригинал 1990–2000 видел, «следить за новыми» (перезапуск 2019–2022 и дальше)"
+
+[[franchise]]
+key = "cars"
+name = "Тачки (Pixar)"
+scope = "all"
+tmdb_collections = [87118]
+note = "владелец 2026-10-23: «Тачки я все видел, кроме сериала — его скрыть»; фильмы 1–3 отмечены"
+hide_all_series = true
+
+[[franchise]]
+key = "godfather"
+name = "Крёстный отец"
+scope = "all"
+tmdb_collections = [230]
+note = "владелец 2026-10-24: «франшиза, которую я не видел, у которой просто высокий приоритет по сортировке над IMAX» — в плейлисты не класть"

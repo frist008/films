@@ -1,0 +1,8 @@
+requests>=2.32
+beautifulsoup4>=4.12
+lxml>=5.2
+gspread>=6.1
+google-auth-oauthlib>=1.2
+yt-dlp>=2025.1
+faster-whisper>=1.1
+numpy>=1.26
