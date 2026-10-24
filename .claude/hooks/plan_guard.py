@@ -24,6 +24,10 @@ CUTOFF = "2026-10-24T06:45:00"   # messages before the hook existed were handled
 HEAD = "## Входящие (каждое сообщение владельца — сюда первым делом; разобрать в R-пункт или выполнить)"
 
 
+# scheduled prompts (cron watchdog, /loop) are not the owner's words
+NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|<<autonomous-loop)", re.I)
+
+
 def _key(text: str) -> str:
     return hashlib.sha1(re.sub(r"\s+", " ", text).strip().encode()).hexdigest()[:8]
 
@@ -38,7 +42,7 @@ def _seen() -> set[str]:
 def _add(items: list[tuple[str, str]]) -> list[str]:
     """items: (iso time, text) → new inbox lines appended under HEAD (top of the plan)."""
     seen = _seen()
-    new = [(ts, t) for ts, t in items if _key(t) not in seen and t.strip()]
+    new = [(ts, t) for ts, t in items if _key(t) not in seen and t.strip() and not NOT_OWNER.search(t)]
     if not new:
         return []
     plan = PLAN.read_text(encoding="utf-8")
@@ -82,7 +86,7 @@ def main(mode: str) -> None:
     d = json.load(sys.stdin)
     if mode == "prompt":
         p = d.get("prompt") or ""
-        if p.strip() and not p.lstrip().startswith("<"):
+        if p.strip() and not p.lstrip().startswith("<") and not NOT_OWNER.search(p):
             _add([(datetime.now().isoformat(timespec="seconds"), p)])
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext":
                   "Сообщение владельца записано в PLAN.md → «Входящие». Первым делом: оформить R-пункт (или сделать), "
