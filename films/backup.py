@@ -12,7 +12,9 @@ Run: python -X utf8 -m films.backup export | restore <new.db>
 """
 from __future__ import annotations
 
+import hashlib
 import json
+import re
 import sqlite3
 import sys
 
@@ -21,6 +23,41 @@ from . import db
 OUT = db.ROOT / "backup"
 CHUNK = 45_000_000
 CACHE_TABLES = {"release_raw", "tmdb_raw", "imdb_basics", "imdb_akas", "imdb_ratings", "imdb_title_norm", "rt_pages"}
+
+
+def _hide(path: str | None) -> str | None:
+    """«E:\\Vegas\\Network\\…» → «E:\\#<sha1>.<ext>»: names of the owner's own files (video projects, phone clips, work
+    folders) identify him (sensitive-data review 2026-10-24); films keep their paths."""
+    if not path:
+        return path
+    last = re.split(r"[\\/]", path)[-1]
+    ext = last.rsplit(".", 1)[-1].lower() if "." in last else ""
+    return f"{path[:2]}\\#{hashlib.sha1(path.encode('utf-8')).hexdigest()[:12]}" + (f".{ext}" if ext else "")
+
+
+_USER = re.compile(r"(?i)([\\/]users[\\/])[^\\/]+")
+
+
+def _redact(table: str, cols: list[str], row: tuple) -> tuple:
+    """The published copy hides what identifies the owner: the Windows user name in every path, and the whole path of
+    a file that is not a film (disk_files / qbt_torrents rows without a title)."""
+    r = list(row)
+    for i, v in enumerate(r):
+        if isinstance(v, str) and ("\\" in v or "/" in v):
+            r[i] = _USER.sub(r"\1<user>", v)
+    d = dict(zip(cols, r))
+    if table == "disk_files" and d.get("title_id") is None:
+        for c in ("path", "folder", "nfo_path"):
+            if c in d:
+                r[cols.index(c)] = _hide(d[c])
+        for c in ("parsed_title", "note"):
+            if c in d:
+                r[cols.index(c)] = None
+    if table == "qbt_torrents" and d.get("title_id") is None:
+        for c in ("name", "save_path"):
+            if c in d:
+                r[cols.index(c)] = _hide(d[c])
+    return tuple(r)
 
 
 def _tables(conn) -> list[str]:
@@ -42,7 +79,8 @@ def export() -> dict:
         cols = [r[1] for r in conn.execute(f'PRAGMA table_info("{t}")')]
         part, size, n, f = 0, 0, 0, None
         for row in conn.execute(f'SELECT * FROM "{t}" ORDER BY rowid'):
-            line = json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n"
+            row = _redact(t, cols, row)
+            line =json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n"
             if f is None or size + len(line.encode()) > CHUNK:
                 if f:
                     f.close()

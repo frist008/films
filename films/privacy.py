@@ -23,6 +23,7 @@ SECRET_RES = [
     ("Google API key", re.compile(r"AIza[0-9A-Za-z_-]{35}")),
     ("Plex token", re.compile(r"(?i)X-Plex-Token=[A-Za-z0-9_-]{15,}")),
 ]
+USER_PATH_RE = re.compile(r"(?i)[A-Z]:[\\/]+Users[\\/]+(?!<user>|Public|Default)([\w.-]+)")
 SKIP_SUFFIXES = {".db", ".gz", ".pickle", ".png", ".jpg"}
 
 
@@ -61,9 +62,12 @@ def check() -> list[str]:
             text = path.read_text(encoding="utf-8")
         except UnicodeDecodeError:
             continue
+        low = text.lower()   # case-insensitive: «Frist…» and «frist…» are the same person (review 2026-10-24)
         for v in private_vals:
-            if v in text:
+            if v.lower() in low:
                 problems.append(f"{rel}: private value «{v[:4]}…» (config/private.toml)")
+        for m in ([] if rel.startswith("tests/") else USER_PATH_RE.findall(text)):   # a real Windows user name in a path (tests use fake ones)
+            problems.append(f"{rel}: Windows user name in a path «…/Users/{m[:3]}…» (backup._redact hides it)")
         for m in EMAIL_RE.findall(text):
             if m not in ALLOWED_EMAILS and not m.endswith(("example.com", "gserviceaccount.com")):
                 problems.append(f"{rel}: e-mail {m}")
