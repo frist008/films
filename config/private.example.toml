@@ -41,7 +41,6 @@ postcode = ""
 address = ""
 phone = ""
 birth_date = ""
-language = ""
 
 [accounts]   # остальные аккаунты Google в Chrome (все — владельца)
 google_work = ""
