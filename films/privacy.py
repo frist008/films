@@ -12,6 +12,7 @@ import subprocess
 import sys
 
 from . import db
+from .backup import CACHE_TABLES
 
 ALLOWED_EMAILS = {"noreply@anthropic.com", "google-admob-ads-sdk@googlegroups.com"}
 EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}")
@@ -39,7 +40,9 @@ def _private_values() -> list[str]:
     vals = []
     for section in cfg.values():
         for v in section.values():
-            if isinstance(v, str) and len(v) >= 5:
+            # short numbers (postcode) and dates (birth date) collide with ids / release dates and reveal nothing alone;
+            # the full address, phone and name are still searched
+            if isinstance(v, str) and len(v) >= 5 and not re.fullmatch(r"\d{1,6}|\d{4}-\d\d-\d\d", v):
                 vals.append(v)
                 local = v.split("@")[0]
                 if "@" in v and len(local) >= 5:
@@ -73,7 +76,7 @@ def check() -> list[str]:
         tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")]
         for v in private_vals:
             for t in tables:
-                if t in ("release_raw", "tmdb_raw"):  # compressed public pages
+                if t in CACHE_TABLES:   # third-party caches: not published (films/backup.py), backup/ files are checked above
                     continue
                 cols = [r[1] for r in conn.execute(f"PRAGMA table_info({t})")]
                 for col in cols:
