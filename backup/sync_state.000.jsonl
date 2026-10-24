@@ -12,7 +12,7 @@
 ["plex_mark","2026-10-24 08:51:43",null,"{\"title_id\": 7063, \"title\": \"Локи\", \"season\": 2, \"plex\": [{\"where\": \"discover\", \"plexId\": \"64644b2d400acb098afda76d\", \"viewCount\": null, \"viewState\": null, \"note\": \"season: episodes via mark_episode\"}], \"dry_run\": false, \"confirmed\": false}"]
 ["jellyfin_to_plex","2026-10-24 03:35:11",null,"{\"movies\": 0, \"episodes\": 3, \"not_confirmed\": 0}"]
 ["trailer_lang","2026-10-24 20:00:41",null,"{\"titles\": 8, \"confirmed_ru\": 8, \"replaced\": 0, \"removed\": 0, \"unknown\": 0}"]
-["qbittorrent","2026-10-24 03:32:53","2026-10-22 13:56:37","{\"linked_btih\": 34, \"linked_topic\": 0, \"linked_name\": 0, \"linked_tmdb\": 33, \"queued\": 64, \"complete\": 11, \"torrents\": 75, \"unlinked\": 8}"]
+["qbittorrent","2026-10-24 21:53:22","2026-10-24 07:56:47","{\"linked_btih\": 47, \"linked_topic\": 1, \"linked_name\": 0, \"linked_tmdb\": 18, \"queued\": 65, \"complete\": 9, \"torrents\": 74, \"unlinked\": 8}"]
 ["watchlist","2026-10-24 20:28:55",null,"{\"items\": 51, \"matched\": 51, \"ambiguous\": 0, \"not_found\": 0, \"titles\": 128}"]
 ["watchlist_releases","2026-10-23 13:43:44",null,"{\"queries\": 336, \"rows\": 4106, \"new\": 2015}"]
 ["health","2026-10-24 03:33:04",null,"{\"dead_library_folders\": 3, \"queued_twice\": 0, \"queued_but_downloaded\": 0}"]

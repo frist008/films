@@ -20,6 +20,7 @@ import json
 import os
 import re
 import sys
+import zlib
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -192,9 +193,17 @@ def link(conn, rows: list[dict]) -> dict:
                 how = "tmdb" if tid else None
             if not tid:
                 stats["unlinked"].append({"name": r["name"], "parsed": p, "search": res.get("status")})
+        if not rid and tid and r.get("size_bytes"):
+            # the exact size names the release (owner, 2026-10-25: «по весу можешь понять, что это за раздача»): one release
+            # of this title within 0.2 % of the torrent's size → that release (its quality, DV profile and voice)
+            near = [x for (x,) in conn.execute(
+                "SELECT r.id FROM releases r JOIN release_titles t ON t.release_id = r.id WHERE t.title_id = ? AND r.size_bytes"
+                " BETWEEN ? AND ?", (tid, r["size_bytes"] * 0.998, r["size_bytes"] * 1.002))]
+            if len(near) == 1:
+                rid, how = near[0], (how or "tmdb") + "+size"
         r.update(release_id=rid, title_id=tid, how=how)
         if how:
-            stats[f"linked_{'name' if how == 'name' else how}"] += 1
+            stats[f"linked_{'name' if how == 'name' else how}"] = stats.get(f"linked_{'name' if how == 'name' else how}", 0) + 1
         stats["complete" if r["progress"] >= 0.999 else "queued"] += 1
     return stats
 
@@ -228,8 +237,58 @@ def queued_titles(conn) -> dict[int, dict]:
         "SELECT * FROM qbt_torrents WHERE present = 1 AND progress < 0.999 AND title_id IS NOT NULL")}
 
 
+def fetch_owned(conn) -> dict:
+    """The owner's torrents name their source (owner, 2026-10-25: «торрент-файлы есть в папке temp … там можно увидеть, откуда
+    торрент»): a rutor topic URL from the .torrent 'comment' that is not among the collected releases (a film before 2024,
+    outside the collected years) — that one page is fetched and parsed, so the owner's exact copy (quality, DV profile,
+    voice) is known for upgrades. Then the queue is linked again."""
+    import html as _html
+    from . import rutor
+    known = {sid for (sid,) in conn.execute("SELECT source_id FROM releases WHERE source='rutor'")}
+    want = {}
+    for url, name, season in conn.execute(
+            "SELECT topic_url, name, NULL FROM qbt_torrents WHERE present = 1 AND release_id IS NULL AND topic_url LIKE '%rutor%'"):
+        m = re.search(r"/torrent/(\d+)", url or "")
+        if m and m.group(1) not in known:
+            want[m.group(1)] = name
+    rows = []
+    for sid, tname in want.items():
+        try:
+            body = rutor.get(f"{rutor.BASE}/torrent/{sid}")
+        except RuntimeError as e:
+            print(f"  FAILED rutor {sid}: {e}", file=sys.stderr, flush=True)
+            continue
+        h1 = re.search(r"<h1>(.*?)</h1>", body, re.S)
+        size = re.search(r"\((\d+) Bytes\)", body)
+        btih = re.search(r"magnet:\?xt=urn:btih:([0-9a-fA-F]{40})", body)
+        if not h1 or 'id="details"' not in body:
+            continue
+        title = _html.unescape(re.sub(r"<[^>]+>", "", h1.group(1))).strip()
+        rows.append({"source_id": sid, "name": title, "size_bytes": int(size.group(1)) if size else None,
+                     "seeders": None, "leechers": None, "btih": btih.group(1).lower() if btih else None, "added_at": None,
+                     "_body": body, "_series": bool(re.search(r"(?i)\bS\d{1,2}\b|сезон", title))})
+    new_ids = []
+    for r in rows:
+        rutor.upsert(conn, [r], "foreign_series" if r["_series"] else "foreign_films")
+        row = conn.execute("SELECT id FROM releases WHERE source='rutor' AND source_id=?", (r["source_id"],)).fetchone()
+        if not row:      # excluded (DV5-only): not stored
+            continue
+        rid = row[0]
+        with conn:
+            conn.execute("INSERT OR REPLACE INTO release_raw (release_id, body) VALUES (?, ?)",
+                         (rid, zlib.compress(r["_body"].encode("utf-8"), 9)))
+        new_ids.append(rid)
+    out = {"topics": len(want), "fetched": len(new_ids)}
+    if new_ids:
+        out["parsed"] = rutor.parse_pages(conn, ids=new_ids, delete_dv5=False)
+        from .. import match
+        out["match"] = match.match_releases(conn)
+        out["relink"] = sync(conn)
+    return out
+
+
 if __name__ == "__main__":
     c = db.connect()
     db.migrate(c)
-    st = sync(c)
+    st = fetch_owned(c) if sys.argv[1:2] == ["owned"] else sync(c)
     print(json.dumps(st, ensure_ascii=False, indent=1))

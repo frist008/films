@@ -1082,6 +1082,11 @@ def parse_release_name(name: str) -> dict:
         out[k] = _uniq(out[k])
     if out["audio_source"]:
         w.append(f"audio from cinema recording: {out['audio_source']}")
+    if out.get("dv_profile_inferred") and re.search(r"(?i)remux", s):
+        # «UHD BDRemux … HDR10 | Dolby Vision TV»: a remux is the disc's own stream (47–75 GB, owner 2026-10-25: «по весу
+        # можешь понять, что это за раздача»), and UHD discs carry DV on an HDR10 base — Profile 5 would need a re-encode
+        out["dv_profile"], out["dv_profile_inferred"] = None, False
+        w.append("'Dolby Vision TV' on a remux: not Profile 5 (disc stream, HDR10 base)")
     return out
 
 

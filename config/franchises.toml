@@ -1794,7 +1794,7 @@ name = "Bayonetta"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "borderlands"
@@ -1823,7 +1823,7 @@ name = "Final Fantasy (вкл. Compilation of FFVII, Fabula Nova Crystallis)"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "cuphead"
@@ -1838,7 +1838,7 @@ name = "Cyberpunk (2077, Edgerunners)"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "dead_by_daylight"
@@ -1867,7 +1867,7 @@ name = "Dragon Ball — вся вселенная"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
 review = ["tt1608208", "tt0122050", "wd:Q115940570", "tt0081852", "tt10838374", "tt1189033", "tt0157222"]   # 2026-10-25 агент: нелицензионные фильмы (Корея 1990, Тайвань 1991), валенсийский дубляж, «Доктор Сламп» — другая франшиза Ториямы
 
 [[franchise]]
@@ -1876,7 +1876,7 @@ name = "Dragon's Dogma"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "drakengard_nier"
@@ -1884,7 +1884,7 @@ name = "Drakengard / NieR"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "fallout"
@@ -1921,7 +1921,7 @@ name = "Hatsune Miku (Project DIVA / Project SEKAI)"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "mini_ninjas"
@@ -1943,7 +1943,7 @@ name = "Persona (Shin Megami Tensei)"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
 review = ["tt0284043", "tt0266106", "tt0929419", "tt0108914", "tt0425637", "tt0882978", "tt1514753", "tt7587604"]   # 2026-10-25 агент: экранизации «Троецарствия» / Dynasty Warriors попали из game_adaptations по ошибке — к Persona не относятся
 
 [[franchise]]
@@ -1974,7 +1974,7 @@ name = "Shenmue"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = true  # владелец 2026-10-25: аниме — собирать
 
 [[franchise]]
 key = "street_fighter"
@@ -1982,7 +1982,7 @@ name = "Street Fighter"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
 review = ["tt1156102", "tt1696187"]   # 2026-10-25 агент: пародия «The Later Years» (CollegeHumor), фан-короткометражка «Legacy» (2010)
 
 [[franchise]]
@@ -2013,7 +2013,7 @@ name = "The King of Fighters"
 scope = "all"
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
-anime = true   # R44: экранизации — аниме; франшиза из игр владельца = «названа владельцем» (R36)
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
 
 [[franchise]]
 key = "the_last_of_us"

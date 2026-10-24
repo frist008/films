@@ -84,11 +84,11 @@ def describe(r: dict) -> str:
 def _qbt_release(q: dict) -> dict:
     """A queued qBittorrent torrent shown as the title's row when no collected release matches it."""
     n = q.get("name") or ""
-    hdr = [x for x, rx in (("DV", r"DV|DoVi|Dolby.?Vision"), ("HDR10+", r"HDR10\+|HDR10P"), ("HDR10", r"HDR"))
+    hdr = [x for x, rx in (("DV", r"\bDV|DoVi|Dolby.?Vision"), ("HDR10+", r"HDR10\+|HDR10P"), ("HDR10", r"\bHDR"))
            if re.search(rx, n, re.I)]
     src = next((s for s, rx in (("BDRemux", r"remux"), ("BDRip", r"bdrip|blu-?ray"), ("WEB-DL", r"web-?dl|webrip"))
                 if re.search(rx, n, re.I)), None)
-    res = 2160 if re.search(r"2160p|4k|uhd", n, re.I) else 1080 if re.search(r"1080p", n, re.I) else None
+    res = 2160 if re.search(r"2160p|\b4k\b|uhd", n, re.I) else 1080 if re.search(r"1080p", n, re.I) else None
     return {"id": None, "source": "qbittorrent", "url": q.get("topic_url"), "name": n, "size_bytes": q.get("size_bytes"),
             "resolution": res, "hdr": json.dumps(hdr), "source_type": src, "best_voice": None, "edition": "[]"}
 

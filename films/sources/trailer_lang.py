@@ -42,7 +42,7 @@ MODEL_SIZE = "small"        # multilingual; enough for language id + a rough tra
 RU_MIN_PROB = 0.7
 _CYR = re.compile(r"[а-яё]{3,}", re.I)
 # neural / AI Russian voice-over does not count as a Russian trailer (owner 2026-10-23) — the original one is better
-_NEURAL = re.compile(r"нейро|нейросет|ai|ии[- ]?(?:озвуч|дубляж|перевод)|ai[- ]?(?:dub|voice)|синтез", re.I)
+_NEURAL = re.compile(r"нейро|нейросет|\bai\b|\bии\b[- ]?(?:озвуч|дубляж|перевод)|ai[- ]?(?:dub|voice)|синтез", re.I)
 
 
 def check_method(rec: dict) -> str:
