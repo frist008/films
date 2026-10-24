@@ -60,22 +60,7 @@ def _redact(table: str, cols: list[str], row: tuple) -> tuple:
         for i, v in enumerate(r):
             if isinstance(v, str):
                 r[i] = _DRIVE_PATH.sub(lambda m: _hide(m.group(0).replace("\\\\", "\\")), v)
-        # the names also sit inside JSON cells («files», «audio»: {"show": …}) — every occurrence of them in any cell
-        # is replaced (a project name leaked that way: review 2026-10-24)
-        names = {str(d[c]) for c in ("plex_title", "original_title", "show_title", "name") if d.get(c)}
-        for v in r:
-            if isinstance(v, str):
-                names |= set(re.findall(r'"show":\s*"((?:[^"\\]|\\.)+)"', v))
-        names = sorted((n for n in names if len(n) >= 3), key=len, reverse=True)
-        h = lambda s: "#" + hashlib.sha1(s.encode("utf-8")).hexdigest()[:12]
-        for i, v in enumerate(r):
-            if isinstance(v, str):
-                for n in names:
-                    v = v.replace(n, h(n))
-                r[i] = v
-    if table == "plex_history" and d.get("title_id") is None:
-        # a watch of an unrecognised item — often the owner's own video: its names become hashes too
-        for c in ("title", "grandparent_title"):
+        for c in ("plex_title", "original_title", "show_title", "name"):
             if c in d and d[c]:
                 r[cols.index(c)] = "#" + hashlib.sha1(str(d[c]).encode("utf-8")).hexdigest()[:12]
     if table == "qbt_torrents" and d.get("title_id") is None:
@@ -83,6 +68,35 @@ def _redact(table: str, cols: list[str], row: tuple) -> tuple:
             if c in d:
                 r[cols.index(c)] = _hide(d[c])
     return tuple(r)
+
+
+def _personal(conn) -> dict:
+    """The owner's own videos never go to git (owner, 2026-10-25: «Этих видео личных даже в базе не должно быть, они там на
+    пару дней. Их не должно быть в гите»): disk files marked 'personal' and the shows the link step marked 'personal'
+    (data/cache/plex_show_map_private.json) — their rows are left out of the copy entirely, not hashed."""
+    paths = {p for (p,) in conn.execute("SELECT path FROM disk_files WHERE how = 'personal'")}
+    try:
+        names = set(json.loads((db.ROOT / "data" / "cache" / "plex_show_map_private.json").read_text(encoding="utf-8")))
+    except (OSError, ValueError):
+        names = set()
+    return {"paths": paths, "names": names}
+
+
+def _skip(table: str, cols: list[str], row: tuple, personal: dict) -> bool:
+    d = dict(zip(cols, row))
+    if table == "disk_files":
+        return d.get("how") == "personal"
+    if table not in ("plex_items", "jellyfin_items", "plex_history") or d.get("title_id") is not None:
+        return False
+    if any(d.get(c) in personal["paths"] for c in ("file_path", "path") if d.get(c)):
+        return True
+    names = personal["names"]
+    for c in ("show_title", "plex_title", "name", "original_title", "grandparent_title", "title"):
+        v = d.get(c)
+        if v and (v in names or any(v.startswith(n + " ") or v.startswith(n + "_") for n in names)):
+            return True
+    blob = " ".join(str(v) for v in row if isinstance(v, str) and '"show"' in v)
+    return any(f'"show": "{n}"' in blob for n in names)
 
 
 def _tables(conn) -> list[str]:
@@ -98,12 +112,17 @@ def export() -> dict:
                                          "ORDER BY type = 'table' DESC, name")]
     (OUT / "schema.sql").write_text(";\n".join(schema) + ";\n", encoding="utf-8")
     stats = {}
+    personal = _personal(conn)
     for t in _tables(conn):
         if t in CACHE_TABLES:
             continue
         cols = [r[1] for r in conn.execute(f'PRAGMA table_info("{t}")')]
         part, size, n, f = 0, 0, 0, None
+        skipped = 0
         for row in conn.execute(f'SELECT * FROM "{t}" ORDER BY rowid'):
+            if _skip(t, cols, row, personal):
+                skipped += 1
+                continue
             row = _redact(t, cols, row)
             line =json.dumps(row, ensure_ascii=False, separators=(",", ":")) + "\n"
             if f is None or size + len(line.encode()) > CHUNK:

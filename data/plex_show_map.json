@@ -245,6 +245,17 @@
   "first_year": 2021,
   "candidates": []
  },
+ "Arcane S02 1080p": {
+  "query": "Arcane",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 94605,
+  "title": "Аркейн",
+  "original_title": "Arcane",
+  "first_year": 2021,
+  "candidates": []
+ },
  "Arcane Season 01": {
   "query": "Arcane",
   "year_hint": null,
@@ -462,6 +473,64 @@
   "first_year": 2025,
   "candidates": []
  },
+ "Daredevil Born Again S01 2160p": {
+  "query": "Daredevil Born Again",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 202555,
+  "title": "Сорвиголова: Рождённый заново",
+  "original_title": "Daredevil: Born Again",
+  "first_year": 2025,
+  "candidates": []
+ },
+ "Death Note": {
+  "query": "Death Note",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 13916,
+  "title": "Тетрадь смерти",
+  "original_title": "DEATH NOTE",
+  "first_year": 2006,
+  "candidates": [
+   {
+    "tmdb_id": 13916,
+    "title": "Тетрадь смерти",
+    "original_title": "DEATH NOTE",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 63648,
+    "title": "Тетрадь смерти",
+    "original_title": "デスノート",
+    "year": 2015
+   },
+   {
+    "tmdb_id": 78004,
+    "title": "Тетрадь смерти: Новое поколение",
+    "original_title": "デスノート NEW GENERATION",
+    "year": 2016
+   },
+   {
+    "tmdb_id": 328197,
+    "title": "DEATH NOTE - IL LIBRICYNO DEL MUORI",
+    "original_title": "DEATH NOTE - IL LIBRICYNO DEL MUORI",
+    "year": 2017
+   }
+  ]
+ },
+ "Fairy Tail": {
+  "query": "Fairy Tail",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 46261,
+  "title": "Хвост Феи",
+  "original_title": "FAIRY TAIL",
+  "first_year": 2009,
+  "candidates": []
+ },
  "Fairy Tail TV-3": {
   "query": "Fairy Tail",
   "year_hint": null,
@@ -586,6 +655,17 @@
   "first_year": 2022,
   "candidates": []
  },
+ "INVINCIBLE (2021)": {
+  "query": "INVINCIBLE",
+  "year_hint": 2021,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 95557,
+  "title": "НЕПОБЕДИМЫЙ",
+  "original_title": "INVINCIBLE",
+  "first_year": 2021,
+  "candidates": []
+ },
  "Ice Age Scrat Tales": {
   "query": "Ice Age Scrat Tales",
   "year_hint": null,
@@ -647,6 +727,17 @@
  "Iron Fist": {
   "query": "Iron Fist",
   "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62127,
+  "title": "Железный кулак",
+  "original_title": "Marvel's Iron Fist",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Iron Fist S02 2018 2160p": {
+  "query": "Iron Fist",
+  "year_hint": 2018,
   "status": "matched",
   "reason": "clear",
   "tmdb_tv": 62127,
@@ -798,7 +889,65 @@
   "first_year": 2019,
   "candidates": []
  },
+ "Love Death and Robots S04 1080p": {
+  "query": "Love Death and Robots",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 86831,
+  "title": "Любовь, смерть и роботы",
+  "original_title": "Love, Death & Robots",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Love, Death & Robots 3": {
+  "query": "Love, Death & Robots 3",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "trailing number 3 = season",
+  "season": 3,
+  "tmdb_tv": 86831,
+  "title": "Любовь, смерть и роботы",
+  "original_title": "Love, Death & Robots",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Magical Index 2008 1080": {
+  "query": "Magical Index 1080",
+  "year_hint": 2008,
+  "status": "manual",
+  "reason": "A Certain Magical Index 2008 = TMDB 30980 season 1 (S2 aired 2010)",
+  "tmdb_tv": 30980,
+  "title": "Некий Магический Индекс",
+  "original_title": "とある魔術の禁書目録",
+  "first_year": 2008,
+  "candidates": [],
+  "season": 1
+ },
+ "Magical Index 2010 1080": {
+  "query": "Magical Index 1080",
+  "year_hint": 2010,
+  "status": "manual",
+  "reason": "A Certain Magical Index 2010 = TMDB 30980 season 2 (Index II)",
+  "tmdb_tv": 30980,
+  "title": "Некий Магический Индекс",
+  "original_title": "とある魔術の禁書目録",
+  "first_year": 2008,
+  "candidates": [],
+  "season": 2
+ },
  "Mahou Shoujo Site": {
+  "query": "Mahou Shoujo Site",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 77702,
+  "title": "Сайт волшебниц",
+  "original_title": "魔法少女サイト",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Mahou Shoujo Site ( 1080p )": {
   "query": "Mahou Shoujo Site",
   "year_hint": null,
   "status": "matched",
@@ -842,6 +991,17 @@
   "first_year": 2015,
   "candidates": []
  },
+ "Marvels Jessica Jones S03 2019 2160p": {
+  "query": "Marvel's Jessica Jones",
+  "year_hint": 2019,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
  "Marvels Luke Cage": {
   "query": "Marvel's Luke Cage",
   "year_hint": null,
@@ -853,7 +1013,29 @@
   "first_year": 2016,
   "candidates": []
  },
+ "Marvels Luke Cage S02 1080p": {
+  "query": "Marvel's Luke Cage",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62126,
+  "title": "Люк Кейдж",
+  "original_title": "Marvel's Luke Cage",
+  "first_year": 2016,
+  "candidates": []
+ },
  "Marvels The Punisher": {
+  "query": "Marvel's The Punisher",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 67178,
+  "title": "Каратель",
+  "original_title": "Marvel's The Punisher",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Marvels The Punisher S02 2160p by DVT": {
   "query": "Marvel's The Punisher",
   "year_hint": null,
   "status": "matched",
@@ -955,6 +1137,18 @@
    }
   ]
  },
+ "One Piece S01 2160p": {
+  "query": "One Piece",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "a 2160p «S01» release can only be the Netflix live action (2023); the anime S1 is from 1999",
+  "tmdb_tv": 111110,
+  "title": "ONE PIECE. БОЛЬШОЙ КУШ",
+  "original_title": "ONE PIECE",
+  "first_year": 2023,
+  "candidates": [],
+  "season": 1
+ },
  "One Punch Man Season 3": {
   "query": "One Punch Man",
   "year_hint": null,
@@ -971,6 +1165,17 @@
   "year_hint": null,
   "status": "manual",
   "reason": "the anime: every file under this Plex show name is «One_piece_[NNN]_[Nazel]_[AniMedia.TV]» (absolute numbering)",
+  "tmdb_tv": 37854,
+  "title": "Ван-Пис",
+  "original_title": "ワンピース",
+  "first_year": 1999,
+  "candidates": []
+ },
+ "One-piece": {
+  "query": "One-piece",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "the anime: the folder holds only «One_Piece_[NNN]_[Nazel]_[AniMedia.TV]» files (absolute numbering)",
   "tmdb_tv": 37854,
   "title": "Ван-Пис",
   "original_title": "ワンピース",
@@ -1043,6 +1248,42 @@
    }
   ]
  },
+ "Overlord": {
+  "query": "Overlord",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "tmdb_tv": 64196,
+  "title": "Повелитель",
+  "original_title": "オーバーロード",
+  "first_year": 2015,
+  "candidates": [
+   {
+    "tmdb_id": 64196,
+    "title": "Повелитель",
+    "original_title": "オーバーロード",
+    "year": 2015
+   },
+   {
+    "tmdb_id": 111993,
+    "title": "Властелин Цзю Лю",
+    "original_title": "九流霸主",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 221383,
+    "title": "Overlord: Blood Genealogy",
+    "original_title": "Overlord: Blood Genealogy",
+    "year": 2018
+   },
+   {
+    "tmdb_id": 328234,
+    "title": "Overlord: Play Play Pleiades",
+    "original_title": "Overlord: Play Play Pleiades",
+    "year": 2015
+   }
+  ]
+ },
  "Pacific Rim The Black": {
   "query": "Pacific Rim The Black",
   "year_hint": null,
@@ -1065,7 +1306,29 @@
   "first_year": 2024,
   "candidates": []
  },
+ "Parasyte The Grey (S01) (2024) 2160p P8 Ukr Kor": {
+  "query": "Parasyte The Grey",
+  "year_hint": 2024,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 208825,
+  "title": "Паразит: серые",
+  "original_title": "기생수: 더 그레이",
+  "first_year": 2024,
+  "candidates": []
+ },
  "Peacemaker 2022": {
+  "query": "Peacemaker",
+  "year_hint": 2022,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 110492,
+  "title": "Миротворец",
+  "original_title": "Peacemaker",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Peacemaker 2022 S02 1080p -RGzsRutracker": {
   "query": "Peacemaker",
   "year_hint": 2022,
   "status": "matched",
@@ -1143,6 +1406,17 @@
   "first_year": 2012,
   "candidates": []
  },
+ "Psycho-Pass 2019 2": {
+  "query": "Psycho-Pass 2",
+  "year_hint": 2019,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
+  "candidates": []
+ },
  "Psycho-Pass 3": {
   "query": "Psycho-Pass 3",
   "year_hint": null,
@@ -1163,6 +1437,18 @@
   "title": null,
   "original_title": null,
   "first_year": null,
+  "candidates": []
+ },
+ "Psycho-Pass 3 2020": {
+  "query": "Psycho-Pass 3",
+  "year_hint": 2020,
+  "status": "matched",
+  "reason": "trailing number 3 = season (aired 2019)",
+  "season": 3,
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
   "candidates": []
  },
  "Psycho-Pass Sinners of the System": {
@@ -1199,6 +1485,17 @@
   "candidates": []
  },
  "Rick and Morty": {
+  "query": "Rick and Morty",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60625,
+  "title": "Рик и Морти",
+  "original_title": "Rick and Morty",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Rick and Morty S08": {
   "query": "Rick and Morty",
   "year_hint": null,
   "status": "matched",
@@ -1786,7 +2083,29 @@
    }
   ]
  },
+ "Stas & DIma": {
+  "query": "Stas & DIma",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "no TMDB results for any title",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": []
+ },
  "Sword Art Online Alternative - Gun Gale Online II": {
+  "query": "Sword Art Online Alternative - Gun Gale Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78204,
+  "title": "Мастера меча онлайн: Альтернативная призрачная пуля",
+  "original_title": "ソードアート・オンライン オルタナティブ ガンゲイル・オンライン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Sword Art Online Alternative - Gun Gale Online II - [ 1080p]": {
   "query": "Sword Art Online Alternative - Gun Gale Online",
   "year_hint": null,
   "status": "matched",
@@ -1811,6 +2130,17 @@
  "Terminator Zero": {
   "query": "Terminator Zero",
   "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 239287,
+  "title": "Terminator Zero",
+  "original_title": "Terminator Zero",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Terminator Zero [TV-1] [2024] [ ] [1080p] [ + + ]": {
+  "query": "Terminator Zero",
+  "year_hint": 2024,
   "status": "matched",
   "reason": "clear",
   "tmdb_tv": 239287,
@@ -2090,6 +2420,92 @@
   "first_year": 2024,
   "candidates": []
  },
+ "X-Men 97 S02 1080p D Flarrow Films": {
+  "query": "X-Men 97",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 138502,
+  "title": "Люди Икс '97",
+  "original_title": "X-Men '97",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "[ ]_Berserk_TV-3_[720p]_[JAM_Trina_D]": {
+  "query": "Berserk TV-3",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "TV-3 = the third Berserk TV series = Берсерк (2016) season 2 (see data/disk_map.json)",
+  "tmdb_tv": 66053,
+  "title": "Берсерк",
+  "original_title": "ベルセルク",
+  "first_year": 2016,
+  "candidates": [],
+  "season": 2
+ },
+ "[AniPlague] One Punch Man S03 1080p": {
+  "query": "One Punch Man",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 63926,
+  "title": "Ванпанчмен",
+  "original_title": "ワンパンマン",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "[Tsundere-Raws] Oshi no Ko [ 2160p ]": {
+  "query": "Oshi no Ko",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "tmdb_tv": 203737,
+  "title": "Звёздное дитя",
+  "original_title": "【推しの子】",
+  "first_year": 2023,
+  "candidates": [
+   {
+    "tmdb_id": 203737,
+    "title": "Звёздное дитя",
+    "original_title": "【推しの子】",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 244377,
+    "title": "【推しの子】",
+    "original_title": "【推しの子】",
+    "year": 2024
+   },
+   {
+    "tmdb_id": 240270,
+    "title": "推しを召し上がれ～広報ガールのまろやかな日々～",
+    "original_title": "推しを召し上がれ～広報ガールのまろやかな日々～",
+    "year": 2024
+   }
+  ]
+ },
+ "[VLDeshka] Tomb Raider - The Legend of Lara Croft [ 1080p]": {
+  "query": "Tomb Raider - The Legend of Lara Croft",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 117830,
+  "title": "Tomb Raider: легенда Лары Крофт",
+  "original_title": "Tomb Raider: The Legend of Lara Croft",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Агенты Щ. И. Т": {
+  "query": "Агенты Щ. И. Т",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": 2013,
+  "candidates": []
+ },
  "Джентельмены": {
   "query": "Джентельмены",
   "year_hint": null,
@@ -2132,6 +2548,17 @@
   "title": null,
   "original_title": null,
   "first_year": null,
+  "candidates": []
+ },
+ "Класс убийц": {
+  "query": "Класс убийц",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62110,
+  "title": "Класс убийц",
+  "original_title": "暗殺教室",
+  "first_year": 2015,
   "candidates": []
  },
  "Локи": {
@@ -2186,6 +2613,17 @@
   "first_year": 2021,
   "candidates": []
  },
+ "Приказ свыше": {
+  "query": "Приказ свыше",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 65439,
+  "title": "Приказ, изменивший мир",
+  "original_title": "ビッグオーダー",
+  "first_year": 2016,
+  "candidates": []
+ },
  "Секретное вторжение": {
   "query": "Секретное вторжение",
   "year_hint": null,
@@ -2229,6 +2667,29 @@
   "original_title": "Marvel's Daredevil",
   "first_year": 2015,
   "candidates": []
+ },
+ "Сорвиголова S03 2160p": {
+  "query": "Сорвиголова",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61889,
+  "title": "Сорвиголова",
+  "original_title": "Marvel's Daredevil",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Стигматы квайзеров 2 1080": {
+  "query": "Стигматы квайзеров 2 1080",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Стигматы квайзеров 2» = The Qwaser of Stigmata II = TMDB 聖痕のクェイサー season 2",
+  "tmdb_tv": 338325,
+  "title": "聖痕のクェイサー",
+  "original_title": "聖痕のクェイサー",
+  "first_year": 2010,
+  "candidates": [],
+  "season": 2
  },
  "Фильм": {
   "query": "Фильм",
@@ -2322,467 +2783,6 @@
   "title": "Шерлок",
   "original_title": "Sherlock",
   "first_year": 2010,
-  "candidates": []
- },
- "Arcane S02 1080p": {
-  "query": "Arcane",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 94605,
-  "title": "Аркейн",
-  "original_title": "Arcane",
-  "first_year": 2021,
-  "candidates": []
- },
- "Daredevil Born Again S01 2160p": {
-  "query": "Daredevil Born Again",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "close runner-ups have no TMDB votes at all",
-  "tmdb_tv": 202555,
-  "title": "Сорвиголова: Рождённый заново",
-  "original_title": "Daredevil: Born Again",
-  "first_year": 2025,
-  "candidates": []
- },
- "Fairy Tail": {
-  "query": "Fairy Tail",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 46261,
-  "title": "Хвост Феи",
-  "original_title": "FAIRY TAIL",
-  "first_year": 2009,
-  "candidates": []
- },
- "Iron Fist S02 2018 2160p": {
-  "query": "Iron Fist",
-  "year_hint": 2018,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 62127,
-  "title": "Железный кулак",
-  "original_title": "Marvel's Iron Fist",
-  "first_year": 2017,
-  "candidates": []
- },
- "Love Death and Robots S04 1080p": {
-  "query": "Love Death and Robots",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 86831,
-  "title": "Любовь, смерть и роботы",
-  "original_title": "Love, Death & Robots",
-  "first_year": 2019,
-  "candidates": []
- },
- "Love, Death & Robots 3": {
-  "query": "Love, Death & Robots 3",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "trailing number 3 = season",
-  "season": 3,
-  "tmdb_tv": 86831,
-  "title": "Любовь, смерть и роботы",
-  "original_title": "Love, Death & Robots",
-  "first_year": 2019,
-  "candidates": []
- },
- "Magical Index 2008 1080": {
-  "query": "Magical Index 1080",
-  "year_hint": 2008,
-  "status": "manual",
-  "reason": "A Certain Magical Index 2008 = TMDB 30980 season 1 (S2 aired 2010)",
-  "tmdb_tv": 30980,
-  "title": "Некий Магический Индекс",
-  "original_title": "とある魔術の禁書目録",
-  "first_year": 2008,
-  "candidates": [],
-  "season": 1
- },
- "Magical Index 2010 1080": {
-  "query": "Magical Index 1080",
-  "year_hint": 2010,
-  "status": "manual",
-  "reason": "A Certain Magical Index 2010 = TMDB 30980 season 2 (Index II)",
-  "tmdb_tv": 30980,
-  "title": "Некий Магический Индекс",
-  "original_title": "とある魔術の禁書目録",
-  "first_year": 2008,
-  "candidates": [],
-  "season": 2
- },
- "Mahou Shoujo Site ( 1080p )": {
-  "query": "Mahou Shoujo Site",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 77702,
-  "title": "Сайт волшебниц",
-  "original_title": "魔法少女サイト",
-  "first_year": 2018,
-  "candidates": []
- },
- "Marvels Jessica Jones S03 2019 2160p": {
-  "query": "Marvel's Jessica Jones",
-  "year_hint": 2019,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 38472,
-  "title": "Джессика Джонс",
-  "original_title": "Marvel's Jessica Jones",
-  "first_year": 2015,
-  "candidates": []
- },
- "Marvels Luke Cage S02 1080p": {
-  "query": "Marvel's Luke Cage",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 62126,
-  "title": "Люк Кейдж",
-  "original_title": "Marvel's Luke Cage",
-  "first_year": 2016,
-  "candidates": []
- },
- "Marvels The Punisher S02 2160p by DVT": {
-  "query": "Marvel's The Punisher",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 67178,
-  "title": "Каратель",
-  "original_title": "Marvel's The Punisher",
-  "first_year": 2017,
-  "candidates": []
- },
- "One Piece S01 2160p": {
-  "query": "One Piece",
-  "year_hint": null,
-  "status": "manual",
-  "reason": "a 2160p «S01» release can only be the Netflix live action (2023); the anime S1 is from 1999",
-  "tmdb_tv": 111110,
-  "title": "ONE PIECE. БОЛЬШОЙ КУШ",
-  "original_title": "ONE PIECE",
-  "first_year": 2023,
-  "candidates": [],
-  "season": 1
- },
- "One-piece": {
-  "query": "One-piece",
-  "year_hint": null,
-  "status": "manual",
-  "reason": "the anime: the folder holds only «One_Piece_[NNN]_[Nazel]_[AniMedia.TV]» files (absolute numbering)",
-  "tmdb_tv": 37854,
-  "title": "Ван-Пис",
-  "original_title": "ワンピース",
-  "first_year": 1999,
-  "candidates": []
- },
- "Overlord": {
-  "query": "Overlord",
-  "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-24",
-  "tmdb_tv": 64196,
-  "title": "Повелитель",
-  "original_title": "オーバーロード",
-  "first_year": 2015,
-  "candidates": [
-   {
-    "tmdb_id": 64196,
-    "title": "Повелитель",
-    "original_title": "オーバーロード",
-    "year": 2015
-   },
-   {
-    "tmdb_id": 111993,
-    "title": "Властелин Цзю Лю",
-    "original_title": "九流霸主",
-    "year": 2020
-   },
-   {
-    "tmdb_id": 221383,
-    "title": "Overlord: Blood Genealogy",
-    "original_title": "Overlord: Blood Genealogy",
-    "year": 2018
-   },
-   {
-    "tmdb_id": 328234,
-    "title": "Overlord: Play Play Pleiades",
-    "original_title": "Overlord: Play Play Pleiades",
-    "year": 2015
-   }
-  ]
- },
- "Parasyte The Grey (S01) (2024) 2160p P8 Ukr Kor": {
-  "query": "Parasyte The Grey",
-  "year_hint": 2024,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 208825,
-  "title": "Паразит: серые",
-  "original_title": "기생수: 더 그레이",
-  "first_year": 2024,
-  "candidates": []
- },
- "Peacemaker 2022 S02 1080p -RGzsRutracker": {
-  "query": "Peacemaker",
-  "year_hint": 2022,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 110492,
-  "title": "Миротворец",
-  "original_title": "Peacemaker",
-  "first_year": 2022,
-  "candidates": []
- },
- "Psycho-Pass 2019 2": {
-  "query": "Psycho-Pass 2",
-  "year_hint": 2019,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 43865,
-  "title": "Психопаспорт",
-  "original_title": "PSYCHO-PASS サイコパス",
-  "first_year": 2012,
-  "candidates": []
- },
- "Psycho-Pass 3 2020": {
-  "query": "Psycho-Pass 3",
-  "year_hint": 2020,
-  "status": "matched",
-  "reason": "trailing number 3 = season (aired 2019)",
-  "season": 3,
-  "tmdb_tv": 43865,
-  "title": "Психопаспорт",
-  "original_title": "PSYCHO-PASS サイコパス",
-  "first_year": 2012,
-  "candidates": []
- },
- "Rick and Morty S08": {
-  "query": "Rick and Morty",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 60625,
-  "title": "Рик и Морти",
-  "original_title": "Rick and Morty",
-  "first_year": 2013,
-  "candidates": []
- },
- "Stas & DIma": {
-  "query": "Stas & DIma",
-  "year_hint": null,
-  "status": "not_found",
-  "reason": "no TMDB results for any title",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": []
- },
- "Sword Art Online Alternative - Gun Gale Online II - [ 1080p]": {
-  "query": "Sword Art Online Alternative - Gun Gale Online",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 78204,
-  "title": "Мастера меча онлайн: Альтернативная призрачная пуля",
-  "original_title": "ソードアート・オンライン オルタナティブ ガンゲイル・オンライン",
-  "first_year": 2018,
-  "candidates": []
- },
- "Terminator Zero [TV-1] [2024] [ ] [1080p] [ + + ]": {
-  "query": "Terminator Zero",
-  "year_hint": 2024,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 239287,
-  "title": "Terminator Zero",
-  "original_title": "Terminator Zero",
-  "first_year": 2024,
-  "candidates": []
- },
- "X-Men 97 S02 1080p D Flarrow Films": {
-  "query": "X-Men 97",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 138502,
-  "title": "Люди Икс '97",
-  "original_title": "X-Men '97",
-  "first_year": 2024,
-  "candidates": []
- },
- "[ ]_Berserk_TV-3_[720p]_[JAM_Trina_D]": {
-  "query": "Berserk TV-3",
-  "year_hint": null,
-  "status": "manual",
-  "reason": "TV-3 = the third Berserk TV series = Берсерк (2016) season 2 (see data/disk_map.json)",
-  "tmdb_tv": 66053,
-  "title": "Берсерк",
-  "original_title": "ベルセルク",
-  "first_year": 2016,
-  "candidates": [],
-  "season": 2
- },
- "[AniPlague] One Punch Man S03 1080p": {
-  "query": "One Punch Man",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 63926,
-  "title": "Ванпанчмен",
-  "original_title": "ワンパンマン",
-  "first_year": 2015,
-  "candidates": []
- },
- "[Tsundere-Raws] Oshi no Ko [ 2160p ]": {
-  "query": "Oshi no Ko",
-  "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-24",
-  "tmdb_tv": 203737,
-  "title": "Звёздное дитя",
-  "original_title": "【推しの子】",
-  "first_year": 2023,
-  "candidates": [
-   {
-    "tmdb_id": 203737,
-    "title": "Звёздное дитя",
-    "original_title": "【推しの子】",
-    "year": 2023
-   },
-   {
-    "tmdb_id": 244377,
-    "title": "【推しの子】",
-    "original_title": "【推しの子】",
-    "year": 2024
-   },
-   {
-    "tmdb_id": 240270,
-    "title": "推しを召し上がれ～広報ガールのまろやかな日々～",
-    "original_title": "推しを召し上がれ～広報ガールのまろやかな日々～",
-    "year": 2024
-   }
-  ]
- },
- "[VLDeshka] Tomb Raider - The Legend of Lara Croft [ 1080p]": {
-  "query": "Tomb Raider - The Legend of Lara Croft",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 117830,
-  "title": "Tomb Raider: легенда Лары Крофт",
-  "original_title": "Tomb Raider: The Legend of Lara Croft",
-  "first_year": 2024,
-  "candidates": []
- },
- "Агенты Щ. И. Т": {
-  "query": "Агенты Щ. И. Т",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 1403,
-  "title": "Агенты «Щ.И.Т.»",
-  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
-  "first_year": 2013,
-  "candidates": []
- },
- "Класс убийц": {
-  "query": "Класс убийц",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 62110,
-  "title": "Класс убийц",
-  "original_title": "暗殺教室",
-  "first_year": 2015,
-  "candidates": []
- },
- "Приказ свыше": {
-  "query": "Приказ свыше",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 65439,
-  "title": "Приказ, изменивший мир",
-  "original_title": "ビッグオーダー",
-  "first_year": 2016,
-  "candidates": []
- },
- "Сорвиголова S03 2160p": {
-  "query": "Сорвиголова",
-  "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 61889,
-  "title": "Сорвиголова",
-  "original_title": "Marvel's Daredevil",
-  "first_year": 2015,
-  "candidates": []
- },
- "Стигматы квайзеров 2 1080": {
-  "query": "Стигматы квайзеров 2 1080",
-  "year_hint": null,
-  "status": "manual",
-  "reason": "«Стигматы квайзеров 2» = The Qwaser of Stigmata II = TMDB 聖痕のクェイサー season 2",
-  "tmdb_tv": 338325,
-  "title": "聖痕のクェイサー",
-  "original_title": "聖痕のクェイサー",
-  "first_year": 2010,
-  "candidates": [],
-  "season": 2
- },
- "Death Note": {
-  "query": "Death Note",
-  "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-23",
-  "tmdb_tv": 13916,
-  "title": "Тетрадь смерти",
-  "original_title": "DEATH NOTE",
-  "first_year": 2006,
-  "candidates": [
-   {
-    "tmdb_id": 13916,
-    "title": "Тетрадь смерти",
-    "original_title": "DEATH NOTE",
-    "year": 2006
-   },
-   {
-    "tmdb_id": 63648,
-    "title": "Тетрадь смерти",
-    "original_title": "デスノート",
-    "year": 2015
-   },
-   {
-    "tmdb_id": 78004,
-    "title": "Тетрадь смерти: Новое поколение",
-    "original_title": "デスノート NEW GENERATION",
-    "year": 2016
-   },
-   {
-    "tmdb_id": 328197,
-    "title": "DEATH NOTE - IL LIBRICYNO DEL MUORI",
-    "original_title": "DEATH NOTE - IL LIBRICYNO DEL MUORI",
-    "year": 2017
-   }
-  ]
- },
- "INVINCIBLE (2021)": {
-  "query": "INVINCIBLE",
-  "year_hint": 2021,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 95557,
-  "title": "НЕПОБЕДИМЫЙ",
-  "original_title": "INVINCIBLE",
-  "first_year": 2021,
   "candidates": []
  }
 }

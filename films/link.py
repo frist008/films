@@ -19,8 +19,7 @@ from .enrich import _apply, _credits, _collection
 from .sources import tmdb
 
 SHOW_MAP_PATH = db.ROOT / "data" / "plex_show_map.json"
-# the owner's own videos (status 'personal') are kept out of the published map: their folder names identify him
-# (sensitive-data review 2026-10-24) — data/cache/ is not in git
+# the owner's own videos (status 'personal') never go to git (owner, 2026-10-25: «их не должно быть в гите»)
 SHOW_MAP_PRIVATE = db.ROOT / "data" / "cache" / "plex_show_map_private.json"
 
 
@@ -199,8 +198,8 @@ def build_show_map(conn, names: set[str], first_seen: dict | None = None) -> dic
                          "candidates": [{k: c.get(k) for k in ("tmdb_id", "title", "original_title", "year")}
                                         for c in (res.get("candidates") or [])[:4]] if res["status"] != "matched" else []}
     _episode_title_shows(conn, current)
-    public = {k: v for k, v in current.items() if v.get("status") != "personal"}
-    SHOW_MAP_PATH.write_text(json.dumps(public, ensure_ascii=False, indent=1), encoding="utf-8")
+    SHOW_MAP_PATH.write_text(json.dumps({k: v for k, v in current.items() if v.get("status") != "personal"},
+                                        ensure_ascii=False, indent=1), encoding="utf-8")
     SHOW_MAP_PRIVATE.write_text(json.dumps({k: v for k, v in current.items() if v.get("status") == "personal"},
                                            ensure_ascii=False, indent=1), encoding="utf-8")
     return current
