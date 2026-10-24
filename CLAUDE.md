@@ -75,6 +75,8 @@ YouTube-канал <youtube.channel_name> `<youtube.channel>`.
 Где лежат значения: заметка Google Keep «films — секреты» аккаунта `<google.cloud>` (там `.env`, `secrets/*`,
 `config/private.toml`). На новой машине — восстановить из заметки ([docs/google-setup.md](docs/google-setup.md)).
 
+Копия базы для git (`backup/`) — без путей к личным файлам и имени пользователя Windows (`backup._redact`); имена близких, «Костя», логин GitHub — можно (владелец, 2026-10-24); подробно — скил owner-rules §9.
+
 Перед каждым пушем: `python -X utf8 -m films privacy-check` (стоит и в `.git/hooks/pre-push`) — ищет значения из
 `private.toml`, почты и похожие на ключи строки во всех публикуемых файлах **и в БД**. Новые личные данные —
 сначала в `private.toml`, потом метка в тексте.
