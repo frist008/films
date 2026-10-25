@@ -14,6 +14,7 @@ from __future__ import annotations
 import re
 import subprocess
 import time
+from pathlib import Path
 
 from . import db
 
@@ -135,6 +136,40 @@ def owner_report() -> str:
     return "\n".join(lines)
 
 
+def owner_table(now: float | None = None, logs: Path | None = None) -> str:
+    """Markdown table for the owner's message (owner, 2026-10-26: «ни таймеров которые проверяжют бекграунд агентов и
+    сообщающих таблицей что они делают и сколько всего осталось»): one row per agent log of the last 12 h —
+    who, what it is doing, done, left, finishes, state (работает / закончил / ЗАВИС? / НЕТ ДВИЖЕНИЯ N мин)."""
+    now = now or time.time()
+    rows = []
+    for f in sorted((logs or db.ROOT / "data" / "logs").glob("agent_*.log"), key=lambda f: -f.stat().st_mtime):
+        age = (now - f.stat().st_mtime) / 60
+        if age > 12 * 60:
+            continue
+        text = f.read_text(encoding="utf-8", errors="replace").splitlines()
+        who = f.stem.removeprefix("agent_")
+        prog = next((l for l in reversed(text) if "PROGRESS" in l), "")
+        m = re.search(r"PROGRESS\s+(\d+)%\s*(?:ETA\s+(\S+))?\s*[—-]?\s*(.*)", prog)
+        pct, eta, step = (m.group(1), m.group(2) or "?", m.group(3).strip()) if m else ("?", "?", "нет строки PROGRESS")
+        cnt = re.search(r"(\d+)/(\d+)", step)
+        left = f"{int(cnt.group(2)) - int(cnt.group(1))} из {cnt.group(2)}" if cnt else (f"{100 - int(pct)}%" if pct != "?" else "?")
+        if finished(text, f.stem):
+            if age >= 60:
+                continue
+            state, left, eta = "закончил", "0", f"{age:.0f} мин назад"
+        elif age >= AGENT_STALL_MIN:
+            state = f"⚠ ЗАВИС? (лог молчит {age:.0f} мин)"
+        elif (since := no_movement_min(text, now)) is not None:
+            state = f"⚠ НЕТ ДВИЖЕНИЯ {since} мин"
+        else:
+            state = "работает"
+        rows.append(f"| {who} | {step[:70].replace('|', '/')} | {pct}% | {left} | {eta} | {state} |")
+    if not rows:
+        return f"Сторож {time.strftime('%H:%M')}: фоновых агентов нет."
+    return "\n".join([f"Сторож {time.strftime('%H:%M')} (проверка каждые 10 мин):", "",
+                      "| Кто | Что делает | Готово | Осталось | Закончит | Состояние |", "|---|---|---|---|---|---|", *rows])
+
+
 if __name__ == "__main__":
     import sys
-    print(owner_report() if "--owner" in sys.argv else report())
+    print(owner_table() if "--table" in sys.argv else owner_report() if "--owner" in sys.argv else report())

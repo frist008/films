@@ -52,5 +52,24 @@ class FinishedTest(unittest.TestCase):
         self.assertTrue(watchdog.finished(log, "agent_update_full"))
 
 
+class OwnerTableTest(unittest.TestCase):
+    def test_table_rows(self):
+        # owner, 2026-10-26: «таймеров которые проверяжют бекграунд агентов и сообщающих таблицей что они делают и сколько
+        # всего осталось» — one row per agent: what, done, left, finishes, state
+        import os
+        import tempfile
+        from pathlib import Path
+        d = Path(tempfile.mkdtemp())
+        now = time.time()
+        stamp = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now - 60))
+        (d / "agent_rutracker.log").write_text(f"{stamp} PROGRESS 3% ETA 21:24 — rutracker: 127/4224 запросов\n", encoding="utf-8")
+        (d / "agent_old.log").write_text(f"{stamp} PROGRESS 100% — x\nAGENT_OLD_OK\n", encoding="utf-8")
+        os.utime(d / "agent_old.log", (now - 3 * 3600, now - 3 * 3600))
+        t = watchdog.owner_table(now, d)
+        self.assertIn("| Кто | Что делает | Готово | Осталось | Закончит | Состояние |", t)
+        self.assertIn("| rutracker | rutracker: 127/4224 запросов | 3% | 4097 из 4224 | 21:24 | работает |", t)
+        self.assertNotIn("old", t)      # finished long ago — not shown
+
+
 if __name__ == "__main__":
     unittest.main()
