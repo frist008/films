@@ -3,6 +3,6 @@ beautifulsoup4>=4.12
 lxml>=5.2
 gspread>=6.1
 google-auth-oauthlib>=1.2
-yt-dlp>=2025.1
+yt-dlp[default]>=2025.11.12   # [default] brings yt-dlp-ejs (YouTube JS challenges, run by Deno — trailer-check skill)
 faster-whisper>=1.1
 numpy>=1.26

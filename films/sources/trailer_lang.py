@@ -5,6 +5,7 @@ Usage:
     python -X utf8 -m films.sources.trailer_lang check --unconfirmed [--limit N] [--dry-run]
     python -X utf8 -m films.sources.trailer_lang check --ids 12,34
     python -X utf8 -m films.sources.trailer_lang video <youtube_id>          # one video, prints the verdict
+    python -X utf8 -m films.sources.trailer_lang cuts 2827 6870              # distinct cuts → owner questions
 
 Order of checks for one video (cheapest first, owner's instruction 2026-10-23):
 1. Watch page (films.sources.youtube.YouTube.watch): audio-track language / automatic ('asr') captions = the
@@ -76,7 +77,7 @@ SR = 16000
 WIN = 30            # seconds per window of the no-VAD pass
 ISLAND = 8          # seconds per piece of the speech-island pass
 MIN_WIN = 10        # shorter tails are padded with silence and Whisper hallucinates on them
-CONFIRMED = ("audio_track", "asr", "speech", "teaser_only", "no_speech")
+CONFIRMED = ("audio_track", "asr", "speech", "teaser_only", "no_speech", "owner")   # owner: the owner listened and chose
 # Whisper's well-known hallucinations on music / silence (subtitle credits, outros) — never speech
 _FILLER = re.compile(r"субтитр|dimatorzok|продолжение следует|спасибо за (?:просмотр|внимание)|редактор|корректор|"
                      r"подписывайтесь|ставьте лайк|amara\.org|субтітр|дякую за перегляд|thanks for watching|"
@@ -182,7 +183,10 @@ def _download_audio(video_id: str) -> Path | None:
     pace("youtube_http", yt_mod.MIN_INTERVAL)   # shared YouTube rate with search / watch pages (all processes)
     AUDIO_DIR.mkdir(parents=True, exist_ok=True)
     opts = {"format": "bestaudio[filesize<30M]/bestaudio", "outtmpl": str(AUDIO_DIR / f"{video_id}.%(ext)s"),
-            "quiet": True, "no_warnings": True, "noprogress": True, "noplaylist": True, "geo_bypass_country": "UA"}
+            "quiet": True, "no_warnings": True, "noprogress": True, "noplaylist": True, "geo_bypass_country": "UA",
+            # YouTube's JS challenges: Deno + yt-dlp-ejs (owner 2026-10-25 «Да, поставить Deno»); without a JS runtime
+            # some videos are «This video is not available».  No remote components are fetched.
+            "js_runtimes": {"deno": {}}}
     with yt_dlp.YoutubeDL(opts) as y:
         y.download([f"https://www.youtube.com/watch?v={video_id}"])
     files = list(AUDIO_DIR.glob(f"{video_id}.*"))
@@ -563,6 +567,255 @@ def search_originals(conn, log=print) -> dict:
     return stats
 
 
+# ---- distinct trailer cuts for the owner (owner 2026-10-25) ---------------------------------------------------------
+# «где написано, сколько времени идут другие и какой там язык? Я вижу один. Как мне выбрать?» and «если время одинаковое
+# или почти одинаковое с разных каналов — это одно и то же, мне нужны реально разные длительности и их язык».
+CUTS_FILE = db.ROOT / "data" / "cache" / "trailer_cuts.json"
+QUESTIONS_FILE = db.ROOT / "data" / "cache" / "survey_queue" / "trailers_left.json"
+CUT_TOLERANCE = 3        # seconds: uploads this close in length are one cut re-uploaded by different channels
+_CUT_TRAILER = re.compile(r"trailer|teaser|трейлер|тизер|трейлър|預告|预告|tráiler|bande", re.I)
+# not a trailer of the film: games, playthroughs, reviews, reactions, clips, fan edits / fan films, other series
+_CUT_NOT = re.compile(r"gameplay|\bgame\b|геймплей|игр[аыу]\b|игров|прохожд|walkthrough|playthrough|\bps[2-5]\b|xbox|"
+                      r"nintendo|steam|sega|let.?s ?play|обзор|review|reaction|реакция|разбор|behind the scenes|"
+                      r"за кадром|интервью|interview|music video|\bost\b|soundtrack|full movie|фильм целиком|"
+                      r"полный фильм|\bfan\b|фанат|re-?cut|modern trailer|trailer style|animated trailer|bloxburg|"
+                      r"roblox|\bgta\b|minecraft|майнкрафт|for honor|ubisoft", re.I)
+_CUT_EPISODE = re.compile(r"\bсери[яиюй]\b|сериал|\bseries\b|\bэпизод|\bepisode\b|\bсезон|\bseason\b", re.I)
+_CUT_YEAR = re.compile(r"\b(19[5-9]\d|20[0-4]\d)\b")
+_T2S = str.maketrans("無機變戰劍傳說華語電影預", "无机变战剑传说华语电影预")   # traditional → simplified (name match)
+_CUT_HD = re.compile(r"4k|2160|uhd|1080|hd", re.I)
+_CLAIMS_RU = re.compile(r"рус|дубл|озвуч", re.I)
+_LANG_RU = {"ru": "русский", "en": "английский", "zh": "китайский", "yue": "кантонский", "fr": "французский",
+            "uk": "украинский", "ja": "японский", "ko": "корейский", "de": "немецкий", "es": "испанский",
+            "it": "итальянский", "ar": "арабский", "tt": "татарский", "ba": "башкирский", "kk": "казахский",
+            "hi": "хинди", "tr": "турецкий", "pt": "португальский", "pl": "польский", "th": "тайский"}
+
+
+def mmss(s) -> str:
+    s = int(s or 0)
+    return f"{s} с" if s < 60 else (f"{s // 60} мин {s % 60} с" if s % 60 else f"{s // 60} мин")
+
+
+def cut_title_ok(row: dict, title: str | None, cast: set[str] = frozenset()) -> bool:
+    """A search result is a trailer of THIS film: says trailer / teaser; not a game / review / fan edit / episode of a
+    series; no other year in the title (±1); the Russian / Ukrainian or original non-Latin name is in it, or a Latin name
+    confirmed by the year, a cast / director name or a name of 3+ words («Hidden Blade» alone is also Assassin's Creed)."""
+    title = title or ""
+    if not _CUT_TRAILER.search(title) or _CUT_NOT.search(title):
+        return False
+    if row.get("kind", "movie") == "movie" and _CUT_EPISODE.search(title):
+        return False
+    ys = [int(x) for x in _CUT_YEAR.findall(title)]
+    if ys and row.get("year") and not any(abs(y - row["year"]) <= 1 for y in ys):
+        return False
+    t = f" {yt_mod.norm(title.translate(_T2S))} "
+
+    def has(n):
+        return bool(n) and bool(yt_mod.norm(n)) and f" {yt_mod.norm(n.translate(_T2S))} " in t
+    if has(row.get("title_ru")) or has(row.get("title_uk")):
+        return True
+    orig = row.get("title_original") or ""
+    if orig and not re.search(r"[A-Za-z]", orig) and has(orig):
+        return True
+    latin = [n for n in (row.get("title_latin"), orig if re.search(r"[A-Za-z]", orig) else None) if n and has(n)]
+    if not latin:
+        return False
+    return bool(ys) or bool(set(cast) & set(t.split())) or any(len(yt_mod.norm(n).split()) >= 3 for n in latin)
+
+
+def group_cuts(videos: list[dict], tol: int = CUT_TOLERANCE) -> list[list[dict]]:
+    """Uploads sorted by length; a length within `tol` s of the previous one joins its cut."""
+    groups: list[list[dict]] = []
+    last = None
+    for v in sorted((v for v in videos if v.get("length")), key=lambda v: v["length"]):
+        if groups and last is not None and v["length"] - last <= tol:
+            groups[-1].append(v)
+        else:
+            groups.append([v])
+        last = v["length"]
+    return groups
+
+
+def best_upload_key(v: dict) -> tuple:
+    """Official (verified) channel first, then 4K / HD in the title, then views."""
+    verified = any("VERIFIED" in (b or "") for b in v.get("owner_badges") or [])
+    return (0 if verified else 1, 0 if _CUT_HD.search(v.get("title") or "") else 1, -(v.get("views") or 0))
+
+
+def cut_language(c: dict) -> str:
+    """What the owner reads: русский / английский / … / «речь не распознана (под музыкой)» — never «речи нет» unless
+    someone listened (no confident speech = music only, or speech the recogniser cannot separate from the music)."""
+    v = c.get("verdict")
+    if v == "ru":
+        return "русский"
+    if v == "uk":
+        return "украинский"
+    if v == "neural":
+        return "нейросетевая озвучка"
+    if c.get("error"):
+        hint = c.get("meta_lang")
+        return "язык не проверить — YouTube не отдаёт звук" + (f" (по данным YouTube: {_LANG_RU.get(hint, hint)})"
+                                                                if hint else "")
+    if v == "other" and c.get("language") in _LANG_RU and (c.get("transcript") or "").strip():
+        return _LANG_RU[c["language"]]
+    return "речь не распознана (под музыкой)"
+
+
+def cut_quote(c: dict) -> str:
+    t = re.sub(r"\s+", " ", re.sub(r"\d+s: ", "", c.get("transcript") or "")).strip(" |")
+    if not t or c.get("error") or c.get("verdict") not in ("ru", "uk", "other") or \
+            cut_language(c).startswith("речь не распознана"):
+        return ""
+    if not re.search(r"[A-Za-zА-Яа-яЁё]{2}", t):          # CJK: no spaces between words
+        return t[:30] + "…" if len(t) > 30 else t
+    return t[:70].rsplit(" ", 1)[0] + "…" if len(t) > 70 else t
+
+
+def _cut_queries(row) -> list[str]:
+    ru, orig, lat, uk, y = row["title_ru"], row["title_original"], row["title_latin"], row["title_uk"], row["year"] or ""
+    qs = []
+    if ru:
+        qs += [f"{ru} трейлер", f"{ru} тизер", f"{ru} трейлер 2", f"{ru} дублированный трейлер", f"{ru} {y} трейлер"]
+    for o in [x for x in (orig, lat) if x and yt_mod.norm(x) != yt_mod.norm(ru)]:
+        qs += [f"{o} trailer", f"{o} teaser", f"{o} {y} trailer", f"{o} трейлер"]
+    if uk and yt_mod.norm(uk) != yt_mod.norm(ru):
+        qs.append(f"{uk} трейлер")
+    return list(dict.fromkeys(" ".join(q.split()) for q in qs))
+
+
+def title_cuts(conn, yt: yt_mod.YouTube, cache: dict, tid: int, log=print) -> dict:
+    """The distinct cuts of one film: search → filters → ≤ 3 s groups → per cut the best upload (and one claiming a
+    Russian dub) speech-checked; the first Russian one represents the cut."""
+    row = conn.execute("SELECT * FROM titles WHERE id = ?", (tid,)).fetchone()
+    rd = dict(row)
+    cast = set(yt_mod.title_context(conn, row).get("cast_tokens") or [])
+    cur = {k: _vid(row[c]) for k, c in (("ru", "trailer_ru_url"), ("alt", "trailer_alt_url"))}
+    pool: dict[str, dict] = {}
+    for q in _cut_queries(row):
+        for v in yt.search(q).get("videos") or []:
+            if v.get("length") and 15 <= v["length"] <= 300 and cut_title_ok(rd, v.get("title"), cast):
+                pool.setdefault(v["id"], v)
+    for vid in cur.values():                     # the trailer set now is always listed
+        if vid and vid not in pool:
+            w = yt.watch(vid)
+            pool[vid] = {"id": vid, "title": w.get("title"), "length": w.get("length"), "views": w.get("views"),
+                         "owner_badges": []}
+    cuts = []
+    for g in group_cuts(list(pool.values())):
+        ordered = sorted(g, key=best_upload_key)
+        claim = [v for v in ordered if _CLAIMS_RU.search(v.get("title") or "")]
+        chosen = None
+        for v in list({x["id"]: x for x in ordered[:2] + claim[:1]}.values()):
+            w = yt.watch(v["id"])
+            if w.get("status") != "OK" or w.get("available_in_ua") is False:
+                continue
+            r = check_video(yt, v["id"], cache)
+            al, _ = yt_mod.audio_language(w.get("audio_tracks") or [], w.get("captions") or [])
+            c = {"id": v["id"], "title": w.get("title"), "channel": w.get("author"), "length": w.get("length"),
+                 "verdict": r.get("verdict"), "language": r.get("language"), "transcript": r.get("transcript") or "",
+                 "method": r.get("method"), "error": r.get("error"), "meta_lang": al}
+            if chosen is None or (chosen["verdict"] != "ru" and c["verdict"] == "ru") or \
+                    (chosen.get("error") and not c.get("error")):
+                chosen = c
+            if chosen["verdict"] == "ru":
+                break
+        if chosen is None:                       # nothing playable in this cut: listed without a language
+            v = ordered[0]
+            chosen = {"id": v["id"], "title": v.get("title"), "channel": v.get("channel"), "length": v.get("length"),
+                      "verdict": None, "language": None, "transcript": "", "error": "не воспроизводится в UA",
+                      "meta_lang": None}
+        chosen.update(uploads=len(g), upload_ids=[x["id"] for x in g],
+                      current=[k for k, vid in cur.items() if vid and vid in {x["id"] for x in g}])
+        chosen["lang_label"], chosen["quote"] = cut_language(chosen), cut_quote(chosen)
+        cuts.append(chosen)
+    log(f"  cuts {tid} {row['title_ru']}: {len(pool)} uploads → {len(cuts)} cuts: " +
+        "; ".join(f"{c['length']}s {c['lang_label']}" for c in cuts))
+    return {"title_id": tid, "title_ru": row["title_ru"], "orig": row["title_original"], "year": row["year"],
+            "is_animation": row["is_animation"], "cuts": cuts}
+
+
+def cuts_question(f: dict, max_options: int = 3) -> dict:
+    """One owner-survey question: options = up to 3 cuts (Russian first, then the one set now, then the longest) +
+    «Ни один»; links_markdown = every cut (length, language, channel, quote, «сейчас стоит») to post before it."""
+    cuts = sorted(f["cuts"], key=lambda c: c["length"] or 0)
+    for c in cuts:
+        c.setdefault("lang_label", cut_language(c))
+        c.setdefault("quote", cut_quote(c))
+    url = "https://www.youtube.com/watch?v="
+    links = []
+    for c in cuts:
+        now = (" — сейчас стоит" + (" (запасной трейлер)" if c["current"] == ["alt"] else "")) if c["current"] else ""
+        links.append(f"[{mmss(c['length'])} — {c['lang_label']}]({url}{c['id']}) — {c.get('channel') or '?'}"
+                     f"{'; слышно: «' + c['quote'] + '»' if c['quote'] else ''}"
+                     f"{'; таких роликов ' + str(c['uploads']) if c['uploads'] > 1 else ''}{now}")
+    pri = sorted(cuts, key=lambda c: (c["verdict"] != "ru", not c["current"], -(c["length"] or 0)))[:max_options]
+    opts = []
+    for c in sorted(pri, key=lambda c: c["length"] or 0):
+        desc = (c.get("channel") or "") + (f"; слышно: «{c['quote']}»" if c["quote"] else "") + \
+            ("; сейчас стоит" if c["current"] else "") + \
+            (". Станет русским трейлером." if c["verdict"] == "ru" else ". Станет запасным трейлером (не русский).")
+        opts.append({"label": f"{mmss(c['length'])} — {c['lang_label'].split(' (')[0]}"[:60], "description": desc[:200],
+                     "video": c["id"], "russian": c["verdict"] == "ru"})
+    opts.append({"label": "Ни один", "description": "Ни один не подходит: русского трейлера нет, запасной не меняется."})
+    cat = "мультфильм" if f.get("is_animation") else "фильм"
+    name = f"«{f['title_ru']}»" + (f" / {f['orig']}" if f.get("orig") and f["orig"] != f["title_ru"] else "")
+    found = "найдена одна версия" if len(cuts) == 1 else f"{len(cuts)} разных версий"
+    extra = f" В вариантах {len(pri)} из {len(cuts)}, остальные — в списке." if len(cuts) > len(pri) else ""
+    return {"key": f"trailer:{f['title_id']}", "title_id": f["title_id"], "header": "Трейлер", "multiSelect": False,
+            "question": (f"{cat}, {f['year']}, {name}: на YouTube {found} трейлера (ролики одной длительности ±3 с с "
+                         f"разных каналов — одна версия). Список с длительностью, языком и ссылками — перед вопросом."
+                         f"{extra} Какую поставить?"),
+            "links_markdown": links, "options": opts,
+            "apply": "вариант с russian=true → titles.trailer_ru_url = видео, trailer_ru_source='owner', "
+                     "trailer_ru_check='owner'; иначе → trailer_alt_url = видео (trailer_alt_kind по языку); "
+                     "«Ни один» → без изменений"}
+
+
+def _vid(url: str | None) -> str | None:
+    m = re.search(r"(?:v=|youtu\.be/|shorts/)([\w-]{11})", url or "")
+    return m.group(1) if m else None
+
+
+def watched_ids(conn, ids: list[int]) -> set[int]:
+    """Titles the owner has seen (owner 2026-10-25: «Не нужны трейлеры для фильмов, которые я видел»)."""
+    if not ids:
+        return set()
+    q = ",".join(str(int(i)) for i in ids)
+    seen = {r[0] for r in conn.execute(f"SELECT id FROM titles WHERE id IN ({q})" + yt_mod.NOT_WATCHED)}
+    return set(ids) - seen
+
+
+def run_cuts(ids: list[int], write_questions: bool = True, log=print) -> dict:
+    conn = db.connect()
+    yt = yt_mod.YouTube(log=log)
+    cache = _load_checks()
+    seen = watched_ids(conn, ids)
+    for t in sorted(seen):
+        log(f"  cuts {t}: watched by the owner — no trailer, skipped")
+    store = json.loads(CUTS_FILE.read_text(encoding="utf-8")) if CUTS_FILE.exists() else {}
+    done = []
+    try:
+        for tid in [i for i in ids if i not in seen]:
+            store[str(tid)] = title_cuts(conn, yt, cache, tid, log=log)
+            done.append(tid)
+            CUTS_FILE.write_text(json.dumps(store, ensure_ascii=False, indent=1), encoding="utf-8")
+    finally:
+        shutil.rmtree(AUDIO_DIR, ignore_errors=True)
+    qs = [cuts_question(store[str(t)]) for t in done if store[str(t)]["cuts"]]
+    for i, q in enumerate(qs, 1):
+        q["question"] = f"{i}/{len(qs)} · " + q["question"]
+    if write_questions:
+        QUESTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
+        QUESTIONS_FILE.write_text(json.dumps({
+            "kind": "trailers_left", "created": datetime.now().date().isoformat(), "version": 2,
+            "note": ("Трейлеры, которые не решились автоматически (films.sources.trailer_lang cuts). По каждому фильму — "
+                     "реально разные версии трейлера: ролики с длительностью ±3 с — одна версия (лучшая загрузка), у "
+                     "каждой длительность, язык по проверке звука (локальный Whisper) и цитата. links_markdown — "
+                     "опубликовать сообщением перед вопросом (в вопросе ссылки не кликабельны). 4 вопроса за вызов."),
+            "questions": qs}, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"titles": len(ids), "watched_skipped": sorted(seen), "questions": len(qs)}
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="films.sources.trailer_lang")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -575,7 +828,19 @@ def main(argv=None):
     sub.add_parser("originals")
     v = sub.add_parser("video")
     v.add_argument("id")
+    cu = sub.add_parser("cuts")
+    cu.add_argument("ids", nargs="+", help="title ids (space or comma separated)")
+    cu.add_argument("--no-questions", action="store_true", help="only data/cache/trailer_cuts.json")
     a = p.parse_args(argv)
+    if a.cmd == "cuts":
+        ids = [int(x) for s in a.ids for x in s.split(",") if x.strip()]
+        try:
+            st = run_cuts(ids, not a.no_questions, log=lambda m: print(m, file=sys.stderr, flush=True))
+        except yt_mod.Blocked as e:
+            print(f"STOPPED: YouTube blocked: {e}", file=sys.stderr)
+            sys.exit(2)
+        print(json.dumps(st, ensure_ascii=False, indent=1))
+        return
     if a.cmd == "originals":
         print(json.dumps(search_originals(db.connect(), log=lambda m: print(m, file=sys.stderr, flush=True)),
                          ensure_ascii=False, indent=1))

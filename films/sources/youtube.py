@@ -1241,7 +1241,9 @@ NOT_WATCHED = (" AND NOT EXISTS (SELECT 1 FROM watched w WHERE w.title_id = titl
 
 
 def _todo(conn, recheck_days: float | None, ids: list[int] | None = None) -> list:
-    sql = "SELECT * FROM titles WHERE trailer_ru_url IS NULL" + NOT_WATCHED
+    # owner_none: the owner listened to every version and said none is Russian — not searched again
+    sql = ("SELECT * FROM titles WHERE trailer_ru_url IS NULL AND coalesce(trailer_ru_check, '') != 'owner_none'"
+           + NOT_WATCHED)
     args: list = []
     if ids:
         sql += f" AND id IN ({','.join('?' * len(ids))})"
