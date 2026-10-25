@@ -28,6 +28,10 @@ for q in qs:
     for o in opts:
         if re.search(r"[×x]\s*\d", o.get("label", "")) or (o.get("description", "").count("→") > 1) or len(re.findall(r"\((19|20)\d\d\)", o.get("label", ""))) > 1:
             deny("Один фильм — один вариант, не группами (владелец, 2026-10-24: «1 фильм один вариант. Что за экономия»).")
+    # clarity (owner, 2026-10-25): «база» must say where — on the computer or on GitHub (a prompt hook here stopped the whole
+    # turn on every refusal: «Опять остановился. Баг скила»; this check only refuses the question)
+    if re.search(r"\bбаз[аеуыо]й?\b", blob, re.I) and not re.search(r"компьютер|GitHub|гитхаб", blob, re.I):
+        deny("Слово «база» без уточнения: «база на компьютере» или «копия на GitHub» (владелец, 2026-10-25).")
     if re.search(r"ранни[ех] част", blob, re.I):
         deny("Не писать «ранние части» — владелец не понял термин: «предыдущий фильм серии» + пример (2026-10-24).")
     if re.search(r"TMDB\s*\d|TMDB[^.]{0,20}рейтинг|рейтинг[^.]{0,20}TMDB", blob, re.I):
