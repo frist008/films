@@ -496,7 +496,15 @@ def link_jellyfin(conn) -> dict:
     with conn:
         for iid, imdb, tmdb_id, path in conn.execute(
                 "SELECT item_id, imdb_id, tmdb_id, path FROM jellyfin_items WHERE kind = 'movie'").fetchall():
-            tid = ensure_movie(conn, imdb, "jellyfin") if imdb else None
+            # an episode file («…[tmdbid-N]\Season 01\Wednesday S01E02.mkv») in a «movies» library is never a movie: Jellyfin
+            # matches it to a namesake film (Wednesday S01E02 → «Wednesday's Child», 2026-10-25) — the folder decides first
+            tid = None
+            if path and PATH_TMDB.search(path) and PATH_EPISODE.search(path.rsplit("\\", 1)[-1]):
+                tid = _from_path(conn, path)
+                if tid:
+                    stats["episode_by_path"] += 1
+            if not tid:
+                tid = ensure_movie(conn, imdb, "jellyfin") if imdb else None
             if not tid and path:
                 tid = _from_path(conn, path)
                 if tid:
