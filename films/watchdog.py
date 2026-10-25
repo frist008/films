@@ -64,6 +64,8 @@ def report() -> str:
             continue
         prog = next((l for l in reversed(text) if "PROGRESS" in l), None)
         stall = " ⚠ ЗАВИС? (лог молчит ≥ 20 мин)" if age >= AGENT_STALL_MIN else ""
+        if not stall and (since := no_movement_min(text)) is not None:
+            stall = f" ⚠ НЕТ ДВИЖЕНИЯ {since} мин (процент и счётчики те же) — написать агенту сразу"
         lines.append(f"  агент {f.stem}: {prog.split('PROGRESS', 1)[1].strip()[:120] if prog else 'нет строки PROGRESS (процент и прогноз не пишет)'}"
                      f"; последняя строка {age:.0f} мин назад{stall}")
     lines.append("  Chrome-циклы (плейлисты __plRun, Google TV __gRun) — проверить в вкладке javascript_tool")
@@ -71,6 +73,35 @@ def report() -> str:
 
 
 AGENT_STALL_MIN = 20   # agents write PROGRESS at least every 10 minutes
+NO_MOVE_MIN = 10       # owner, 2026-10-25: «Пиши сразу, 10 минут и 0 % движения — это уже плохо»
+
+
+def no_movement_min(lines: list[str], now: float | None = None) -> int | None:
+    """Minutes the agent's progress has stood still: the percent and every «N/M» counter of the newest PROGRESS line are
+    the same as in all PROGRESS lines of the last NO_MOVE_MIN+ minutes (a fresh line with the same numbers is not
+    progress). None when it moved, or when there is no PROGRESS line old enough to compare."""
+    now = now or time.time()
+    progs = []
+    for l in lines:
+        m = re.match(r"(\d{4}-\d\d-\d\d[ T]\d\d:\d\d:\d\d)\S*\s+PROGRESS\s+(.*)", l)
+        if m:
+            try:
+                ts = time.mktime(time.strptime(m.group(1).replace("T", " "), "%Y-%m-%d %H:%M:%S"))
+            except ValueError:
+                continue
+            text = m.group(2)
+            pct = re.findall(r"\d+%", text.split("ETA")[0])        # the percent, not times or other numbers
+            progs.append((ts, tuple(pct + re.findall(r"\d+/\d+", text))))
+    if not progs:
+        return None
+    last = progs[-1][1]
+    start = progs[-1][0]
+    for ts, nums in reversed(progs):
+        if nums != last:
+            break
+        start = ts
+    still = (now - start) / 60   # since the numbers last changed (or since the first report, if they never did)
+    return int(still) if still >= NO_MOVE_MIN else None
 
 
 def owner_report() -> str:
