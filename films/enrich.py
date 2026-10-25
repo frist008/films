@@ -12,7 +12,7 @@ from .sources import tmdb
 UPDATABLE = ["is_animation", "title_original", "title_latin", "title_ru", "title_uk", "year", "release_date",
              "countries", "genres", "main_genre", "runtime_min", "studios", "budget_usd", "box_office_usd",
              "seasons_total", "episodes_total", "series_status", "tmdb_id", "tmdb_type", "trailer_ru_url",
-             "series_tmdb_id", "series_imdb_id", "series_key"]
+             "series_tmdb_id", "series_imdb_id", "series_key", "episode_dates"]
 
 
 def _issue(conn, title_id: int, problem: str, details: dict):
@@ -268,3 +268,29 @@ def enrich(conn, only_missing: bool = True, max_age_days: float = tmdb.DEFAULT_M
         if i % 500 == 0:
             print(f"  enriched {i}/{len(titles)}", file=sys.stderr, flush=True)
     return stats
+
+
+def fill_episode_dates(conn, max_age_days: float = 7) -> dict:
+    """Episode air dates of every season row (titles.episode_dates; owner 2026-10-25: «у идущего сезона „вышло N из M“
+    — в таблицу»). Running seasons are re-read when the TMDB cache is older than a week, finished ones only once."""
+    rows = conn.execute("SELECT id, series_tmdb_id, season_number, series_status, episode_dates FROM titles "
+                        "WHERE kind = 'series' AND series_tmdb_id IS NOT NULL AND season_number IS NOT NULL "
+                        "AND duplicate_of IS NULL").fetchall()
+    stats = {"seasons": len(rows), "filled": 0, "no_tmdb": 0}
+    for tid, tv, sn, status, have in rows:
+        running = status in ("returning", "in_production")
+        if have and not running:
+            continue
+        s = tmdb.season(conn, tv, sn, max_age_days=max_age_days if running else tmdb.DEFAULT_MAX_AGE_DAYS)
+        if not s:
+            stats["no_tmdb"] += 1
+            continue
+        conn.execute("UPDATE titles SET episode_dates = ? WHERE id = ?", (json.dumps(s.get("episode_dates") or []), tid))
+        stats["filled"] += 1
+    conn.commit()
+    return stats
+
+
+if __name__ == "__main__":
+    from . import db
+    print(json.dumps(fill_episode_dates(db.connect()), ensure_ascii=False))

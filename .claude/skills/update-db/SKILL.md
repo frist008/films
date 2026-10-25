@@ -76,6 +76,7 @@ description: Полное обновление базы фильмов/сери�
    его стоит повторить: постеры RT заменят TMDB / трекер); фильмам с 4K-раздачей и неизвестным мастером — blu-ray.com «Native/Upscaled 4K»
    (HTTP, ~7 с на запрос, фоном): `python -X utf8 -m films.sources.bluray_com run` (R32, `docs/research-codecs-upscale.md` §2.5);
    новое без TMDB — `python -X utf8 -m films enrich`, рейтинги — `films ratings imdb` и `films ratings rt`
+   (даты выхода серий всех сезонов — `python -X utf8 -m films.enrich`, идущие сезоны перечитываются раз в неделю → «вышло N из M, идёт» в таблице)
    (`enrich` сам ищет TMDB по названиям + году, если TMDB не знает IMDb id, — только однозначное совпадение, см.
    `enrich.search_fallback`; найденный дубль чужой строки — issue `tmdb_same_as_title`); украинское название, если у TMDB
    его нет, — aka IMDb (`imdb_specs run` или отдельно `imdb_specs uk`, `title_uk_source`); монтажёр (role `editor`, только

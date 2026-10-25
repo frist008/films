@@ -95,6 +95,10 @@ class HelpersTest(unittest.TestCase):
         self.assertEqual(rank.describe(rel(fps=23.976)), "1080 WEB-DL dub")
         self.assertEqual(rank.describe(rel(), title_bw=True), "1080 WEB-DL ч/б dub")
         self.assertEqual(rank.describe(rel(video_color="colorized"), title_bw=True), "1080 WEB-DL dub")
+        # owner 2026-10-25: master unknown → «4K?» on 4K releases only, never on a fan AI upscale
+        self.assertEqual(rank.describe(rel(resolution=2160), master_unknown=True), "4K? WEB-DL dub")
+        self.assertEqual(rank.describe(rel(), master_unknown=True), "1080 WEB-DL dub")
+        self.assertEqual(rank.describe(rel(resolution=2160, is_ai_upscale=1), master_unknown=True), "2160 WEB-DL dub")
         self.assertTrue(rank.title_is_bw({"color": "Black and White"}))
         self.assertFalse(rank.title_is_bw({"color": "Color | Black and White (some scenes)"}))
 

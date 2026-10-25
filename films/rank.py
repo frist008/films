@@ -290,9 +290,11 @@ def max_quality(t: dict, best: dict | None, rels: list[dict], cfg: dict, pref: d
     return True
 
 
-def describe(r: dict, title_bw: bool = False) -> str:
+def describe(r: dict, title_bw: bool = False, master_unknown: bool = False) -> str:
     hdr = hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))
     parts = [str(r.get("resolution") or "SD"), r.get("source_type") or "?"]
+    if master_unknown and (r.get("resolution") or 0) >= 2160 and not r.get("is_ai_upscale"):
+        parts[0] = "4K?"   # owner 2026-10-25: the studio master is unknown — the 4K may be an upscale
     if hdr == "DV*":   # R31: DV not from the studio — rebuilt from HDR10 (1) or converted from HDR10+ (2)
         parts.append("DV" + (f" P{r['dv_profile']}" if r.get("dv_profile") else "")
                      + (" (DV: из HDR10+)" if r.get("dv_static_md") == 2 else " (DV: статические метаданные)"))
@@ -564,7 +566,9 @@ def compute(conn) -> list[dict]:
         # (upscale_verdict, films.sources.imdb_specs / blu-ray.com) wins over the raw DI value.
         verdict = t.get("upscale_verdict")
         studio_upscale = (verdict == "upscaled") if verdict in ("upscaled", "native")             else t.get("di_resolution") in ("2K", "HD", "SD")
-        if studio_upscale and (best.get("resolution") or 0) >= 2160:
+        # master unknown (no verdict, no DI value): «4K?» and the original row too (owner, 2026-10-25: «4K?» и строка оригинала)
+        master_unknown = verdict not in ("upscaled", "native") and not t.get("di_resolution")
+        if (studio_upscale or master_unknown) and (best.get("resolution") or 0) >= 2160:
             orig = [r for r in rels if (r.get("resolution") or 0) < 2160 and not r.get("is_ai_upscale")]
             orig = [r for r in orig if (r.get("resolution") or 0) >= 1080] or orig   # «лучший 1080p», 720p only if nothing else
             if orig:
@@ -676,7 +680,7 @@ def compute(conn) -> list[dict]:
             + tuple(sort_vals[k] for k in cfg["sort"]["order"])
         at_max = max_quality(t, best, all_rels, cfg, pref, episodes)
         for vi, (label, r) in enumerate(variants):
-            q = describe(r, ctx["title_bw"])
+            q = describe(r, ctx["title_bw"], master_unknown)
             if vi == 0 and ep_note:
                 q += f" · {ep_note}"
             rows.append({"title": t, "variant": label, "variant_index": vi, "release": r,

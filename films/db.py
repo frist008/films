@@ -694,6 +694,11 @@ MIGRATIONS = [
     """
     ALTER TABLE titles ADD COLUMN title_uk_source TEXT;
     """,
+    # 21: owner, 2026-10-25 (audit answers): «у идущего сезона „вышло N из M“ — в таблицу». Season rows keep the TMDB air
+    # dates of their episodes (JSON list, ISO dates), so the sheet counts what is out on the day it is built.
+    """
+    ALTER TABLE titles ADD COLUMN episode_dates TEXT;
+    """,
 ]
 
 

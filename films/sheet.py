@@ -400,6 +400,11 @@ def _main_row(r: dict, people: dict, collections: dict) -> list:
         status = {"returning": "идёт", "ended": "завершён", "canceled": "закрыт", "in_production": "в производстве"}
         season_info = f"{t.get('episodes_total') or '?'} сер." + (f", {status.get(t['series_status'], t['series_status'])}"
                                                                     if t.get("series_status") else "")
+        # a season still airing: «вышло N из M, идёт» (owner, 2026-10-25), counted on the day the sheet is built
+        dates = _j(t.get("episode_dates"), [])
+        aired = sum(1 for d in dates if d <= date.today().isoformat())
+        if dates and 0 < aired < len(dates):
+            season_info = f"вышло {aired} из {max(len(dates), t.get('episodes_total') or 0)}, идёт"
     have = r["have"]
     have_txt = None
     if have:

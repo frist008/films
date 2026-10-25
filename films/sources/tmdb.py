@@ -747,6 +747,7 @@ def season(conn, tv_id: int, season_number: int, max_age_days: float = DEFAULT_M
         "name": b.get("name"),
         "air_date": air, "year": _year(air),
         "last_episode_date": ep_dates[-1] if ep_dates else None,
+        "episode_dates": ep_dates,
         "episode_count": len(eps),
         "episodes_aired": sum(1 for x in ep_dates if x <= today),
         "runtime_min": int(statistics.median(runtimes)) if runtimes else None,
@@ -776,6 +777,7 @@ def season_row(series: dict, s: dict) -> dict:
         "seasons_total": series["number_of_seasons"], "episodes_total": s["episode_count"],
         "series_status": series["series_status"], "tmdb_id": series["tmdb_id"], "tmdb_type": "tv",
         "trailer_ru_url": s["trailer_ru_url"],
+        "episode_dates": json.dumps(s.get("episode_dates") or []),
     }
 
 
