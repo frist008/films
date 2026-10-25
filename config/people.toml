@@ -159,3 +159,55 @@ imdb_id = "nm0000115"
 tmdb_id = 2963
 weight = 10
 note = "владелец 2026-10-26: «Да, важный» (опрос кандидатов из просмотренного, 3/10)"
+
+[[person]]
+name = "Steven Spielberg"   # Стивен Спилберг, режиссёр и продюсер
+imdb_id = "nm0000229"
+tmdb_id = 488
+weight = 10
+note = "владелец 2026-10-26: «Да, важный» (опрос кандидатов из просмотренного, 8/10, по фото)"
+
+[[person]]
+name = "Robert Pattinson"   # Роберт Паттинсон, актёр
+imdb_id = "nm1500155"
+tmdb_id = 11288
+weight = 10
+note = "владелец 2026-10-26: «Да, важный» (опрос кандидатов из просмотренного, 10/10, по фото)"
+
+# Владелец ответил «Нет» — больше не предлагать (rank.py читает только [[person]]).
+[[rejected]]
+name = "Matt Damon"
+tmdb_id = 1892
+note = "владелец 2026-10-26: «Нет» (4/10, по фото)"
+
+[[rejected]]
+name = "Brad Pitt"
+tmdb_id = 287
+note = "владелец 2026-10-26: «Нет» (5/10, по фото)"
+
+[[rejected]]
+name = "Jake Gyllenhaal"
+tmdb_id = 131
+note = "владелец 2026-10-26: «Нет» (6/10, по фото)"
+
+[[rejected]]
+name = "Anne Hathaway"
+tmdb_id = 1813
+note = "владелец 2026-10-26: «Нет» (7/10, по фото)"
+
+[[rejected]]
+name = "Ben Kingsley"
+tmdb_id = 2282
+note = "владелец 2026-10-26: «Нет» (9/10, по фото)"
+
+[[rejected]]
+name = "Ralph Fiennes"
+note = "владелец 2026-10-25: «Нет» (по фото)"
+
+[[rejected]]
+name = "Emily Blunt"
+note = "владелец 2026-10-25: «Нет» (по фото)"
+
+[[rejected]]
+name = "Anya Taylor-Joy"
+note = "владелец 2026-10-25: «Нет» (по фото)"
