@@ -129,8 +129,14 @@ description: Полное обновление базы фильмов/сери�
       rutor которых нет 4K / HDR-DV / дубляжа, в порядке таблицы. Пишет `data/cache/rutracker/queries.json` (с причинами),
       `queries_run.json` (отдаёт мост), `run.js` (сборщик + `__rtCollect({queriesUrl})`) и запасные `run_inline_N.js`.
       Объём (2026-10-24): ≈ 5 500 запросов (≈ 3 100 тайтлов R9) — несколько часов в фоне вкладки; поиск 1,5–2,2 с на запрос.
-   2) мост — фоном: `python -X utf8 -m films bridge` (+ сторож: агент-watchdog).
-   3) **один** вызов в Chrome (владелец у компьютера, жмёт «Allow» один раз): вкладка `https://rutracker.org/forum/index.php`
+   2) мост — фоном: `python -X utf8 -m films.bridge` (модуль, не подкоманда `films bridge` — той нет, 2026-10-26) (+ сторож: агент-watchdog).
+   3) **Сначала — запуск владельцем, без окон** (R200, 2026-10-26: «хватит! … надо это исправить»): для rutracker расширение
+      Claude in Chrome запрещает постоянное разрешение («Site-level permissions are disabled for this site»), поэтому каждый
+      `javascript_tool` / `get_page_text` там — новое окно «Allow», и пока владелец его не видит, вызов просто истекает. Поэтому:
+      `Get-Content -Raw -Encoding UTF8 data\cache\rutracker\run.js | Set-Clipboard` → владелец во вкладке rutracker (залогинен):
+      F12 → Console → (первый раз Chrome просит ввести `allow pasting`) → Ctrl+V → Enter. Дальше всё как ниже (мост, ingest);
+      статус — он же в консоли: `__rtStatus()`. Вызов через `javascript_tool` — только если владелец сам попросил.
+      Запасной путь — **один** вызов в Chrome (владелец у компьютера, жмёт «Allow» один раз): вкладка `https://rutracker.org/forum/index.php`
       (залогинен, без Cloudflare) → `javascript_tool` с содержимым `data/cache/rutracker/run.js` целиком. Вызов сразу
       возвращает «loading queries…»: дальше цикл идёт сам — поиск по всем страницам (до 500), страницы выбранных раздач
       (видео-форум, год ±1, в названии есть нужное: 2160p/4K, HDR/DV, Dub; уже известные не открываются), по POST на запрос
