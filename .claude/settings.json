@@ -109,6 +109,16 @@
         ]
       },
       {
+        "matcher": "mcp__visualize__show_widget",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/widget-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
         "matcher": "AskUserQuestion",
         "hooks": [
           {

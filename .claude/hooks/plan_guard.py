@@ -105,6 +105,22 @@ def _human_messages(transcript: str) -> list[tuple[str, str]]:
     return out
 
 
+DEIXIS = re.compile(r"(?<![\w-])(тут|здесь|там|сюда|туда|на нём|на нем|на этом|этот сайт|этом сайте)(?![\w-])", re.I)
+URL = re.compile(r"https?://[^\s<>\"«»]+")
+
+
+def deixis_hint(text: str) -> str:
+    """«как тут зарегистрироватся. Потенциально ещё один источник https://rustorka.com/…» — «тут» was read as the sites of
+    the previous answer (owner, 2026-10-26: «ты вопрос не читал что ли?»). When a message has «тут / здесь / там …» and a
+    link, the hint names the link it most likely points to."""
+    urls = URL.findall(text or "")
+    if not urls or not DEIXIS.search(text):
+        return ""
+    return (" ВНИМАНИЕ: в сообщении «" + DEIXIS.search(text).group(1) + "» и ссылка " + ", ".join(urls[:3]) +
+            " — «тут/здесь» скорее всего про эту ссылку из того же сообщения, а не про то, о чём шла речь раньше; "
+            "не уверен — спроси через AskUserQuestion.")
+
+
 def main(mode: str) -> None:
     d = json.load(sys.stdin)
     if mode == "prompt":
@@ -113,7 +129,7 @@ def main(mode: str) -> None:
             _add([(datetime.now().isoformat(timespec="seconds"), _text(p))])
             print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext":
                   "Сообщение владельца записано в PLAN.md → «Входящие». Первым делом: оформить R-пункт (или сделать), "
-                  "по выполнении — проверить и перенести в PLAN-done.md."}}, ensure_ascii=False))
+                  "по выполнении — проверить и перенести в PLAN-done.md." + deixis_hint(_text(p))}}, ensure_ascii=False))
         return
     new = _add(_human_messages(d.get("transcript_path") or ""), occurrences=True)
     plan = PLAN.read_text(encoding="utf-8")
