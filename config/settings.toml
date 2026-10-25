@@ -26,6 +26,11 @@ hide_downloaded = true     # кроме тайтлов с доступным а�
 # Sony Bravia KD-65AG9 (OLED, 2019): HDR10, HLG, Dolby Vision; HDR10+ нет (раздача HDR10+ = её базовый слой HDR10).
 # Плеер — Plezy (клиент Plex; ExoPlayer/mpv, есть преобразование DV profile 7 → 8.1). DV profile 5 — не поддерживается (правило 2).
 # AV1 — у чипов ТВ 2019 года аппаратного декодера нет (появился в 2020) → программно, 4K может тормозить.
+# Вместе с владельцем смотрят онлайн (2026-10-25): друзья на Windows (RTX 5070 и RTX 4070, процессоры AMD) и на приставке
+# NVIDIA Shield TV. Windows: DV profile 7/8 идёт через базовый слой HDR10, у DV profile 5 базового слоя нет — картинка
+# фиолетово-зелёная → «из-за винды я просил фильтровать DV5» (правило 2). RTX 40/50 декодируют AV1 аппаратно, Shield — нет,
+# HDR10+ не показывает ни ТВ, ни Shield. Итог для всех зрителей: DV (с HDR10-фолбэком) > HDR10 = HDR10+ > HLG > SDR; AV1 ниже.
+viewers = ["Sony Bravia KD-65AG9 + Plezy (владелец)", "Windows, RTX 5070", "Windows, RTX 4070", "NVIDIA Shield TV"]
 model = "Sony Bravia KD-65AG9"
 player = "Plezy"
 hdr_supported = ["DV", "HDR10", "HLG"]
