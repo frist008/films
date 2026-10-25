@@ -1712,7 +1712,7 @@ def parse_release_page(html: str) -> dict:
         # extra
         "video_width": None, "video_height": None, "dv_profile_full": None, "dv_fallback": None,
         "dv_layers": None, "dv5_only": False, "hdr10_from_generic_tag": False, "voice_by_lang": {}, "subtitle_langs": [],
-        "imdb_id": None, "kinopoisk_id": None, "mediainfo_found": False, "mediainfo_blocks": 0,
+        "imdb_id": None, "mediainfo_found": False, "mediainfo_blocks": 0,
         "title_ru": None, "title_ru_desc": None, "title_original": None, "year": None, "year_to": None,
         "year_desc": None, "countries": [], "genres": [],
         "directors": [], "cast": [], "runtime_min": None, "runtime_episode_min": None, "episodes_count": None,
@@ -1740,10 +1740,7 @@ def parse_release_page(html: str) -> dict:
         out["imdb_id"] = ids[0]
         if len(ids) > 1:
             w.append(f"several IMDb ids in description: {ids}")
-    kp = _uniq(re.findall(r"kinopoisk\.ru/(?:film|series)/(?:film/)?(\d+)", parts["desc_html"], re.I)
-               + re.findall(r"rating\.kinopoisk\.ru/(\d+)\.gif", parts["desc_html"], re.I))
-    if kp:
-        out["kinopoisk_id"] = int(kp[0])
+    # Kinopoisk is not used in any form (owner, 2026-10-25: «Я из Украины, а это вражеский сайт»)
 
     # ---- MediaInfo
     mi_blocks = _parse_mediainfo(main_text)
