@@ -2,7 +2,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Agent",
+        "matcher": "Agent|Bash|PowerShell|CronCreate|CronDelete",
         "hooks": [
           {
             "type": "command",

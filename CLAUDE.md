@@ -118,6 +118,7 @@ YouTube-канал <youtube.channel_name> `<youtube.channel>`.
   или по кругу → `SendMessage` агенту → не помогло: `TaskStop` и перезапуск с уточнённым заданием, запись в PLAN.md.
   Короткий итог владельцу: кто работает, кто закончил, кто завис.
 - Cron срабатывает только когда сессия простаивает → дублирует его PostToolUse-хук `.claude/hooks/watchdog-tick.sh` (раз в 30 мин и посреди хода: `python -X utf8 -m films.watchdog` — процессы, свежесть логов, «ЗАВИС?»; Chrome-циклы — `__plRun` / `__gRun` в вкладке).
+- Хук `agent-watchdog.sh` (PostToolUse на Agent, фоновые Bash/PowerShell, CronCreate/CronDelete) помнит таймер в `data/cache/locks/watchdog_cron.json` и **блокирует** любой фоновый запуск без таймера (владелец, 2026-10-25: «чтобы он при любом запуске агента опять запускался»).
 - Фоновых агентов не осталось → `CronDelete`. Cron живёт только в сессии (и не больше 7 дней): в новой сессии
   с запущенными агентами взвести заново.
 
