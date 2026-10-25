@@ -40,7 +40,7 @@ from pathlib import Path
 
 from . import db
 
-DRIVES = ["E", "G"]   # owner 2026-10-25: «Что вообще там делает диск C, если медиа у нас только на E?» (G holds films too)
+DRIVES = ["E"]   # owner 2026-10-25: «Только диск E» (C, D, G — не сканировать, из базы и GitHub убрать)
 VIDEO_EXT = {"mkv", "mp4", "avi", "m2ts", "ts", "mov", "wmv", "m4v", "webm", "iso", "vob"}
 SKIP_DIRS = {"windows", "program files", "program files (x86)", "programdata", "appdata", "$recycle.bin",
              "system volume information", "node_modules", "$windows.~ws", "$windows.~bt", "$winreagent", "recovery",
