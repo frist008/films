@@ -32,7 +32,9 @@ Claude не вписывает ключи/токены в веб-формы и �
 
 ## Новая машина / другой Claude-аккаунт
 
-1. `git clone` репозитория, `pip install -r requirements.txt`.
+1. `git clone` репозитория, `pip install -r requirements.txt`; для проверки русской речи в трейлерах YouTube —
+   `winget install DenoLand.Deno` и `pip install -U "yt-dlp[default]"` (решатель JS-проверок YouTube для yt-dlp; без него
+   часть роликов не скачивается — владелец, 2026-10-25: «Да, поставить Deno»; подробно — скил trailer-check).
 2. Открыть заметку Keep «films — секреты» (<google.cloud>) → создать `.env` по `.env.example`, `secrets/google_oauth_client.json`
    и `config/private.toml` (шаблон — `config/private.example.toml`; без него код не знает аккаунтов и ID списков владельца).
 3. База: `python -X utf8 -m films.backup restore data/films.db` — восстановить из текстовой копии `backup/` (схема + все таблицы,
