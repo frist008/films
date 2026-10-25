@@ -47,8 +47,26 @@ def report() -> str:
         flag = " ⚠ ЗАВИС? (процесс жив, лог молчит ≥ 30 мин)" if alive and age >= STALL_MIN else ""
         if alive or age < 180:   # older finished logs are noise
             lines.append(f"  лог {f.name}: {age:.0f} мин назад{flag}")
+    # background agents (owner, 2026-10-25: «каждый агент во время отчёта должен прогнозировать время, когда закончит, и
+    # процент выполнения»): the last «PROGRESS N% ETA HH:MM — …» line of every data/logs/agent_*.log written today
+    for f in sorted((db.ROOT / "data" / "logs").glob("agent_*.log"), key=lambda f: -f.stat().st_mtime):
+        age = (now - f.stat().st_mtime) / 60
+        if age > 12 * 60:
+            continue
+        text = f.read_text(encoding="utf-8", errors="replace").splitlines()
+        if any(re.search(r"AGENT_\w+_OK", l) for l in text[-5:]):
+            if age < 60:
+                lines.append(f"  агент {f.stem}: закончил ({age:.0f} мин назад)")
+            continue
+        prog = next((l for l in reversed(text) if "PROGRESS" in l), None)
+        stall = " ⚠ ЗАВИС? (лог молчит ≥ 20 мин)" if age >= AGENT_STALL_MIN else ""
+        lines.append(f"  агент {f.stem}: {prog.split('PROGRESS', 1)[1].strip()[:120] if prog else 'нет строки PROGRESS (процент и прогноз не пишет)'}"
+                     f"; последняя строка {age:.0f} мин назад{stall}")
     lines.append("  Chrome-циклы (плейлисты __plRun, Google TV __gRun) — проверить в вкладке javascript_tool")
     return "\n".join(lines)
+
+
+AGENT_STALL_MIN = 20   # agents write PROGRESS at least every 10 minutes
 
 
 if __name__ == "__main__":

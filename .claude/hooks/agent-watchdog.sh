@@ -36,7 +36,7 @@ if tool == "CronCreate":
 if tool == "CronDelete":
     try:
         m = json.load(open(marker, encoding="utf-8"))
-        if not m.get("id") or m.get("id") == ti.get("id"):
+        if m.get("id") and m.get("id") == ti.get("id"):   # only the remembered job (a new one may already be armed)
             os.remove(marker)
     except (OSError, ValueError):
         pass
@@ -46,9 +46,9 @@ background = tool == "Agent" or (tool in ("Bash", "PowerShell") and ti.get("run_
 if background and not armed():
     print(json.dumps({"decision": "block", "reason":
         "Запущен фоновый агент или команда, а таймер сторожа не взведён (правило владельца: при ЛЮБОМ запуске — проверка раз в "
-        "30 минут). Сейчас: CronCreate, recurring, cron «13,43 * * * *», prompt начинается с «Проверка фоновых агентов и команд "
-        "(правило владельца, раз в 30 мин): хвост data/logs/*.log и tasks/*.output, прогресс с прошлой проверки, зависшее — "
-        "перезапуск и запись в PLAN.md; фоновых не осталось — CronDelete этой задачи.»"}, ensure_ascii=False))
+        "10 минут, 2026-10-25). Сейчас: CronCreate, recurring, cron «3,13,23,33,43,53 * * * *», prompt начинается с «Проверка "
+        "фоновых агентов и команд (правило владельца, раз в 10 мин): …» — у каждого агента процент и прогноз окончания "
+        "(строки PROGRESS в data/logs/agent_*.log); фоновых не осталось — CronDelete этой задачи."}, ensure_ascii=False))
 sys.exit(0)
 '
 exit 0
