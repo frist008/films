@@ -2158,3 +2158,205 @@ name = "Джиперс Криперс"
 scope = "all"
 tmdb_collections = [94899]
 note = "владелец 2026-10-24: «Джиперс Криперс тоже отслеживать франшизу» — вся вселенная, все годы (вкл. «Возрождённый» 2022)"
+
+# ---- R57 (2026-10-25): франшизы из списков владельца. Ответы 1–5 по отдельности, затем правило владельца:
+# «Всё из моих списков — следить» → «Все годы» без вопросов. «Истребитель демонов» — не интересно (ничего не видел и не скачано).
+# tmdb_tv — сериалы франшизы (для справки и сбора состава); ответы — data/cache/franchise_answers_r5.json ----
+
+[[franchise]]
+key = "my_hero_academia"
+name = "Моя геройская академия (My Hero Academia)"
+scope = "all"
+tmdb_collections = [1189668]
+tmdb_tv = [65930]
+note = "сериалы «хочу»; «Не видел ничего, хочу посмотреть» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "stranger_things"
+name = "Очень странные дела (Stranger Things)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [66732]
+note = "сериалы «хочу»; «Хочу, но ничего не видел» (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "attack_on_titan"
+name = "Атака титанов (Attack on Titan)"
+scope = "all"
+tmdb_collections = [370411, 383987]
+tmdb_tv = [1429]
+note = "сериалы «хочу»; «Хочу, но ничего не видел» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "sword_art_online"
+name = "Мастера меча онлайн (Sword Art Online)"
+scope = "all"
+tmdb_collections = [893713]
+tmdb_tv = [45782, 78204]
+note = "видел S1–S4, GGO S1, «Порядковый ранг»; «Все годы» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "seven_deadly_sins"
+name = "Семь смертных грехов (The Seven Deadly Sins)"
+scope = "all"
+tmdb_collections = [703485]
+tmdb_tv = [62104]
+note = "сериалы «хочу»; правило «всё из моих списков — следить» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "alice_burton"
+name = "Алиса в стране чудес (Тим Бёртон)"
+scope = "all"
+tmdb_collections = [261307]
+tmdb_tv = []
+note = "большой список 🔵; правило «всё из моих списков — следить» (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "chainsaw_man"
+name = "Человек-бензопила (Chainsaw Man)"
+scope = "all"
+tmdb_collections = [1544712]
+tmdb_tv = [114410]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "frieren"
+name = "Фрирен, провожающая в последний путь"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [209867]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "mcmullen"
+name = "Братья / Семья МакМаллен"
+scope = "all"
+tmdb_collections = [1548025]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "monster_urasawa"
+name = "Монстр (Наоки Урасава)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [30981]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "national_treasure"
+name = "Сокровище нации (National Treasure)"
+scope = "all"
+tmdb_collections = [52984]
+tmdb_tv = [137437]
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "re_zero"
+name = "Re:ZERO – Жизнь с нуля в альтернативном мире"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [65942]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "shaman_king"
+name = "Король шаманов (Shaman King)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [104699, 232865, 40143]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "family_plan"
+name = "Семейный план (The Family Plan)"
+scope = "all"
+tmdb_collections = [1363124]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "haunting_flanagan"
+name = "Призрак дома на холме / Призраки усадьбы Блай (Майк Флэнаган)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [72844, 109958]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "last_witch_hunter"
+name = "Последний охотник на ведьм"
+scope = "all"
+tmdb_collections = [1543569]
+tmdb_tv = []
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "world_war_z"
+name = "Война миров Z"
+scope = "all"
+tmdb_collections = [1674208]
+tmdb_tv = []
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "iron_sky"
+name = "Железное небо (Iron Sky)"
+scope = "all"
+tmdb_collections = [312977]
+tmdb_tv = []
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "madea"
+name = "Мэдея (Тайлер Перри)"
+scope = "all"
+tmdb_collections = [534673, 501909]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "veteran_kr"
+name = "Мститель / Ветеран (Рю Сын-ван, Корея)"
+scope = "all"
+tmdb_collections = [1089303]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "demon_slayer"
+name = "Истребитель демонов (Demon Slayer)"
+scope = "none"
+tmdb_collections = [925155]
+tmdb_tv = [85937]
+note = "сериалы «хочу»; «Если ничего не видел и не скачано, то не интересно» — не видел, не скачано (2026-10-25)"
+survey = "r5"

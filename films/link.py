@@ -390,14 +390,22 @@ def link_plex(conn) -> dict:
             conn.execute("UPDATE plex_items SET title_id = ?, show_title = ?, season = ?, episode = ? WHERE rating_key = ?",
                          (tid, ep.get("show"), season, ep.get("episode"), r["rating_key"]))
             stats[f"items_episode_linked_{how}" if tid else f"items_episode_{d_how or 'unlinked'}"] += 1
-    # 4. watched movies (plex history + library view counts)
+    # 4. watched movies (plex history + library view counts). The date is the FIRST real view: later entries can be our
+    # own re-marks of 2026-10-23 (R87) and must not replace the owner's chronology; last_viewed_at only without history.
     watched_movies: dict[str, str] = {}
-    for h in conn.execute("SELECT guids, viewed_at FROM plex_history WHERE kind = 'movie'"):
+    for h in conn.execute("SELECT guids, viewed_at FROM plex_history WHERE kind = 'movie' AND viewed_at IS NOT NULL"):
         for i in _imdb_ids(h["guids"])[:1]:
-            watched_movies[i] = max(watched_movies.get(i, ""), h["viewed_at"] or "")
+            watched_movies[i] = min(watched_movies.get(i, h["viewed_at"]), h["viewed_at"])
     for r in conn.execute("SELECT guids, last_viewed_at FROM plex_items WHERE kind = 'movie' AND view_count > 0"):
         for i in _imdb_ids(r["guids"])[:1]:
-            watched_movies[i] = max(watched_movies.get(i, ""), r["last_viewed_at"] or "")
+            watched_movies.setdefault(i, r["last_viewed_at"] or "")
+    # a badly named «show» that is really a film (show map kind = movie, e.g. «6 the Conjuring», «S01E23»)
+    for name, m in show_map.items():
+        if m.get("kind") == "movie" and m.get("imdb") and m.get("status") in LINKED_STATUSES:
+            ats = [h["viewed_at"] for h in hist if (h["grandparent_title"] or h["title"]) == name and h["viewed_at"]]
+            at = min(ats) if ats else m.get("watched_at")
+            if at:
+                watched_movies[m["imdb"]] = min(watched_movies.get(m["imdb"], at), at)
     for i, (imdb_id, at) in enumerate(sorted(watched_movies.items()), 1):
         with conn:
             tid = ensure_movie(conn, imdb_id, "plex_watched")

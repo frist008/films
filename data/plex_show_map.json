@@ -2,38 +2,14 @@
  "2": {
   "query": "2",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "only results with unrelated names",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 2691,
-    "title": "Два с половиной человека",
-    "original_title": "Two and a Half Men",
-    "year": 2003
-   },
-   {
-    "tmdb_id": 39340,
-    "title": "Две девицы на мели",
-    "original_title": "2 Broke Girls",
-    "year": 2011
-   },
-   {
-    "tmdb_id": 57706,
-    "title": "Ранма ½",
-    "original_title": "らんま1/2",
-    "year": 1989
-   },
-   {
-    "tmdb_id": 259140,
-    "title": "Ranma1/2",
-    "original_title": "らんま1/2",
-    "year": 2024
-   }
-  ]
+  "status": "manual",
+  "reason": "«2 _6…_10» (library «Щит», 2024-06-22…07-27) continue «Agent.Carter.S02E01…E05» watched 2024-05-04…06-09 in the same library, file dates 2024-01-12/13 right after S02E04/E05; Agent Carter S2 has 10 episodes. «2 1», «2 2» (library «Миротворец 2») fall under the same Plex name but are another folder — asked separately (data/cache/survey_queue/downloads_ambiguous_left.json); they do not change S2 = 10/10",
+  "tmdb_tv": 61550,
+  "title": "Агент Картер",
+  "original_title": "Marvel's Agent Carter",
+  "first_year": 2015,
+  "candidates": [],
+  "season": 2
  },
  "2 3": {
   "query": "2 3",
@@ -110,96 +86,53 @@
  "3": {
   "query": "3",
   "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 68467,
-  "title": "3%",
-  "original_title": "3%",
-  "first_year": 2016,
-  "candidates": []
+  "status": "manual",
+  "reason": "NOT «3%» (Brazilian series, the old TMDB match): «3 1…3» (2024-08-03…10, library «Миротворец 2») sit between «2 4 3» and «4 10» (= Higurashi Gou) — which Higurashi part is asked (downloads_ambiguous_left.json)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "pending_owner": true
  },
  "4": {
   "query": "4",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "only results with unrelated names",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 56295,
-    "title": "Halo 4: Идущий к рассвету",
-    "original_title": "Halo 4: Forward Unto Dawn",
-    "year": 2012
-   },
-   {
-    "tmdb_id": 61389,
-    "title": "Рыцари Зодиака OVA-4",
-    "original_title": "聖闘士星矢 THE LOST CANVAS 冥王神話",
-    "year": 2009
-   },
-   {
-    "tmdb_id": 71641,
-    "title": "4 квартала",
-    "original_title": "4 Blocks",
-    "year": 2017
-   },
-   {
-    "tmdb_id": 2901,
-    "title": "Фантастическая Четвёрка",
-    "original_title": "Fantastic Four",
-    "year": 1994
-   }
-  ]
+  "status": "manual",
+  "reason": "«4 10…24» (library «Миротворец 2», 2024-08-17…10-12, ~24 min apart) end at 24 = Higurashi Gou (24 eps); «5 1» follows «4 24» 24 minutes later; the folder came with the Higurashi 2006 files (same file date 2023-01-08), Gou E01 was watched 2024-06-08",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": [],
+  "season": 1
  },
  "5": {
   "query": "5",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "only results with unrelated names",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 32798,
-    "title": "Полиция Гавайев",
-    "original_title": "Hawaii Five-0",
-    "year": 2010
-   },
-   {
-    "tmdb_id": 3137,
-    "title": "Вавилон 5",
-    "original_title": "Babylon 5",
-    "year": 1994
-   },
-   {
-    "tmdb_id": 90811,
-    "title": "Авеню 5",
-    "original_title": "Avenue 5",
-    "year": 2020
-   },
-   {
-    "tmdb_id": 2303,
-    "title": "Отдел 5-O",
-    "original_title": "Hawaii Five-O",
-    "year": 1969
-   }
-  ]
+  "status": "manual",
+  "reason": "«5 1…15» (2024-10-12…2025-01-18) right after «4 24» = Higurashi Sotsu, exactly 15 episodes (TMDB 100988 S2)",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": [],
+  "season": 2
  },
  "6 the Conjuring": {
   "query": "6 the Conjuring",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "no TMDB results for any title",
+  "status": "manual",
+  "reason": "a film, not a series: «6 the Conjuring 2» (2023-12-02 22:07 UTC) in the Conjuring marathon (Аннабель 11-25, Заклятие 11-26) = The Conjuring 2 (2016); the real watch date for R87 (watched has only our 2026-10-23 mark)",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": []
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 259693,
+  "imdb": "tt3065204",
+  "watched_at": "2023-12-02 22:07:19"
  },
  "Agatha All Along": {
   "query": "Agatha All Along",
@@ -372,38 +305,14 @@
  "CoD": {
   "query": "CoD",
   "year_hint": null,
-  "status": "ambiguous",
-  "reason": "low score",
+  "status": "manual",
+  "reason": "not a film or series: «CoD 1» (2023-09-06, Personal Media agent, no TMDB work) — Call of Duty footage; the owner names such game clips «CoD N» in his own video-editing material (local folder, not published)",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 131649,
-    "title": "Cod: The Fish That Changed The World",
-    "original_title": "Cod: The Fish That Changed The World",
-    "year": 2018
-   },
-   {
-    "tmdb_id": 96316,
-    "title": "Девушка на час",
-    "original_title": "彼女、お借りします",
-    "year": 2020
-   },
-   {
-    "tmdb_id": 2660,
-    "title": "Команда нашего двора",
-    "original_title": "Codename: Kids Next Door",
-    "year": 2002
-   },
-   {
-    "tmdb_id": 4605,
-    "title": "Всё тип-топ, или Жизнь Зака и Коди",
-    "original_title": "The Suite Life of Zack & Cody",
-    "year": 2005
-   }
-  ]
+  "candidates": [],
+  "not_film": true
  },
  "Code Geass": {
   "query": "Code Geass",
@@ -430,26 +339,14 @@
  "Creature Commandos": {
   "query": "Creature Commandos",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-05-30",
+  "status": "manual",
+  "reason": "files «Creature.Commandos.S01E01…E07» watched 2026-05-30 in library «Миротворец 2» (DC); S1 of the 2024 DC series has exactly 7 episodes; the 2014 namesake is a 3-episode fan project",
   "tmdb_tv": 219543,
   "title": "Монстры-коммандос",
   "original_title": "Creature Commandos",
   "first_year": 2024,
-  "candidates": [
-   {
-    "tmdb_id": 219543,
-    "title": "Монстры-коммандос",
-    "original_title": "Creature Commandos",
-    "year": 2024
-   },
-   {
-    "tmdb_id": 281000,
-    "title": "The Creature Commandos",
-    "original_title": "The Creature Commandos",
-    "year": 2014
-   }
-  ]
+  "candidates": [],
+  "season": 1
  },
  "Daredevil": {
   "query": "Daredevil",
@@ -487,38 +384,14 @@
  "Death Note": {
   "query": "Death Note",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "status": "manual",
+  "reason": "every history row carries the episode ids of the 2006 anime (imdb tt0885243… / tvdb 311257…, 37 episodes); the 2026-10-23 11:45:55 UTC rows are our own mark of the owner's words «видел всё» (PLAN-done 2026-10-23), plex.tv also has real views of E3, E5, E7, E18 in 2024",
   "tmdb_tv": 13916,
   "title": "Тетрадь смерти",
   "original_title": "DEATH NOTE",
   "first_year": 2006,
-  "candidates": [
-   {
-    "tmdb_id": 13916,
-    "title": "Тетрадь смерти",
-    "original_title": "DEATH NOTE",
-    "year": 2006
-   },
-   {
-    "tmdb_id": 63648,
-    "title": "Тетрадь смерти",
-    "original_title": "デスノート",
-    "year": 2015
-   },
-   {
-    "tmdb_id": 78004,
-    "title": "Тетрадь смерти: Новое поколение",
-    "original_title": "デスノート NEW GENERATION",
-    "year": 2016
-   },
-   {
-    "tmdb_id": 328197,
-    "title": "DEATH NOTE - IL LIBRICYNO DEL MUORI",
-    "original_title": "DEATH NOTE - IL LIBRICYNO DEL MUORI",
-    "year": 2017
-   }
-  ]
+  "candidates": [],
+  "season": 1
  },
  "Fairy Tail": {
   "query": "Fairy Tail",
@@ -556,60 +429,38 @@
  "Halo Season 01": {
   "query": "Halo",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2025-07-26",
+  "status": "manual",
+  "reason": "«Halo. Season 01. Episode 01…09. By Wild_Cat» watched 2025-07…10, then «Halo.2024.S02E01…» the same day as E09; Halo (2022) S1 has exactly 9 episodes",
   "tmdb_tv": 52814,
   "title": "Halo",
   "original_title": "Halo",
   "first_year": 2022,
-  "candidates": [
-   {
-    "tmdb_id": 52814,
-    "title": "Halo",
-    "original_title": "Halo",
-    "year": 2022
-   },
-   {
-    "tmdb_id": 238312,
-    "title": "Haló",
-    "original_title": "Haló",
-    "year": 2012
-   },
-   {
-    "tmdb_id": 77184,
-    "title": "Halo: Падение Предела",
-    "original_title": "Halo: The Fall of Reach",
-    "year": 2015
-   },
-   {
-    "tmdb_id": 60879,
-    "title": "Легенды Halo",
-    "original_title": "Halo Legends",
-    "year": 2010
-   }
-  ]
+  "candidates": [],
+  "season": 1
  },
  "Higurashi no Naku Koro ni": {
   "query": "Higurashi no Naku Koro ni",
   "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 75475,
-  "title": "ひぐらしのなく頃に",
-  "original_title": "ひぐらしのなく頃に",
-  "first_year": 2016,
-  "candidates": []
+  "status": "manual",
+  "reason": "was wrongly matched to the 2016 live action (75475): the only file is «[AniFilm] Higurashi no Naku Koro ni (2020) - 01» = Gou E01",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": [],
+  "season": 1
  },
  "Higurashi no Naku Koro ni [": {
   "query": "Higurashi no Naku Koro ni [",
   "year_hint": null,
-  "status": "matched",
-  "reason": "clear",
-  "tmdb_tv": 75475,
-  "title": "ひぐらしのなく頃に",
+  "status": "manual",
+  "reason": "was wrongly matched to the 2016 live action (75475, 6 eps): «[KORSARS]_Higurashi…[S01E01…E09]_[StudioBand]» (anime dub group) include E7–E9 → the 2006 anime S1 (26 eps)",
+  "tmdb_tv": 25760,
+  "title": "Когда плачут цикады",
   "original_title": "ひぐらしのなく頃に",
-  "first_year": 2016,
-  "candidates": []
+  "first_year": 2006,
+  "candidates": [],
+  "season": 1
  },
  "Houkago no Breath": {
   "query": "Houkago no Breath",
@@ -691,38 +542,14 @@
  "Invincible": {
   "query": "Invincible",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-09-19",
+  "status": "manual",
+  "reason": "«Invincible 1» watched 2026-09-19 in library «БезСани» (E:/Films/Without Sasha 2/Invincible (2021) [tmdbid-95557], which still holds S01E05–08 and S02); S1E2–4 were then watched in Jellyfin 2026-10-19 → this is S01E01",
   "tmdb_tv": 95557,
   "title": "НЕПОБЕДИМЫЙ",
   "original_title": "INVINCIBLE",
   "first_year": 2021,
-  "candidates": [
-   {
-    "tmdb_id": 95557,
-    "title": "НЕПОБЕДИМЫЙ",
-    "original_title": "INVINCIBLE",
-    "year": 2021
-   },
-   {
-    "tmdb_id": 24989,
-    "title": "Invincible",
-    "original_title": "Invincible",
-    "year": 2008
-   },
-   {
-    "tmdb_id": 238975,
-    "title": "The Invincible",
-    "original_title": "十方武圣",
-    "year": 2023
-   },
-   {
-    "tmdb_id": 244316,
-    "title": "The Invincible",
-    "original_title": "มือปราบมหาอุตม์",
-    "year": 2024
-   }
-  ]
+  "candidates": [],
+  "season": 1
  },
  "Iron Fist": {
   "query": "Iron Fist",
@@ -1104,38 +931,13 @@
  "One Piece": {
   "query": "One Piece",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2021-12-19",
+  "status": "manual",
+  "reason": "history = «One_Piece_[575]…[692]_[Animedia/Nazel]» = the anime with absolute numbering (season by history_season); the Netflix live-action files under the same Plex show name are linked by data/disk_map.json (111110 S1)",
   "tmdb_tv": 37854,
   "title": "Ван-Пис",
   "original_title": "ワンピース",
   "first_year": 1999,
-  "candidates": [
-   {
-    "tmdb_id": 37854,
-    "title": "Ван-Пис",
-    "original_title": "ワンピース",
-    "year": 1999
-   },
-   {
-    "tmdb_id": 111110,
-    "title": "ONE PIECE. БОЛЬШОЙ КУШ",
-    "original_title": "ONE PIECE",
-    "year": 2023
-   },
-   {
-    "tmdb_id": 241709,
-    "title": "Ван-Пис: Ремейк",
-    "original_title": "THE ONE PIECE",
-    "year": null
-   },
-   {
-    "tmdb_id": 318421,
-    "title": "ONE PIECE: Into the Grand Line: Official Podcast",
-    "original_title": "ONE PIECE: Into the Grand Line: Official Podcast",
-    "year": 2026
-   }
-  ]
+  "candidates": []
  },
  "One Piece S01 2160p": {
   "query": "One Piece",
@@ -1185,104 +987,38 @@
  "Oshi no Ko": {
   "query": "Oshi no Ko",
   "year_hint": null,
-  "status": "ambiguous",
-  "reason": "close runner-up",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 203737,
-    "title": "Звёздное дитя",
-    "original_title": "【推しの子】",
-    "year": 2023
-   },
-   {
-    "tmdb_id": 244377,
-    "title": "【推しの子】",
-    "original_title": "【推しの子】",
-    "year": 2024
-   },
-   {
-    "tmdb_id": 240270,
-    "title": "推しを召し上がれ～広報ガールのまろやかな日々～",
-    "original_title": "推しを召し上がれ～広報ガールのまろやかな日々～",
-    "year": 2024
-   }
-  ]
+  "status": "manual",
+  "reason": "Plex show name of «[Tsundere-Raws] Oshi no Ko - 01…11» = the anime (ep 01 = 82 min, files 2023-06…07)",
+  "tmdb_tv": 203737,
+  "title": "Звёздное дитя",
+  "original_title": "【推しの子】",
+  "first_year": 2023,
+  "candidates": [],
+  "season": 1
  },
  "OverLord": {
   "query": "OverLord",
   "year_hint": null,
-  "status": "ambiguous",
-  "reason": "close runner-up",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 64196,
-    "title": "Повелитель",
-    "original_title": "オーバーロード",
-    "year": 2015
-   },
-   {
-    "tmdb_id": 111993,
-    "title": "Властелин Цзю Лю",
-    "original_title": "九流霸主",
-    "year": 2020
-   },
-   {
-    "tmdb_id": 221383,
-    "title": "Overlord: Blood Genealogy",
-    "original_title": "Overlord: Blood Genealogy",
-    "year": 2018
-   },
-   {
-    "tmdb_id": 328234,
-    "title": "Overlord: Play Play Pleiades",
-    "original_title": "Overlord: Play Play Pleiades",
-    "year": 2015
-   }
-  ]
- },
- "Overlord": {
-  "query": "Overlord",
-  "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "status": "manual",
+  "reason": "Plex show name of «OverLord.03…13.HDTV.1080.Dub» (E:/Overlord) = anime S1, see «Overlord»",
   "tmdb_tv": 64196,
   "title": "Повелитель",
   "original_title": "オーバーロード",
   "first_year": 2015,
-  "candidates": [
-   {
-    "tmdb_id": 64196,
-    "title": "Повелитель",
-    "original_title": "オーバーロード",
-    "year": 2015
-   },
-   {
-    "tmdb_id": 111993,
-    "title": "Властелин Цзю Лю",
-    "original_title": "九流霸主",
-    "year": 2020
-   },
-   {
-    "tmdb_id": 221383,
-    "title": "Overlord: Blood Genealogy",
-    "original_title": "Overlord: Blood Genealogy",
-    "year": 2018
-   },
-   {
-    "tmdb_id": 328234,
-    "title": "Overlord: Play Play Pleiades",
-    "original_title": "Overlord: Play Play Pleiades",
-    "year": 2015
-   }
-  ]
+  "candidates": [],
+  "season": 1
+ },
+ "Overlord": {
+  "query": "Overlord",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "folder E:/Overlord = «OverLord.03…13.HDTV.1080.Dub» = anime S1 (file title tag «Повелитель - Глава третья. Битва за деревню Карне»); the single 2021-10-07 view called «Overlord» is the 2018 war film (imdb tt4530422), a movie row",
+  "tmdb_tv": 64196,
+  "title": "Повелитель",
+  "original_title": "オーバーロード",
+  "first_year": 2015,
+  "candidates": [],
+  "season": 1
  },
  "Pacific Rim The Black": {
   "query": "Pacific Rim The Black",
@@ -1729,13 +1465,17 @@
  "S01E23": {
   "query": "S01E23",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "no TMDB results for any title",
+  "status": "manual",
+  "reason": "a short film, not an episode: watched 2024-03-30 19 min after AoS S01E22 (S1 has 22 eps), library «Щит», file dated 2023-12-02 like the Marvel One-Shots (Thor's Hammer, Consultant, Item 47, All Hail the King watched 2023-12-03); the only One-Shot of that set not in history is «Agent Carter» (2013, 15 min), watched just before the Agent Carter series",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": []
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 211387,
+  "imdb": "tt3067038",
+  "watched_at": "2024-03-30 14:02:30"
  },
  "S02E01.Shadows.1080p.Encoder-Ygrek00": {
   "query": "S02E01.Shadows",
@@ -2050,38 +1790,14 @@
  "Spider-Man": {
   "query": "Spider-Man",
   "year_hint": null,
-  "status": "ambiguous",
-  "reason": "close runner-up",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 888,
-    "title": "Человек-паук",
-    "original_title": "Spider-Man",
-    "year": 1994
-   },
-   {
-    "tmdb_id": 1482,
-    "title": "Настоящий Человек-паук",
-    "original_title": "Spider-Man",
-    "year": 1967
-   },
-   {
-    "tmdb_id": 3973,
-    "title": "Человек-паук",
-    "original_title": "Spider-Man",
-    "year": 1981
-   },
-   {
-    "tmdb_id": 1664,
-    "title": "Человек-паук",
-    "original_title": "Spider-Man: The New Animated Series",
-    "year": 2003
-   }
-  ]
+  "status": "manual",
+  "reason": "folder E:/Spider-Man: history «Spider-Man 1…4» (2025-12-31…2026-01-04) + files 5…10 (27–30 min, file dates 2025-02…03) already linked to 138503 S1 by data/disk_map.json; 10 episodes = S1; the 1994 series has 21-min episodes",
+  "tmdb_tv": 138503,
+  "title": "Ваш дружелюбный сосед Человек-Паук",
+  "original_title": "Your Friendly Neighborhood Spider-Man",
+  "first_year": 2025,
+  "candidates": [],
+  "season": 1
  },
  "Stas & DIma": {
   "query": "Stas & DIma",
@@ -2185,32 +1901,14 @@
  "The Lord of the Rings": {
   "query": "The Lord of the Rings",
   "year_hint": null,
-  "status": "ambiguous",
-  "reason": "low score",
-  "tmdb_tv": null,
-  "title": null,
-  "original_title": null,
-  "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 84773,
-    "title": "Властелин колец: Кольца Власти",
-    "original_title": "The Lord of the Rings: The Rings of Power",
-    "year": 2022
-   },
-   {
-    "tmdb_id": 123034,
-    "title": "Хранители",
-    "original_title": "Хранители",
-    "year": 1991
-   },
-   {
-    "tmdb_id": 250033,
-    "title": "Icons Unearthed: Lord of The Rings",
-    "original_title": "Icons Unearthed: Lord of The Rings",
-    "year": 2024
-   }
-  ]
+  "status": "manual",
+  "reason": "«The.Lord.of.the.Rings 8» marked watched 2026-05-10 02:03, 35 min after «…Rings.of.Power.S02E08» was played; a second copy (library «Без Кости Без Сани», file dated 2024-10-17 = S2E8 release) → S2E8",
+  "tmdb_tv": 84773,
+  "title": "Властелин колец: Кольца Власти",
+  "original_title": "The Lord of the Rings: The Rings of Power",
+  "first_year": 2022,
+  "candidates": [],
+  "season": 2
  },
  "The Lord of the Rings The Rings of Power": {
   "query": "The Lord of the Rings The Rings of Power",
@@ -2237,38 +1935,14 @@
  "The Witcher": {
   "query": "The Witcher",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "status": "manual",
+  "reason": "folder E:/The Witcher holds «The.Witcher.S02E01.a.Grain.of.Truth … S02E08.Family» NF 2160p — the episode titles of The Witcher (2019) season 2",
   "tmdb_tv": 71912,
   "title": "Ведьмак",
   "original_title": "The Witcher",
   "first_year": 2019,
-  "candidates": [
-   {
-    "tmdb_id": 71912,
-    "title": "Ведьмак",
-    "original_title": "The Witcher",
-    "year": 2019
-   },
-   {
-    "tmdb_id": 17625,
-    "title": "Ведьмак",
-    "original_title": "Wiedźmin",
-    "year": 2002
-   },
-   {
-    "tmdb_id": 106541,
-    "title": "Ведьмак: происхождение",
-    "original_title": "The Witcher: Blood Origin",
-    "year": 2022
-   },
-   {
-    "tmdb_id": 108987,
-    "title": "Ведьмак. Как создавались эпизоды",
-    "original_title": "The Witcher: A Look Inside the Episodes",
-    "year": 2020
-   }
-  ]
+  "candidates": [],
+  "season": 2
  },
  "The Witcher Blood Origin": {
   "query": "The Witcher Blood Origin",
@@ -2329,85 +2003,38 @@
  "What If": {
   "query": "What If",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2024-06-22",
+  "status": "manual",
+  "reason": "«What If 8», «What If 9» (2024-06-22, library «Сериалы») finish «Что если...? 1…7» (2024-02…05, file dated 2023-12-26 = during S2's daily release); S1 was watched in 2021 («What if 1 Капитан Картер…» … «9 Наблюдатель…»)",
   "tmdb_tv": 91363,
   "title": "Что, Если...?",
   "original_title": "What If...?",
   "first_year": 2021,
-  "candidates": [
-   {
-    "tmdb_id": 91363,
-    "title": "Что, Если...?",
-    "original_title": "What If...?",
-    "year": 2021
-   },
-   {
-    "tmdb_id": 81940,
-    "title": "Что/если",
-    "original_title": "WHAT / IF",
-    "year": 2019
-   },
-   {
-    "tmdb_id": 50116,
-    "title": "Wat als?",
-    "original_title": "Wat als?",
-    "year": 2011
-   },
-   {
-    "tmdb_id": 286433,
-    "title": "三命",
-    "original_title": "三命",
-    "year": 2025
-   }
-  ]
+  "candidates": [],
+  "season": 2
  },
  "World of Warcraft": {
   "query": "World of Warcraft",
   "year_hint": null,
-  "status": "ambiguous",
-  "reason": "low score",
+  "status": "manual",
+  "reason": "not a film or series: World of Warcraft game video (library «ДляРамала ДляСани», marked 2025-12-27); the same library/family has «Wow Midnight 1» and the WoW Midnight cinematics («Анимированный синематик World of Warcraft Midnight» 1…6, 2026-04-09)",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": [
-   {
-    "tmdb_id": 322066,
-    "title": "Легенда о Шаохао",
-    "original_title": "The Burdens of Shaohao",
-    "year": 2013
-   },
-   {
-    "tmdb_id": 322070,
-    "title": "Владыки Войны",
-    "original_title": "Lords of War",
-    "year": 2014
-   },
-   {
-    "tmdb_id": 322716,
-    "title": "Dragonflight Legacies: Animated Shorts",
-    "original_title": "Dragonflight Legacies: Animated Shorts",
-    "year": 2022
-   },
-   {
-    "tmdb_id": 322468,
-    "title": "Лики Войны: Короткометражные Ролики",
-    "original_title": "Warbringers: Animated Shorts",
-    "year": 2018
-   }
-  ]
+  "candidates": [],
+  "not_film": true
  },
  "Wow Midnight": {
   "query": "Wow Midnight",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "no TMDB results for any title",
+  "status": "manual",
+  "reason": "not a film or series: «Wow Midnight 1» (2026-01-31) = a World of Warcraft: Midnight video (cinematics of the expansion were watched as YouTube files in 2026-03/04)",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": []
+  "candidates": [],
+  "not_film": true
  },
  "X-Men 97": {
   "query": "X-Men 97",
@@ -2457,32 +2084,14 @@
  "[Tsundere-Raws] Oshi no Ko [ 2160p ]": {
   "query": "Oshi no Ko",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "status": "manual",
+  "reason": "folder of «[Tsundere-Raws] Oshi no Ko - 01…11 [WEB-DL 2160p]»: episode 01 runs 82 min (the anime's feature-length opener), files dated 2023-06…07 — the anime, not the 2024 live action (8 episodes, Nov 2024)",
   "tmdb_tv": 203737,
   "title": "Звёздное дитя",
   "original_title": "【推しの子】",
   "first_year": 2023,
-  "candidates": [
-   {
-    "tmdb_id": 203737,
-    "title": "Звёздное дитя",
-    "original_title": "【推しの子】",
-    "year": 2023
-   },
-   {
-    "tmdb_id": 244377,
-    "title": "【推しの子】",
-    "original_title": "【推しの子】",
-    "year": 2024
-   },
-   {
-    "tmdb_id": 240270,
-    "title": "推しを召し上がれ～広報ガールのまろやかな日々～",
-    "original_title": "推しを召し上がれ～広報ガールのまろやかな日々～",
-    "year": 2024
-   }
-  ]
+  "candidates": [],
+  "season": 1
  },
  "[VLDeshka] Tomb Raider - The Legend of Lara Croft [ 1080p]": {
   "query": "Tomb Raider - The Legend of Lara Croft",
@@ -2575,32 +2184,14 @@
  "Миротворец": {
   "query": "Миротворец",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2023-03-19",
+  "status": "manual",
+  "reason": "«Миротворец 1…8» watched 2023-03…2024-07; S2 premiered 2025-08 → season 1 (8 episodes)",
   "tmdb_tv": 110492,
   "title": "Миротворец",
   "original_title": "Peacemaker",
   "first_year": 2022,
-  "candidates": [
-   {
-    "tmdb_id": 110492,
-    "title": "Миротворец",
-    "original_title": "Peacemaker",
-    "year": 2022
-   },
-   {
-    "tmdb_id": 108886,
-    "title": "Миротворец",
-    "original_title": "Rauhantekijä",
-    "year": 2020
-   },
-   {
-    "tmdb_id": 21788,
-    "title": "Железный миротворец",
-    "original_title": "PEACE MAKER鐵",
-    "year": 2003
-   }
-  ]
+  "candidates": [],
+  "season": 1
  },
  "Покемон Эволюция": {
   "query": "Покемон Эволюция",
@@ -2741,38 +2332,14 @@
  "Что если ?": {
   "query": "Что если ?",
   "year_hint": null,
-  "status": "auto_popular",
-  "reason": "most-voted exact name premiered before first watch 2024-02-10",
+  "status": "manual",
+  "reason": "«Что если...? 1…7» watched 2024-02-10…05-25, file dated 2023-12-26 (S2 was released daily 22–30.12.2023), continued by «What If 8, 9»; S1 had been watched in 2021 with its Russian episode titles",
   "tmdb_tv": 91363,
   "title": "Что, Если...?",
   "original_title": "What If...?",
   "first_year": 2021,
-  "candidates": [
-   {
-    "tmdb_id": 91363,
-    "title": "Что, Если...?",
-    "original_title": "What If...?",
-    "year": 2021
-   },
-   {
-    "tmdb_id": 81940,
-    "title": "Что/если",
-    "original_title": "WHAT / IF",
-    "year": 2019
-   },
-   {
-    "tmdb_id": 235614,
-    "title": "Что, если",
-    "original_title": "生活在别处的我",
-    "year": 2024
-   },
-   {
-    "tmdb_id": 114198,
-    "title": "Что, если чрезвычайно развитая ролевая игра с полным погружением вызывает большее привыкание, чем реальность",
-    "original_title": "究極進化したフルダイブRPGが現実よりもクソゲーだったら",
-    "year": 2021
-   }
-  ]
+  "candidates": [],
+  "season": 2
  },
  "Шерлок": {
   "query": "Шерлок",
