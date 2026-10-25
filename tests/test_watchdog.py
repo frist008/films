@@ -35,5 +35,22 @@ class NoMovementTest(unittest.TestCase):
         self.assertEqual(watchdog.no_movement_min(log, at("23:11:00")), 11)
 
 
+class FinishedTest(unittest.TestCase):
+    def test_new_run_after_old_marker(self):
+        # agent_rutracker.log, 2026-10-26: the old run's marker, then the new run's PROGRESS — the new run is not done
+        log = ["2026-10-24 22:00:00 PROGRESS 100% — done", "AGENT_RUTRACKER_OK",
+               "2026-10-26 00:45:06 PROGRESS 0% ETA ? — rutracker: ждёт запуска"]
+        self.assertFalse(watchdog.finished(log, "agent_rutracker"))
+
+    def test_marker_after_progress(self):
+        log = ["2026-10-26 03:00:00 PROGRESS 100% — rutracker 4224/4224", "2026-10-26 03:00:00 AGENT_RUTRACKER_OK"]
+        self.assertTrue(watchdog.finished(log, "agent_rutracker"))
+
+    def test_marker_then_heartbeat_note(self):
+        # agent_update_full.log, 23:55: marker in the middle of the STOPPED line, nothing after it but a non-PROGRESS note
+        log = ["2026-10-25 23:54:11 PROGRESS 94% — sheet", "23:55:35 STOPPED by main AGENT_UPDATE_FULL_OK", "note"]
+        self.assertTrue(watchdog.finished(log, "agent_update_full"))
+
+
 if __name__ == "__main__":
     unittest.main()

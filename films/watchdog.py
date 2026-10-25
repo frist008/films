@@ -54,11 +54,7 @@ def report() -> str:
         if age > 12 * 60:
             continue
         text = f.read_text(encoding="utf-8", errors="replace").splitlines()
-        own = "AGENT_" + f.stem.removeprefix("agent_").upper() + "_OK"   # only its own marker, not another agent's quoted
-        last = next((l.strip() for l in reversed(text) if l.strip()), "")
-        # done: its own marker, or a marker closing its last line (sub-logs write the parent's), or a final «finished …»
-        if (any(own in l for l in text[-5:]) or re.search(r"AGENT_\w+_OK\W*$", last)
-                or re.match(r"\S+( \S+)? finished\b", last)):
+        if finished(text, f.stem):
             if age < 60:
                 lines.append(f"  агент {f.stem}: закончил ({age:.0f} мин назад)")
             continue
@@ -74,6 +70,22 @@ def report() -> str:
 
 AGENT_STALL_MIN = 20   # agents write PROGRESS at least every 10 minutes
 NO_MOVE_MIN = 10       # owner, 2026-10-25: «Пиши сразу, 10 минут и 0 % движения — это уже плохо»
+
+
+def finished(lines: list[str], stem: str) -> bool:
+    """Done: its own marker, or a marker closing its last line (sub-logs write the parent's), or a final «finished …».
+    A marker counts only if no PROGRESS line follows it: a log reused by a new run (agent_rutracker.log, 2026-10-26) keeps
+    the old run's marker a few lines up, and the new run was shown as «закончил»."""
+    own = "AGENT_" + stem.removeprefix("agent_").upper() + "_OK"   # only its own marker, not another agent's quoted
+    last = next((l.strip() for l in reversed(lines) if l.strip()), "")
+    if re.search(r"AGENT_\w+_OK\W*$", last) or re.match(r"\S+( \S+)? finished\b", last):
+        return True
+    for l in reversed(lines[-5:]):
+        if own in l:
+            return True
+        if "PROGRESS" in l:
+            return False
+    return False
 
 
 def no_movement_min(lines: list[str], now: float | None = None) -> int | None:
