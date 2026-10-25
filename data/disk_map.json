@@ -104,6 +104,26 @@
    "match": "^One_Piece_\\[750\\]_.*1\\.mkv$",
    "why": "104 min, RU subs: Celestial Dragon ship to Mary Geoise, Olga escaped, «Чистое Золото» — One Piece: Heart of Gold (TV special 2016, TMDB 433157) (R89, 2026-10-24)",
    "tmdb_movie": 433157
+  },
+  {
+   "path": "E:\\Majutsu no Index\\Magical Index 2008 1080\bonus",
+   "tmdb_tv": 30980,
+   "season": 1,
+   "why": "creditless OP1/OP2/ED1/ED2 of «Некий магический индекс» S1 (2008) — owner 2026-10-25: «надо узнать их», not left unrecognized"
+  },
+  {
+   "path": "E:\\Приказ свыше",
+   "match": "OVA",
+   "tmdb_tv": 65439,
+   "season": 0,
+   "why": "«Big Order» OVA = TMDB «Приказ, изменивший мир» season 0 (специальный выпуск)"
+  },
+  {
+   "path": "E:\\One-piece",
+   "match": "One_Piece_\\[750\\]",
+   "tmdb_tv": 37854,
+   "season": 18,
+   "why": "One Piece episode 750 (absolute) = TMDB season 18 (749–803)"
   }
  ]
 }
