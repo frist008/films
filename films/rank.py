@@ -465,7 +465,8 @@ def compute(conn) -> list[dict]:
     rel_by_title: dict[int, list[dict]] = {}
     for r in conn.execute(
             """SELECT rt.title_id, r.* FROM release_titles rt JOIN releases r ON r.id = rt.release_id
-               WHERE NOT EXISTS (SELECT 1 FROM excluded_releases e      -- DV5-only, 3D, TS/TC/CAM, КПК: kept, never shown
+               WHERE coalesce(rt.how, '') NOT LIKE 'wrong_link%'                -- a link found wrong: kept, never used
+                 AND NOT EXISTS (SELECT 1 FROM excluded_releases e      -- DV5-only, 3D, TS/TC/CAM, КПК: kept, never shown
                                  WHERE e.source = r.source AND e.source_id = r.source_id
                                    AND e.reason NOT LIKE 'lifted:%')"""):
         rel_by_title.setdefault(r["title_id"], []).append(dict(r))

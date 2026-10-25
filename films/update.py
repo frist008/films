@@ -123,7 +123,8 @@ def snapshot(conn) -> dict:
     # best voice / HDR / 4K / disc over ALL releases (the «Лучшее» row puts voice first, so it may not be the 4K one)
     for tid, voice, hdr, dvs, res, src in conn.execute(
             """SELECT rt.title_id, r.best_voice, r.hdr, r.dv_static_md, r.resolution, r.source_type
-               FROM release_titles rt JOIN releases r ON r.id = rt.release_id"""):
+               FROM release_titles rt JOIN releases r ON r.id = rt.release_id
+               WHERE coalesce(rt.how, '') NOT LIKE 'wrong_link%'"""):
         s = titles.get(tid)
         if s is None:
             continue

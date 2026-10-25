@@ -33,7 +33,8 @@ def first_seen(conn) -> dict[int, str]:
     """title_id → date (YYYY-MM-DD) of its first rutor release."""
     return {tid: d[:10] for tid, d in conn.execute(
         """SELECT rt.title_id, min(r.added_at) FROM release_titles rt JOIN releases r ON r.id = rt.release_id
-           WHERE r.source = 'rutor' AND r.added_at IS NOT NULL GROUP BY rt.title_id""")}
+           WHERE r.source = 'rutor' AND r.added_at IS NOT NULL AND coalesce(rt.how, '') NOT LIKE 'wrong_link%'
+           GROUP BY rt.title_id""")}
 
 
 def is_new(fs: dict[int, str], tid: int) -> bool:

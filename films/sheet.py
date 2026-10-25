@@ -528,7 +528,8 @@ def _not_found_rows(conn) -> list[list]:
         fr = {x["key"]: x for x in tomllib.load(f)["franchise"]}
     with_rel = set()
     for imdb, simdb, tmdb, stmdb in conn.execute(
-            "SELECT t.imdb_id, t.series_imdb_id, t.tmdb_id, t.series_tmdb_id FROM titles t WHERE t.id IN (SELECT title_id FROM release_titles)"):
+            "SELECT t.imdb_id, t.series_imdb_id, t.tmdb_id, t.series_tmdb_id FROM titles t WHERE t.id IN (SELECT title_id FROM release_titles "
+            "WHERE coalesce(how, '') NOT LIKE 'wrong_link%')"):
         with_rel |= {x for x in (imdb, simdb, f"tmdb:{tmdb}" if tmdb else None, f"tmdb:{stmdb}" if stmdb else None) if x}
     seen = set()
     for imdb, simdb, tmdb, stmdb in conn.execute(
