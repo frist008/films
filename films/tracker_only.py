@@ -15,6 +15,11 @@ year_from unless «encountered» (R162: the torrent is in qBittorrent) or of an 
 all years, decision 2026-10-23). Several releases of one work share the row (same Russian / original name; films year
 ±1; seasons by series_key 'tracker:<name>').
 
+Out of scope (close_out_of_scope, every match run after create): the open issues of releases the base does not collect
+at all — anime outside the owner's anime franchises, before year_from and not encountered, excluded releases, film packs
+before year_from of no franchise — are closed with the rule as the note (candidates 'out_of_scope' / 'resolved_note');
+match.match_releases no longer re-matches them, reopen_in_scope gives one a new open issue when the rule stops holding.
+
 In rank / sheet they are ordinary titles: no rating → not hidden by the IMDb < 5 rule; the voice filter, the year rule
 and «мультсериал» apply as to any title; the sheet leaves the missing columns blank and says «нет в TMDB/IMDb — данные
 только с трекера». Poster — films/posters.py (the page's own image when nothing else has one).
@@ -348,6 +353,131 @@ def create(conn, dry: bool = False, log=print) -> dict:
     return st
 
 
+# ------------------------------------------------------------------------------------------------ out of scope
+
+# eligible() reasons that mean «not collected at all» (rules of the base, not a matching failure)
+_SCOPE_RU = (
+    ("anime outside", "аниме вне аниме-франшиз владельца — по правилу не собирается (CLAUDE.md, решение 2026-10-23, R44)"),
+    ("before ", "вышло до {year} и не встречалось у владельца (нет в qBittorrent) — вне диапазона базы (CLAUDE.md, R162)"),
+    ("excluded kpk", "раздача исключена правилом: для КПК / телефона (опрос 2026-10-25)"),
+    ("excluded is_3d", "раздача исключена правилом: 3D (опрос 2026-10-25)"),
+    ("excluded cam", "раздача исключена правилом: звук или видео TS / TC / CAM (опрос 2026-10-25)"),
+    ("excluded dv5", "раздача только с Dolby Vision Profile 5 — не храним (CLAUDE.md, правило 2)"),
+    ("dv5_only", "раздача только с Dolby Vision Profile 5 — не храним (CLAUDE.md, правило 2)"),
+    ("pack before", "пачка фильмов до {year}, не встречалась у владельца и не из его франшиз — вне диапазона базы"),
+)
+
+
+def _pack_scope(conn, rel: dict, p: dict, year_from: int) -> str | None:
+    """A film pack (open 'collection_pack') entirely before year_from, not in qBittorrent and not of an owner's franchise
+    (its name is no franchise member's title) → 'pack before …'; None = keep it for the pack matcher."""
+    from .match import _pack_base_names, _years
+    y1, y2 = _years(p)
+    if not (y2 or y1) or (y2 or y1) >= year_from or encountered(conn, rel["id"], rel.get("btih")):
+        return None
+    names = {norm(t) for t in _pack_base_names(p)} - {""}
+    try:
+        members = {norm(t) for row in conn.execute("SELECT title, title_ru FROM franchise_members WHERE confidence != 'review'")
+                   for t in row if t}
+    except Exception:  # noqa: BLE001 — bare test DB
+        members = set()
+    return None if names & members else f"pack before {year_from}, not encountered, no franchise"
+
+
+def scope_reason(conn, rel: dict, p: dict, problem: str, frs: dict, year_from: int) -> str | None:
+    """Why a release with an open match issue is not collected at all (anime outside the owner's franchises, before
+    year_from and not encountered, an excluded release, a pre-year_from pack of no franchise) → the reason; None when
+    it is in scope (made a tracker-only title, or left for the pack matcher / the owner)."""
+    if problem == "collection_pack":
+        return _pack_scope(conn, rel, p, year_from)
+    ok, why, _ = eligible(conn, rel, p, problem, frs, year_from)
+    if ok or not any(why.startswith(k) for k, _ in _SCOPE_RU if not k.startswith("pack")):
+        return None
+    return why
+
+
+def scope_note(why: str, year_from: int) -> str:
+    for k, ru in _SCOPE_RU:
+        if why.startswith(k):
+            return ru.format(year=year_from)
+    return why
+
+
+def with_note(candidates: str | None, **extra) -> str:
+    """An issue's candidates JSON with the closing note added (a list is kept under 'candidates')."""
+    try:
+        c = json.loads(candidates) if candidates else None
+    except ValueError:
+        c = candidates
+    if not isinstance(c, dict):
+        c = {"candidates": c} if c is not None else {}
+    c.update(extra)
+    return json.dumps(c, ensure_ascii=False, default=str)
+
+
+def close_out_of_scope(conn, dry: bool = False, log=print) -> dict:
+    """Open match issues of releases the base does not collect are closed with the rule as the note (candidates
+    'out_of_scope', 'resolved_note'); match.match_releases skips such releases from then on, reopen_in_scope brings one
+    back when the rule changes (a new anime franchise of the owner, the torrent appears in qBittorrent). Nothing is
+    deleted."""
+    year_from = min(db.years())
+    frs = anime_franchises(conn)
+    st = {"closed": 0, "by_reason": {}}
+    for rel in pending(conn):
+        p = json.loads(rel["parsed"])
+        why = scope_reason(conn, rel, p, rel["problem"], frs, year_from)
+        if not why:
+            continue
+        key = why.split(",")[0]
+        st["by_reason"][key] = st["by_reason"].get(key, 0) + 1
+        st["closed"] += 1
+        if dry:
+            continue
+        with conn:
+            for iid, cands in conn.execute("SELECT id, candidates FROM match_issues WHERE release_id = ? AND resolved_at IS NULL",
+                                           (rel["id"],)).fetchall():
+                conn.execute("UPDATE match_issues SET resolved_at = datetime('now'), candidates = ? WHERE id = ?",
+                             (with_note(cands, out_of_scope=why, resolved_rule="out_of_scope",
+                                        resolved_note=scope_note(why, year_from)), iid))
+        log(f"  out of scope ({key}): {rel['name'][:90]}")
+    return st
+
+
+def reopen_in_scope(conn) -> int:
+    """Out-of-scope closures (close_out_of_scope) whose release is still unlinked but no longer out of scope get a new
+    open issue (the original problem and candidates); the closed row is marked 'reopened_at'."""
+    try:
+        rows = conn.execute(
+            """SELECT m.id, m.problem, m.candidates, r.id AS rid, r.source, r.source_id, r.name, r.category, r.btih, r.parsed
+               FROM match_issues m JOIN releases r ON r.id = m.release_id
+               WHERE m.resolved_at IS NOT NULL AND json_valid(m.candidates)
+                 AND json_extract(m.candidates, '$.out_of_scope') IS NOT NULL
+                 AND json_extract(m.candidates, '$.reopened_at') IS NULL AND r.parsed IS NOT NULL
+                 AND NOT EXISTS (SELECT 1 FROM release_titles x WHERE x.release_id = r.id)
+                 AND NOT EXISTS (SELECT 1 FROM match_issues o WHERE o.release_id = r.id AND o.resolved_at IS NULL)""").fetchall()
+    except Exception:  # noqa: BLE001 — no JSON1 / bare test DB
+        return 0
+    if not rows:
+        return 0
+    year_from = min(db.years())
+    frs = anime_franchises(conn)
+    n = 0
+    for r in rows:
+        rel = {"id": r[3], "source": r[4], "source_id": r[5], "name": r[6], "category": r[7], "btih": r[8]}
+        if scope_reason(conn, rel, json.loads(r[9]), r[1], frs, year_from):
+            continue
+        c = json.loads(r[2])
+        orig = c.get("candidates") if set(c) - {"candidates", "out_of_scope", "resolved_rule", "resolved_note"} == set() \
+            else {k: v for k, v in c.items() if k not in ("out_of_scope", "resolved_rule", "resolved_note")}
+        with conn:
+            conn.execute("UPDATE match_issues SET candidates = ? WHERE id = ?",
+                         (json.dumps(dict(c, reopened_at=_now()), ensure_ascii=False, default=str), r[0]))
+            conn.execute("INSERT INTO match_issues (release_id, problem, candidates) VALUES (?, ?, ?)",
+                         (r[3], r[1], json.dumps(orig, ensure_ascii=False, default=str) if orig else None))
+        n += 1
+    return n
+
+
 # ------------------------------------------------------------------------------------------------ re-identify
 
 def _exact_film(conn, p: dict, own: int) -> list[int] | None:
@@ -464,7 +594,8 @@ class _Counter(dict):
 
 def run(conn, dry: bool = False, log=print, force: bool = False) -> dict:
     """Part of every match run: identify the tracker-only rows again, then make rows for what is still unlinked."""
-    return {"reidentify": reidentify(conn, dry, log, min_age_hours=0 if force else 20), "create": create(conn, dry, log)}
+    return {"reidentify": reidentify(conn, dry, log, min_age_hours=0 if force else 20), "create": create(conn, dry, log),
+            "out_of_scope": close_out_of_scope(conn, dry, log)}
 
 
 def listing(conn) -> list[dict]:

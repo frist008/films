@@ -222,6 +222,77 @@ class TestCreateAndReidentify(unittest.TestCase):
         self.assertEqual(T.known_seasons(c, "season_year_mismatch", {"tmdb_id": 57243, "kind": "series", "seasons": [8]}), {})
 
 
+class TestOutOfScope(unittest.TestCase):
+    """Releases the base does not collect (anime outside the owner's anime franchises, before 2024 and not in
+    qBittorrent, КПК, old packs of no franchise) — their open issues are closed with the rule as the note, the matcher
+    skips them, and they come back when the rule stops holding (triage 2026-10-25)."""
+    FRS = {"bleach": ["блич"]}
+
+    def setUp(self):
+        self.conn = c = mem_db()
+        add_release(c, 20, "Боец Баки / Baki [S01] (2018)", "anime", parsed("Боец Баки / Baki [S01] (2018)", "Боец Баки", "Baki", 2018, seasons=[1]),
+                    problem="no_imdb_ambiguous")
+        add_release(c, 21, "Полиция жизни / The Life Police (2019)", "foreign_films", parsed("x", "Полиция жизни", "The Life Police", 2019),
+                    btih="cd")
+        add_release(c, 22, "Эскорт [S02] (2025) | КПК", "foreign_series", parsed("x", "Эскорт", None, 2025, seasons=[2]))
+        c.execute("INSERT INTO excluded_releases (source, source_id, reason) VALUES ('rutor', '22', 'kpk')")
+        add_release(c, 23, "Судья Дредд: Дилогия / Judge Dredd: Dilogy (1995-2012)", "foreign_films",
+                    parsed("Судья Дредд: Дилогия / Judge Dredd: Dilogy (1995-2012)", "Судья Дредд: Дилогия", "Judge Dredd: Dilogy", 1995, 2012),
+                    problem="collection_pack")
+        add_release(c, 24, "Джон Уик: Коллекция / John Wick: Collection (2014-2025)", "foreign_films",
+                    parsed("Джон Уик: Коллекция / John Wick: Collection (2014-2025)", "Джон Уик: Коллекция", "John Wick: Collection", 2014, 2025),
+                    problem="collection_pack")
+        add_release(c, 25, "Неизвестный фильм (2026)", "foreign_films", parsed("x", "Неизвестный фильм", None, 2026))
+        c.commit()
+
+    def run_close(self):
+        with mock.patch.object(T, "anime_franchises", return_value=self.FRS):
+            return T.close_out_of_scope(self.conn, log=lambda *_: None)
+
+    def test_close_and_skip(self):
+        c = self.conn
+        st = self.run_close()
+        self.assertEqual(st["closed"], 4)
+        self.assertEqual(st["by_reason"], {"anime outside the owner's anime franchises": 1, "before 2024": 1,
+                                           "excluded kpk": 1, "pack before 2024": 1})
+        open_ = {r[0] for r in c.execute("SELECT release_id FROM match_issues WHERE resolved_at IS NULL")}
+        self.assertEqual(open_, {24, 25})   # a 2025 pack and an in-scope film stay for the pack matcher / tracker-only
+        row = c.execute("SELECT candidates FROM match_issues WHERE release_id = 21").fetchone()[0]
+        note = json.loads(row)
+        self.assertEqual(note["out_of_scope"], "before 2024, not encountered")
+        self.assertIn("вне диапазона базы", note["resolved_note"])
+        # the matcher's pending query no longer picks them up (a release whose issue was closed otherwise is retried)
+        add_release(c, 26, "Другой фильм (2026)", "foreign_films", parsed("x", "Другой фильм", None, 2026))
+        c.execute("UPDATE match_issues SET resolved_at = datetime('now') WHERE release_id = 26")
+        c.commit()
+        from films import match
+        with mock.patch.object(match, "link_packs", return_value={}), \
+                mock.patch.object(match, "merge_redirected_titles", return_value={}), \
+                mock.patch.object(match, "match_one", return_value=None) as m1, \
+                mock.patch.object(T, "anime_franchises", return_value=self.FRS):
+            match.match_releases(c)
+        self.assertEqual(sorted(call.args[1] for call in m1.call_args_list), [26])   # 24, 25 still have open issues
+
+    def test_reopen_when_encountered(self):
+        c = self.conn
+        self.run_close()
+        c.execute("INSERT INTO qbt_torrents (infohash, release_id) VALUES ('cd', NULL)")   # now in the owner's client
+        c.commit()
+        with mock.patch.object(T, "anime_franchises", return_value=self.FRS):
+            self.assertEqual(T.reopen_in_scope(c), 1)
+            self.assertEqual(T.reopen_in_scope(c), 0)   # once
+        rows = c.execute("SELECT resolved_at, candidates FROM match_issues WHERE release_id = 21 ORDER BY id").fetchall()
+        self.assertEqual(len(rows), 2)
+        self.assertIn("reopened_at", json.loads(rows[0][1]))
+        self.assertIsNone(rows[1][0])   # a fresh open issue: tracker-only creation picks it up
+        self.assertIsNone(rows[1][1])   # the original candidates (none)
+
+    def test_with_note_keeps_list(self):
+        self.assertEqual(json.loads(T.with_note('[{"tconst": "tt1"}]', resolved_note="x")),
+                         {"candidates": [{"tconst": "tt1"}], "resolved_note": "x"})
+        self.assertEqual(json.loads(T.with_note('{"title_id": 5}', resolved_note="x")), {"title_id": 5, "resolved_note": "x"})
+
+
 class TestSheetNote(unittest.TestCase):
     def test_note_before_links(self):
         cell = sheet._links_cell([("Картинка", "https://p/1.jpg")], note=T.NOTE)

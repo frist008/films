@@ -35,6 +35,8 @@ class TestIsPack(unittest.TestCase):
     def test_saga_needs_a_span(self):
         self.assertFalse(match._is_pack("Horizon: An American Saga - Chapter 1 (2024) WEB-DL", 2024, 2024))
         self.assertTrue(match._is_pack("Сумерки. Сага / The Twilight Saga (2008-2012) BDRip", 2008, 2012))
+        self.assertTrue(match._is_pack("Вселенная «Заклятия» / The Conjuring Universe (2013-2025) BDRip-HEVC 1080p", 2013, 2025))
+        self.assertFalse(match._is_pack("Вселенная Стивена / Steven Universe: The Movie (2019) WEB-DL", 2019, 2019))
 
 
 class TestSeasons(unittest.TestCase):
@@ -136,6 +138,141 @@ class TestPackParts(unittest.TestCase):
                 parts, info = match._pack_parts(self.conn, 1, p, 2014, 2025)
             self.assertIsNone(parts)                       # the 2025 film is not in the collection — left, not guessed
             self.assertEqual(info["reason"], "no TMDB collection fits the year span / count")
+            # … unless the owner's franchise built on that collection has it («Балерина» 2025, triage 2026-10-25)
+            ballerina = {"tmdb_id": 541671, "imdb_id": "tt7181546", "year": 2025, "title_original": "Ballerina",
+                         "collection_id": 404609, "via_franchise": True}
+            with mock.patch.object(match, "_search_collections", return_value=[404609]), \
+                    mock.patch.object(match, "_franchise_films", return_value=[ballerina, dict(part(2014, 1), imdb_id="tt2911666")]):
+                parts, info = match._pack_parts(self.conn, 1, p, 2014, 2025)
+            self.assertEqual([x["tmdb_id"] for x in parts], [1, 2, 3, 4, 541671])   # the collection's film kept once
+            self.assertEqual(info["collection"], 404609)
+
+
+class TestMergeRedirected(unittest.TestCase):
+    def test_films_and_seasons(self):
+        from films import db
+        c = sqlite3.connect(":memory:")
+        db.migrate(c)
+        c.execute("INSERT INTO titles (id, kind, imdb_id) VALUES (1, 'movie', 'tt8272064'), (2, 'movie', 'tt15679400')")
+        c.execute("INSERT INTO titles (id, kind, season_number, series_imdb_id, series_key) VALUES "
+                  "(3, 'series', 1, 'tt22091076', 'imdb:tt22091076'), (4, 'series', 1, 'tt26748649', 'imdb:tt26748649'), "
+                  "(5, 'series', 2, 'tt26748649', 'imdb:tt26748649')")
+        c.execute("INSERT INTO releases (id, source, source_id, url, name, title_id) VALUES (10, 'rutor', '10', 'u', 'n', 2), "
+                  "(11, 'rutor', '11', 'u', 'n', 4)")
+        c.execute("INSERT INTO release_titles (release_id, title_id, how) VALUES (10, 2, 'imdb_page'), (11, 4, 'imdb_page')")
+        c.execute("INSERT INTO user_marks (title_id, mark) VALUES (4, 'want')")
+        with mock.patch.object(match, "imdb_redirects", return_value={"tt15679400": "tt8272064", "tt26748649": "tt22091076"}):
+            st = match.merge_redirected_titles(c, log=lambda *_: None)
+            self.assertEqual(st, {"renamed": 1, "merged": 2, "marked_duplicate": 2})
+            self.assertEqual(match.merge_redirected_titles(c, log=lambda *_: None),
+                             {"renamed": 0, "merged": 0, "marked_duplicate": 0})   # once
+        rows = {r[0]: r[1:] for r in c.execute("SELECT id, duplicate_of, series_imdb_id, series_key FROM titles")}
+        self.assertEqual(rows[2][0], 1)
+        self.assertEqual(rows[4][0], 3)
+        self.assertEqual(rows[5], (None, "tt22091076", "imdb:tt22091076"))   # season 2: no canonical row yet → renamed
+        self.assertEqual({r[0] for r in c.execute("SELECT title_id FROM release_titles")}, {1, 3})
+        self.assertEqual(c.execute("SELECT mark FROM user_marks WHERE title_id = 3").fetchone()[0], "want")
+
+
+class TestYearMismatch(unittest.TestCase):
+    """Enrich's 'tmdb_year_mismatch' decided by data (triage 2026-10-25)."""
+
+    def setUp(self):
+        import json as _json
+        from films import db
+        self.c = c = sqlite3.connect(":memory:")
+        db.migrate(c)
+        c.execute("INSERT INTO titles (id, kind, imdb_id, title_original, title_ru, year) VALUES "
+                  "(1, 'movie', 'tt10810172', 'Vertical', 'Вертикаль', 2021), "
+                  "(2, 'movie', 'tt0084695', 'The Slumber Party Massacre', 'Кровавая вечеринка', 1982)")
+        rel = lambda rid, ru, orig, y: (rid, str(rid), ru, _json.dumps({"title_ru": ru, "title_original": orig, "year": y,
+                                        "name_parsed": {"name": f"{ru} / {orig} ({y})", "title_ru": ru, "title_original": orig, "year": y}},
+                                        ensure_ascii=False))
+        for r in (rel(10, "Вертикаль", "Vertical", 2024), rel(11, "Кровавая вечеринка 2", "Slumber Party Massacre II", 1987)):
+            c.execute("INSERT INTO releases (id, source, source_id, url, name, category, parsed) VALUES (?, 'rutor', ?, 'u', ?, 'foreign_films', ?)", r)
+        c.execute("INSERT INTO release_titles (release_id, title_id, how) VALUES (10, 1, 'imdb_page'), (11, 2, 'imdb_page')")
+        for tid, ry in ((1, 2024), (2, 1987)):
+            c.execute("INSERT INTO match_issues (problem, candidates) VALUES ('tmdb_year_mismatch', ?)",
+                      (_json.dumps({"imdb_id": "x", "release_years": [ry], "title_id": tid}),))
+        c.commit()
+
+    def test_right_and_relinked(self):
+        ii = {"tconst": "tt0093996", "title_type": "movie", "primary_title": "Slumber Party Massacre II",
+              "original_title": None, "start_year": 1987, "genres": "Horror", "runtime_min": 77}
+        with mock.patch.object(match, "_resolve", return_value=("imdb", "tt0093996", None)) as res, \
+                mock.patch.object(match, "_basics", side_effect=lambda conn, tt: ii if tt == "tt0093996" else None):
+            st = match.recheck_year_mismatch(self.c, log=lambda *_: None)
+        self.assertEqual((st["link_right"], st["relinked"], st["left"]), (1, 1, 0))
+        self.assertEqual(res.call_args.args[-1], frozenset({"tt0084695"}))   # the page id excluded
+        new = self.c.execute("SELECT id FROM titles WHERE imdb_id = 'tt0093996'").fetchone()[0]
+        hows = dict(self.c.execute("SELECT title_id, how FROM release_titles WHERE release_id = 11").fetchall())
+        self.assertTrue(hows[2].startswith("wrong_link: year mismatch"))
+        self.assertEqual(hows[new], "imdb_resolve year_recheck")
+        self.assertEqual(self.c.execute("SELECT count(*) FROM match_issues WHERE resolved_at IS NULL").fetchone()[0], 0)
+        # «Вертикаль»: the link is kept as it was
+        self.assertEqual(self.c.execute("SELECT how FROM release_titles WHERE release_id = 10").fetchone()[0], "imdb_page")
+
+
+class TestPageAlternative(unittest.TestCase):
+    """A page IMDb id naming another work («Аватар: Пламя и Пепел / Avatar: Fire and Ash» → «Tron: Ares»)."""
+    B = {"tconst": "tt6604188", "title_type": "movie", "primary_title": "Tron: Ares", "original_title": "Tron: Ares",
+         "start_year": 2025}
+
+    def disjoint(self, names, imdb_names):
+        p = {"title_original": names[0], "title_ru": names[1] if len(names) > 1 else None, "name_parsed": {}}
+        with mock.patch.object(match, "_imdb_names", return_value=set(imdb_names)):
+            return match._page_names_disjoint(None, "tt1", self.B, p)
+
+    def test_disjoint(self):
+        self.assertTrue(self.disjoint(["Avatar: Fire and Ash", "Аватар: Пламя и Пепел"], ["tron ares", "трон арес"]))
+        self.assertFalse(self.disjoint(["RJ Decker"], ["r j decker"]))                      # punctuation
+        self.assertFalse(self.disjoint(["Blade Runner (Final Cut)"], ["blade runner"]))     # an edition around the name
+        self.assertFalse(self.disjoint(["James Bond: The Spy Who Loved Me"], ["the spy who loved me"]))
+        self.assertFalse(self.disjoint(["Аватар"], ["tron ares"]))                          # no original name: no evidence
+        self.assertFalse(self.disjoint(["Avatar: Fire and Ash"], []))                       # IMDb names unknown
+
+    def test_alternative_needs_another_work(self):
+        p = {"title_original": "Avatar: Fire and Ash", "name_parsed": {}}
+        with mock.patch.object(match, "_page_names_disjoint", return_value=True):
+            with mock.patch.object(match, "_resolve", return_value=("imdb", "tt1757678", None)):
+                self.assertTrue(match._page_alternative(None, "tt6604188", self.B, p, "foreign_films", 2025, 2025, []))
+            # a TMDB entry carrying the page's own IMDb id, or none, is the same work spelled differently
+            with mock.patch.object(match, "_resolve", return_value=("tmdb", 5, None)):
+                for raw in ({"imdb_id": "tt6604188"}, {}):
+                    with mock.patch.object(match.tmdb, "movie_raw", return_value=raw):
+                        self.assertFalse(match._page_alternative(None, "tt6604188", self.B, p, "foreign_films", 2025, 2025, []))
+                with mock.patch.object(match.tmdb, "movie_raw", return_value={"imdb_id": "tt1757678"}):
+                    self.assertTrue(match._page_alternative(None, "tt6604188", self.B, p, "foreign_films", 2025, 2025, []))
+            with mock.patch.object(match, "_resolve", return_value=(None, "no_imdb_not_found", [])):
+                self.assertFalse(match._page_alternative(None, "tt6604188", self.B, p, "foreign_films", 2025, 2025, []))
+
+
+class TestNamesAndKinds(unittest.TestCase):
+    def test_spaced_colon_names(self):
+        p = {"title_original": "Shrek 4-D : Shrek. The Ghost of Lord Farquaad",
+             "name_parsed": {"title_ru": "Шрэк 4-D : Шрек. Призрак Лорда Фаркуада"}}
+        names = match._title_names(p)
+        self.assertEqual(names[:2], ["Shrek 4-D : Shrek. The Ghost of Lord Farquaad", "Шрэк 4-D : Шрек. Призрак Лорда Фаркуада"])
+        self.assertIn("Shrek. The Ghost of Lord Farquaad", names)
+        self.assertIn("Shrek 4-D", names)
+        self.assertEqual(match._title_names({"title_original": "Dune: Part Two", "name_parsed": {}}), ["Dune: Part Two"])
+
+    def test_imdb_series_pick(self):
+        res = {"status": "matched", "match": {"tconst": "tt0069637", "start_year": 1973, "score": 1.0}}
+        basics = {"tconst": "tt0069637", "title_type": "tvSeries"}
+        p = {"name_parsed": {"season_raw": "01-22 (22)"}}
+        names = ["Star Trek: The Animated Series", "Звездный путь: Анимационные серии"]
+        with mock.patch.object(match.imdb, "resolve", return_value=res), \
+                mock.patch.object(match, "_basics", return_value=basics):
+            self.assertEqual(match._imdb_series_pick(None, names, p, "animation", "movie", 1973, []), "tt0069637")
+            self.assertIsNone(match._imdb_series_pick(None, names, p, "foreign_films", "movie", 1973, []))   # cartoons only
+            self.assertIsNone(match._imdb_series_pick(None, names, p, "animation", "movie", 1974, []))      # began that year
+            # no episode range nor «Animated Series» in the name: a film stays a film
+            self.assertIsNone(match._imdb_series_pick(None, ["Король Лев"], {"name_parsed": {}}, "animation", "movie", 1973, []))
+            # the words alone are enough («Spider-Man: The Animated Series (1994)»)
+            self.assertEqual(match._imdb_series_pick(None, names, {"name_parsed": {}}, "animation", "movie", 1973, []), "tt0069637")
+        with mock.patch.object(match.imdb, "resolve", return_value={"status": "ambiguous", "match": None}):
+            self.assertIsNone(match._imdb_series_pick(None, names, p, "animation", "movie", 1973, []))
 
 
 class TestLastResortPicks(unittest.TestCase):
