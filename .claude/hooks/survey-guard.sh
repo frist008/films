@@ -28,6 +28,14 @@ for q in qs:
     for o in opts:
         if re.search(r"[×x]\s*\d", o.get("label", "")) or (o.get("description", "").count("→") > 1) or len(re.findall(r"\((19|20)\d\d\)", o.get("label", ""))) > 1:
             deny("Один фильм — один вариант, не группами (владелец, 2026-10-24: «1 фильм один вариант. Что за экономия»).")
+    # one media — one question (owner, 2026-10-25: «Опять забыл, что один медиа один вопрос?»): no bundle options
+    for o in opts:
+        lab = o.get("label", "")
+        if re.search(r"\b(за\s+)?(всеми|все|всех)\s+\d+|\bза\s+всеми\b|по\s+каждому|только\s+фильмы|\bвсе\s+(мульт|фильм|сериал|сезон)", lab, re.I):
+            deny("Один медиа — один вопрос (владелец, 2026-10-25: «Опять забыл, что один медиа один вопрос?»): без вариантов-пачек "
+                 "(«за всеми 16», «спроси по каждому», «только фильмы») — про каждое произведение свой вопрос «Следить / Не следить».")
+    if re.search(r"\bещё\s+\d+\s+(мульт|фильм|сериал|произвед|короткометраж)", text, re.I):
+        deny("Один медиа — один вопрос (владелец, 2026-10-25): не спрашивать про «ещё N фильмов» разом — по вопросу на каждое произведение.")
     # clarity (owner, 2026-10-25): «база» must say where — on the computer or on GitHub (a prompt hook here stopped the whole
     # turn on every refusal: «Опять остановился. Баг скила»; this check only refuses the question)
     if re.search(r"\bбаз[аеуыо]й?\b", blob, re.I) and not re.search(r"компьютер|GitHub|гитхаб", blob, re.I):

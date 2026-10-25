@@ -6,7 +6,7 @@ title: Privacy Policy — films
 
 *Last updated: 2026-10-25*
 
-**films** is a personal, non-commercial tool ([source code](https://github.com/frist008/films)) that keeps one person's
+**films** is a personal, non-commercial tool (its source code is the GitHub repository this page is published from) that keeps one person's
 database of films and series and writes it into a Google Sheets spreadsheet in that person's own Google account.
 It is not a service for the public: the only Google account it is authorised for is the account of the project owner.
 
@@ -39,7 +39,7 @@ Drive and the local `secrets/google_token.json` removes everything the app store
 
 ## Contact
 
-Questions about this policy — open an issue at <https://github.com/frist008/films/issues>.
+Questions about this policy — open an issue in the GitHub repository this page is published from.
 
 ---
 
