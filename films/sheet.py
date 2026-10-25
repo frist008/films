@@ -134,13 +134,25 @@ def open_spreadsheet(gc):
     return sh, True
 
 
+# a renamed tab is renamed in place, never re-created (owner 2026-10-25: «я не просил создавать новые листы, только
+# переименовать»): old title → new title
+RENAMED_TABS = {"Главная": "Фильмы"}
+
+
 def _ws(sh, title: str, rows: int, cols: int):
     try:
         ws = sh.worksheet(title)
-        ws.resize(rows=max(rows, 2), cols=cols)
-        return ws
     except Exception:  # gspread.WorksheetNotFound
-        return sh.add_worksheet(title=title, rows=max(rows, 2), cols=cols)
+        old = next((o for o, n in RENAMED_TABS.items() if n == title), None)
+        try:
+            ws = sh.worksheet(old) if old else None
+        except Exception:
+            ws = None
+        if ws is None:
+            return sh.add_worksheet(title=title, rows=max(rows, 2), cols=cols)
+        ws.update_title(title)
+    ws.resize(rows=max(rows, 2), cols=cols)
+    return ws
 
 
 # ---------------------------------------------------------------------------------------------- read back

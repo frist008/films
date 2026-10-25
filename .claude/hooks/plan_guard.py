@@ -148,6 +148,13 @@ def main(mode: str) -> None:
                    + " | ".join(x[:90] for x in inbox[:6]))
     if done:
         why.append(f"В PLAN.md {len(done)} выполненных «- [x]»: проверить, что сделано, и перенести в PLAN-done.md.")
+    # a promise in the plan without the action (owner, 2026-10-25: «всё сделал, выходит?» — «полный прогон (агент, 19:30)»
+    # was written but never launched): every «лог data/logs/X.log» named in an open item must exist
+    missing = sorted({m for m in re.findall(r"data/logs/([\w.-]+\.log)", "\n".join(
+        l for l in plan.splitlines() if l.startswith("- [ ]"))) if not (ROOT / "data" / "logs" / m).exists()})
+    if missing:
+        why.append("В PLAN.md открытые пункты ссылаются на логи, которых нет (обещан запуск, а его не было): "
+                   + ", ".join(missing[:6]) + " — запустить или исправить запись в плане.")
     if not why and net_note:
         print(json.dumps({"systemMessage": net_note}, ensure_ascii=False))
         return
