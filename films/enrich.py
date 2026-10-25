@@ -20,6 +20,12 @@ def _issue(conn, title_id: int, problem: str, details: dict):
     if conn.execute("SELECT 1 FROM match_issues WHERE problem = ? AND resolved_at IS NULL AND candidates = ?",
                     (problem, data)).fetchone():
         return
+    # closed by films.match_triage as a TMDB data gap (nothing to ask the owner): enrich keeps re-checking the title every
+    # run, but the same gap is not reopened as a new issue (triage 2026-10-25: 113 issues came back after one enrich run)
+    if conn.execute("SELECT 1 FROM match_issues WHERE problem = ? AND resolved_at IS NOT NULL AND json_valid(candidates) "
+                    "AND json_extract(candidates, '$.title_id') = ? "
+                    "AND json_extract(candidates, '$.resolved_rule') = 'tmdb_data_gap'", (problem, title_id)).fetchone():
+        return
     # one open issue per title and problem: newer details (e.g. why the TMDB name search did not decide) replace older
     old = conn.execute("SELECT id FROM match_issues WHERE problem = ? AND resolved_at IS NULL "
                        "AND json_valid(candidates) AND json_extract(candidates, '$.title_id') = ? ORDER BY id LIMIT 1",

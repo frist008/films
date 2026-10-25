@@ -233,6 +233,16 @@ class TestStorage(unittest.TestCase):
         note = self.conn.execute("SELECT note FROM franchise_members WHERE imdb_id='tt2'").fetchone()[0]
         self.assertEqual(note.count("stale:"), 1)                         # not prefixed twice
 
+    def test_hand_added_never_stale(self):
+        # a special added by an owner's rule / by hand is not resolve's to find (One Piece specials, 2026-10-25)
+        m = dict(self.member("tt3", "Special"), sources=["owner_rule_2026-10-24"])
+        F.write_members(self.conn, "k", [self.member("tt1", "A"), m])
+        w = F.write_members(self.conn, "k", [self.member("tt1", "A")])
+        self.assertEqual(w["stale"], 0)
+        row = self.conn.execute("SELECT confidence, note FROM franchise_members WHERE imdb_id='tt3'").fetchone()
+        self.assertEqual(row["confidence"], "confirmed")
+        self.assertFalse((row["note"] or "").startswith("stale:"))
+
 
 class TestHttpHelpers(unittest.TestCase):
     def test_cache_key_stable(self):

@@ -282,6 +282,8 @@ def main(argv=None):
     p = sub.add_parser("rt")
     p.add_argument("--dry", action="store_true")
     p.add_argument("--limit", type=int)
+    p = sub.add_parser("all", help="update-db step: year-mismatch and page-id rechecks, then titles and RT triage")
+    p.add_argument("--dry", action="store_true")
     a = ap.parse_args(argv)
     conn = db.connect()
     log = lambda *x: print(*x, file=sys.stderr)
@@ -289,6 +291,11 @@ def main(argv=None):
         res = summary(conn)
     elif a.cmd == "titles":
         res = titles(conn, a.dry, log)
+    elif a.cmd == "all":
+        from . import match
+        res = {"year_recheck": match.recheck_year_mismatch(conn, a.dry, log),
+               "page_links": match.recheck_page_links(conn, None, a.dry, log),
+               "titles": titles(conn, a.dry, log), "rt": rt(conn, a.dry, None, log), "open": summary(conn)}
     else:
         res = rt(conn, a.dry, a.limit, log)
     print(json.dumps(res, ensure_ascii=False, indent=1, default=str))

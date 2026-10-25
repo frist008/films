@@ -987,6 +987,7 @@ EXTRA: dict[str, dict] = {
     "the_gentlemen": {"anchors_qids": ["Q60614686", "Q115860329"]},                     # 2019 film, 2024 series
     "south_park": {"seeds": ["Q54622175", "Q101199114", "Q110761626"], "anchors_qids": ["Q16538"],
                    "fandom": ["southpark"]},                    # media franchise, universe, film series; the series
+    "the_boys": {"anchors_imdb": ["tt1190634"], "fandom": ["amazons-the-boys"]},          # the series; Wikidata walks the rest
     "rick_and_morty": {"seeds": ["Q107264299"], "anchors_qids": ["Q15659308"], "fandom": ["rickandmorty"]},
     "pokemon": {"seeds": ["Q864", "Q17562848", "Q97138261"], "fandom": ["pokemon"]},   # franchise, universe, films
     "death_note": {"anchors_qids": ["Q718624", "Q1200673", "Q22077183", "Q19961524"], "fandom": ["deathnote"]},
@@ -2239,6 +2240,10 @@ def write_members(conn, key: str, members: list[dict]) -> dict:
     with conn:
         existing = {r["imdb_id"]: r["note"] for r in conn.execute(
             "SELECT imdb_id, note FROM franchise_members WHERE franchise_key = ?", (key,))}
+        # rows added by hand or by an owner's rule (sources manual / owner_rule_*) are not resolve's to find: never stale
+        hand = {r["imdb_id"] for r in conn.execute(
+            "SELECT imdb_id, sources FROM franchise_members WHERE franchise_key = ?", (key,))
+            if any(s == "manual" or s.startswith("owner_rule") for s in json.loads(r["sources"] or "[]"))}
         for m in members:
             conn.execute(
                 """INSERT INTO franchise_members (franchise_key, imdb_id, tmdb_id, tmdb_type, kind, title, title_ru,
@@ -2251,7 +2256,7 @@ def write_members(conn, key: str, members: list[dict]) -> dict:
                 (key, m["imdb_id"], m.get("tmdb_id"), m.get("tmdb_type"), m["kind"], m.get("title"),
                  m.get("title_ru"), m.get("year"), json.dumps(m["sources"], ensure_ascii=False), m["confidence"],
                  note_of(m)))
-        stale = [i for i in existing if i not in found]
+        stale = [i for i in existing if i not in found and i not in hand]
         for imdb in stale:
             note = existing[imdb] or ""
             if not note.startswith("stale:"):
