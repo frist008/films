@@ -1,4 +1,5 @@
-"""«Я видел X»: mark a title watched in Plex (so the owner's account keeps it) and in the DB.
+"""«Я видел X»: mark a title watched in Plex (so the owner's account keeps it), in Jellyfin (jellyfin_guard, owner
+2026-10-25) and in the DB.
 
 - In the local library → `GET /:/scrobble?identifier=com.plexapp.plugins.library&key=<ratingKey>` on the server
   (view-state sync pushes it to plex.tv for agent-matched items).
@@ -10,6 +11,7 @@ watched(source='plex'). Recipes and how ids are resolved: docs/plex-api.md.
 import json
 
 from . import db
+from .sources import jellyfin_guard
 from .sources import plex as plexsrc
 
 LIB_ID = "com.plexapp.plugins.library"
@@ -64,7 +66,8 @@ def _discover_scrobble(px, pid: str):
     r.raise_for_status()
 
 
-def mark_episode(conn, series_imdb: str, season: int, episode: int, dry_run: bool = False, px=None) -> dict:
+def mark_episode(conn, series_imdb: str, season: int, episode: int, dry_run: bool = False, px=None,
+                 jellyfin: bool = True) -> dict:
     """One episode watched in Plex: the library file of that episode (if any) and Plex Discover (account).
     Skips what Plex already has as watched, so repeated syncs do not inflate view counts."""
     px = px or plexsrc.Plex()
@@ -93,7 +96,19 @@ def mark_episode(conn, series_imdb: str, season: int, episode: int, dry_run: boo
     else:
         out["plex"].append({"where": "discover", "error": f"no Plex id for {series_imdb} S{season}E{episode}"})
     out["confirmed"] = any((p.get("viewCount") or 0) > 0 or p.get("viewState") == "complete" for p in out["plex"])
+    if jellyfin and not dry_run:  # owner 2026-10-25: «видел» — и в Jellyfin (jellyfin_guard never re-marks)
+        out["jellyfin"] = jellyfin_guard.mark_episode(conn, series_imdb, season, episode, jf=_jf())
     return out
+
+
+def _jf():
+    global _JF
+    if _JF is None:
+        _JF = jellyfin_guard.Jellyfin()
+    return _JF
+
+
+_JF = None
 
 
 def sync_from_jellyfin(conn, dry_run: bool = False) -> dict:
@@ -105,11 +120,11 @@ def sync_from_jellyfin(conn, dry_run: bool = False) -> dict:
     for key, tid in conn.execute("""SELECT p.key, p.title_id FROM jellyfin_played p WHERE p.kind = 'movie'
                                     AND p.title_id IS NOT NULL AND NOT EXISTS (SELECT 1 FROM watched w
                                     WHERE w.title_id = p.title_id AND w.source = 'plex')""").fetchall():
-        r = mark(conn, tid, dry_run=dry_run, db_source=None)
+        r = mark(conn, tid, dry_run=dry_run, db_source=None, jellyfin=False)
         res["movies"].append({"imdb_id": key, "title": r["title"], "confirmed": r["confirmed"]})
     for imdb, season, episode in conn.execute(
             "SELECT imdb_id, season, episode FROM jellyfin_played WHERE kind = 'episode' ORDER BY 1, 2, 3").fetchall():
-        r = mark_episode(conn, imdb, season, episode, dry_run=dry_run, px=px)
+        r = mark_episode(conn, imdb, season, episode, dry_run=dry_run, px=px, jellyfin=False)
         res["episodes"].append({k: r[k] for k in ("series_imdb_id", "season", "episode", "confirmed")} | {"plex": r["plex"]})
     res["not_confirmed"] = [x for x in res["movies"] + res["episodes"] if not x["confirmed"]]
     if not dry_run:
@@ -118,7 +133,7 @@ def sync_from_jellyfin(conn, dry_run: bool = False) -> dict:
     return res
 
 
-def mark(conn, title_id: int, dry_run: bool = False, db_source: str | None = "manual") -> dict:
+def mark(conn, title_id: int, dry_run: bool = False, db_source: str | None = "manual", jellyfin: bool = True) -> dict:
     t = dict(conn.execute("SELECT * FROM titles WHERE id = ?", (title_id,)).fetchone())
     px = plexsrc.Plex()
     out = {"title_id": title_id, "title": t["title_ru"] or t["title_original"], "season": t["season_number"],
@@ -165,6 +180,8 @@ def mark(conn, title_id: int, dry_run: bool = False, db_source: str | None = "ma
             out["plex"].append({"where": "discover", "error": "no Plex id for " + imdb_id})
     confirmed = any((p.get("viewCount") or 0) > 0 or p.get("viewState") == "complete" for p in out["plex"])
     out["confirmed"] = confirmed
+    if jellyfin and not dry_run:  # owner 2026-10-25: «видел» — и в Jellyfin (jellyfin_guard never re-marks)
+        out["jellyfin"] = jellyfin_guard.mark_title(conn, title_id, jf=_jf())
     if not dry_run:
         with conn:
             if db_source:  # 'manual' = the owner said «я видел»; a Jellyfin transfer already has its own row
