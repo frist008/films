@@ -1111,13 +1111,16 @@
  "Pokemon Secrets of the Jungle": {
   "query": "Pokemon Secrets of the Jungle",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "no TMDB results for any title",
+  "status": "manual",
+  "reason": "a film, not a series: «Pokemon Secrets of the Jungle 01» = Покемон-фильм: Секреты джунглей (2020); watched 2023-10-01 (2026-10-25)",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": []
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 662708,
+  "imdb": "tt11819890"
  },
  "Pokemon Ultimate Journeys S25 1080p": {
   "query": "Pokemon Ultimate Journeys",
@@ -1779,13 +1782,16 @@
  "South Park The End of Obesity 2160p AMZN WEB-DL H": {
   "query": "South Park The End of Obesity",
   "year_hint": null,
-  "status": "not_found",
-  "reason": "no TMDB results for any title",
+  "status": "manual",
+  "reason": "a film, not a series: South Park: The End of Obesity (2024 special); watched 2024-09-04 (2026-10-25)",
   "tmdb_tv": null,
   "title": null,
   "original_title": null,
   "first_year": null,
-  "candidates": []
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 1290938,
+  "imdb": "tt32375562"
  },
  "Spider-Man": {
   "query": "Spider-Man",
