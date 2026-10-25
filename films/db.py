@@ -668,6 +668,13 @@ MIGRATIONS = [
     ALTER TABLE releases ADD COLUMN is_kpk INTEGER;          -- (39) «для КПК / телефона» (PDA, Mobile, iPod, 3GP, ≤ 480 px wide) → excluded
     ALTER TABLE releases ADD COLUMN voice_18plus INTEGER;    -- R168(а): a professional (mvo/dvo/svo) RU/UK track marked 18+ / uncensored
     """,
+    # 18: titles made from a wrong IMDb id on a tracker page (an episode / podcast / another film's id, a series stored as
+    # a film; imdb_specs «year_mismatch», 2026-10-25). Nothing is deleted: the row is kept, its links move to the right
+    # title (duplicate_of), the wrong id is kept in imdb_id_wrong and imdb_id is corrected or cleared.
+    """
+    ALTER TABLE titles ADD COLUMN duplicate_of INTEGER REFERENCES titles(id);  -- this row is that title (links moved there)
+    ALTER TABLE titles ADD COLUMN imdb_id_wrong TEXT;                         -- the wrong IMDb id the row carried
+    """,
 ]
 
 

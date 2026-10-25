@@ -1907,6 +1907,20 @@ def _release_rules(out: dict, nm: dict | None, main_text: str, spoilers: list, m
     out["voice_18plus"] = adult
 
 
+def norm_imdb_id(tconst: str | None) -> str | None:
+    """An IMDb id as IMDb writes it: 7 digits, 8 from tt10000000 on. A tracker page sometimes pads it with an extra leading
+    zero («tt03748172» = «Игра Джералда» tt3748172, «tt09484998» = «Палм-Спрингс» tt9484998) — a duplicate title was made."""
+    if not tconst:
+        return tconst
+    m = re.fullmatch(r"(?i)tt(\d+)", tconst.strip())
+    if not m:
+        return tconst
+    digits = m.group(1)
+    if len(digits) > 7 and digits.startswith("0"):
+        digits = digits.lstrip("0").zfill(7)
+    return "tt" + digits
+
+
 def parse_release_page(html: str) -> dict:
     """Parse a rutor release page (see module docstring). Returns a dict; ``warnings`` lists doubts."""
     w: list[str] = []
@@ -1950,9 +1964,9 @@ def parse_release_page(html: str) -> dict:
         out["size_bytes"] = int(m.group(1))
 
     # ---- IDs (description only; the "related releases" block is excluded)
-    ids = _uniq(re.findall(r"imdb\.com/(?:[a-z]{2}/)?title/(tt\d{7,9})", parts["desc_html"], re.I))
+    ids = _uniq(norm_imdb_id(t) for t in re.findall(r"imdb\.com/(?:[a-z]{2}/)?title/(tt\d{7,9})", parts["desc_html"], re.I))
     if not ids:
-        ids = _uniq(re.findall(r"(?<![\w/])(tt\d{7,9})(?![\w])", parts["desc_html"]))
+        ids = _uniq(norm_imdb_id(t) for t in re.findall(r"(?<![\w/])(tt\d{7,9})(?![\w])", parts["desc_html"]))
     if ids:
         out["imdb_id"] = ids[0]
         if len(ids) > 1:

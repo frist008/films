@@ -78,7 +78,8 @@ def _collection(conn, cid: int):
 
 
 def enrich(conn, only_missing: bool = True, max_age_days: float = tmdb.DEFAULT_MAX_AGE_DAYS) -> dict:
-    where = "WHERE tmdb_checked_at IS NULL" if only_missing else ""
+    # a duplicate row (made from a wrong IMDb id, its links moved to the right title: titles.duplicate_of) is not enriched
+    where = "WHERE duplicate_of IS NULL" + (" AND tmdb_checked_at IS NULL" if only_missing else "")
     titles = conn.execute(f"SELECT id, kind, imdb_id, series_imdb_id, season_number, year FROM titles {where}").fetchall()
     stats = {"titles": len(titles), "movies": 0, "seasons": 0, "issues": {}}
 
