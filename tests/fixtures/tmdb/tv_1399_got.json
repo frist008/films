@@ -1,0 +1,112 @@
+{
+ "id": 1399,
+ "name": "Игра Престолов",
+ "original_name": "Game of Thrones",
+ "original_language": "en",
+ "homepage": "https://www.hbo.com/game-of-thrones",
+ "spoken_languages": [
+  {
+   "english_name": "English",
+   "iso_639_1": "en",
+   "name": "English"
+  }
+ ],
+ "type": "Scripted",
+ "external_ids": {
+  "imdb_id": "tt0944947",
+  "freebase_mid": "/m/0524b41",
+  "freebase_id": "/en/game_of_thrones",
+  "tvdb_id": 121361,
+  "tvrage_id": 24493,
+  "wikidata_id": "Q23572",
+  "facebook_id": "GameOfThrones",
+  "instagram_id": "gameofthrones",
+  "twitter_id": "GameOfThrones"
+ },
+ "keywords": {
+  "results": [
+   {
+    "name": "based on novel or book",
+    "id": 818
+   },
+   {
+    "name": "kingdom",
+    "id": 4152
+   },
+   {
+    "name": "dragon",
+    "id": 12554
+   },
+   {
+    "name": "king",
+    "id": 13084
+   },
+   {
+    "name": "intrigue",
+    "id": 34038
+   },
+   {
+    "name": "fantasy world",
+    "id": 170362
+   }
+  ]
+ },
+ "created_by": [
+  {
+   "id": 9813,
+   "credit_id": "5256c8c219c2956ff604858a",
+   "name": "Дэвид Бениофф",
+   "original_name": "David Benioff",
+   "gender": 2,
+   "profile_path": "/xvNN5huL0X8yJ7h3IZfGG4O2zBD.jpg"
+  },
+  {
+   "id": 228068,
+   "credit_id": "552e611e9251413fea000901",
+   "name": "Д. Б. Уайс",
+   "original_name": "D. B. Weiss",
+   "gender": 2,
+   "profile_path": "/6Wt006TIQoDSSnl0YaKihfn3w7K.jpg"
+  }
+ ],
+ "translations": {
+  "translations": [
+   {
+    "iso_3166_1": "US",
+    "iso_639_1": "en",
+    "name": "English",
+    "english_name": "English",
+    "data": {
+     "name": "",
+     "overview": "Seven noble families fight for control of the mythical land of Westeros. Friction between the houses leads to full-scale war. All while a very ancient evil awakens in the farthest north. Amidst the war, a neglected military order of misfits, the Night's Watch, is all that stands between the realms of men and icy horrors beyond.",
+     "homepage": "",
+     "tagline": "Winter is coming."
+    }
+   },
+   {
+    "iso_3166_1": "RU",
+    "iso_639_1": "ru",
+    "name": "Pусский",
+    "english_name": "Russian",
+    "data": {
+     "name": "Игра Престолов",
+     "overview": "К концу подходит время благоденствия, и лето, длившееся почти десятилетие, угасает. Вокруг средоточия власти Семи Королевств, Железного трона, зреет заговор, и в это непростое время король решает искать поддержки у друга юности Эддарда Старка. В мире, где все — от короля до наёмника — рвутся к власти, плетут интриги и готовы вонзить нож в спину, есть место и благородству, состраданию и любви. Между тем, никто не замечает пробуждение тьмы из легенд далеко на Севере — и лишь Стена защищает живых к югу от неё.",
+     "homepage": "",
+     "tagline": "Рыцари, мертвецы и драконы — в эпической битве за судьбы мира. Сериал, который навсегда изменил телевидение"
+    }
+   },
+   {
+    "iso_3166_1": "UA",
+    "iso_639_1": "uk",
+    "name": "Український",
+    "english_name": "Ukrainian",
+    "data": {
+     "name": "Гра престолів",
+     "overview": "Ось і підходить до завершення літо, що тривало майже десятиліття. Навколо осередку влади Семи королівств, Залізного трону, зріє змова, і в цей непростий час король вирішує шукати підтримки у друга юності Еддарда Старка. У світі, де всі — від короля до найманця — рвуться до влади, плетуть інтриги й готові встромити ніж у спину, є місце і шляхетності, співчуттю та любові. Тим часом ніхто не помічає пробудження темряви з легенд далеко на Півночі — й лише Стіна захищає живих на південь від неї.",
+     "homepage": "",
+     "tagline": "Зима близько."
+    }
+   }
+  ]
+ }
+}

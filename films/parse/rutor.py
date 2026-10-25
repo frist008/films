@@ -545,6 +545,12 @@ _DV_TAG_RE = re.compile(
     r"^(?:dolby\s*vision|dovi|dv)\s*(?:(?:profile|prof\.?|p)\s*)?(\d{1,2})?(?:\.(\d))?\s*(tv|fel|mel)?$", re.I)
 
 
+_3D_TAG_RE = re.compile(
+    r"^(?:3-?d(?:[\s-]*video)?|hsbs|hou|half[\s-]*(?:ou|sbs|over[\s-]*under|side[\s-]*by[\s-]*side)(?:[\s-]*crop)?"
+    r"|anaglyph|анаглиф|ou|sbs|over[\s-]*under|frame[\s-]*packing|mvc)"
+    r"(?:\s*[(/]\s*(?:анаглиф|anaglyph)\w*\)?)?$")
+
+
 def _classify_tag(tok: str, out: dict, w: list) -> None:
     """Classify one comma-separated token from the '|' tail of a release name; mutates ``out``."""
     t = _norm_space(tok)
@@ -578,7 +584,8 @@ def _classify_tag(tok: str, out: dict, w: list) -> None:
                     out["has_ukr"] = True
                 out["lang_tags"].append(_lat(code).upper())
         return
-    if re.match(r"^(?:звук\s+с\s+)?(ts|cam|camrip|line|tc|чистый звук)$", low, re.I):
+    if re.match(r"^(?:звук\s+с\s+)?(ts|cam|camrip|line|tc|чистый звук)$", low, re.I) \
+            or re.match(r"(?i)^чистый\s+звук$", t):   # `low` turns Cyrillic look-alikes Latin («чиcтый»)
         out["audio_source"] = re.sub(r"^звук\s+с\s+", "", t, flags=re.I)
         return
     if up == "R5":
@@ -651,10 +658,11 @@ def _classify_tag(tok: str, out: dict, w: list) -> None:
     if low in ("hybrid",):
         out["hybrid"] = True
         return
-    if up in ("КПК", "KПK", "KPK"):
-        out["kpk"] = True
+    if up in ("КПК", "KПK", "KPK", "PDA", "MOBILE", "IPOD", "IPHONE", "3GP", "PSP") or re.match(r"(?i)^(?:кпк|kpk)\s+(?:от|by)\s", t):
+        out["kpk"] = True   # survey 39 (2026-10-25): «для КПК / телефона» — excluded
         return
-    if re.match(r"^(3d(-video)?|hsbs|hou|halfou|half\s*ou|half\s*sbs|anaglyph|ou|sbs)$", low):
+    # «3D-Video», «HSBS», «halfOU-Crop», «halfSBS», «3D-video (Анаглиф)», «3D-Video / Анаглиф» (survey 21, 2026-10-25)
+    if any(_3D_TAG_RE.match(x) for x in (low, t.lower())):   # raw too: `low` turns «Анаглиф» into Latin look-alikes
         out["is_3d"] = True
         if low not in ("3d", "3d-video"):
             out["format_3d"] = t
@@ -1559,7 +1567,7 @@ _TECH_STRIP = re.compile(
     r"|\bavg\b|\bjoc\b|atmos|\bcore\b|dolby\s*digital(?:\s*plus)?|dolby|truehd|true hd|dts(?:-hd)?(?:\s*(?:master\s*audio|ma|hra|high resolution(?:\s*audio)?|es|:x|-x))?|audio"
     r"|e-?ac-?3|eac3|ac-?3|aac(?:[-\s]?(?:lc|he))?|he-?aac|flac|l?pcm|opus|mp[23]|vorbis|embedded"
     r"|\b[1-9]\.[0-2]\s*ch\b|\bch\b|\blossy\b|\blossless\b|\bstereo\b|\bmono\b|\bkhz\b|\bhz\b|\br5\b|\bddp?\b|dd\+"
-    r"|\bvbr\b|\bcbr\b|телеканал\w*|эпизод\w*\s*\d*|сери[яи]\s*\d*|\bsdh\b"
+    r"|\bvbr\b|\bcbr\b|телеканал\w*|эпизод\w*\s*\d*|сери[яи]\s*\d*|\bsdh\b|\bchannels?\b|\bchnls\b"
     r"|\bbd\s*(?:eur|usa|us|rus|uk|ger)\b|\blinein\b|\bcustom\b|\bobjects?\b|•"
     r"|\d*[.,]?\d*\s*[кkмm]бит/?[сc]?\w*|\d*\s*[кkмm]б/[сc])")
 
@@ -1688,6 +1696,215 @@ _EDITION_TEXT = [
     (re.compile(r"(?<![\w])uncut(?![\w])", re.I), "uncut"),
     (re.compile(r"(?<![\w])unrated(?![\w])", re.I), "unrated"),
 ]
+
+# ---- release rules from the owner's metadata survey (2026-10-25): stored per release, used by films/rank.py ----
+# (19) built-in ads: «Реклама: Отсутствует», «Без рекламы» / «Реклама - есть (пару видеовставок)», «Присутствует
+# аудио-реклама», «Релиз содержит рекламу»; long lines are plot text («рекламщик», «рекламного плаката») and are skipped
+_ADS_NO_RE = re.compile(
+    r"без\s+(?:какой[\s-]*либо\s+)?рекламы|реклам\w*[\s:,\-–—]*(?:любого\s+вида[\s,]*)?(?:полностью\s+)?(?:отсутству|нет\b)"
+    r"|рекламы\s*[-–—:]?\s*нет|нет\s+рекламы", re.I)
+_ADS_YES_RE = re.compile(
+    r"присутству\w*\s+(?:аудио[\s-]*|видео[\s-]*)?реклам|реклам\w*\s*[:\-–—]\s*(?:есть|присутству|одна|\d)|содержит\s+реклам"
+    r"|рекламн\w*\s+(?:аудио[\s-]*|видео[\s-]*)?(?:вставк|баннер|заставк|плашк|ролик)|всплывающ\w*\s+рекламн|реклама\s+есть"
+    r"|вшит\w*\s+реклам|встроенн\w*\s+реклам", re.I)
+# (20) localized video: «Локализованный видеоряд», «Локализованная версия», «Частичная локализация», «Видео ряд локализован»
+_LOCALIZED_RE = re.compile(
+    r"локали[зс]\w*\s+(?:чист\w+\s+)?(?:русск\w+\s+)?(?:видео\s*ряд|верси|blu-?ray)|частичн\w*\s+локализ|видео\s*ряд\w*\s+локализ"
+    r"|русский\s+видеоряд|локализован\w*\s+в\s+т\.?\s*ч\.?\s+и\s+видеоряд|текст\s+локализован|локализован\w*\s+кадр", re.I)
+# (21) 3D: page label «Формат 3D», «Стереоформат», MVC video, «3D-halfOU» in the file name
+_3D_TEXT_RE = re.compile(
+    r"(?m)^(?:формат 3d|стерео\s*формат)\s*:|mvc\s+video|(?<![\w])3d[\s._-]*(?:half[\s._-]*)?(?:ou|sbs|hou|hsbs)(?![\w])"
+    r"|half[\s._-]*(?:overunder|sidebyside|ou|sbs)(?![\w])", re.I)
+# (22) TS / TC / CAM picture or sound: «звук с TS», «(Line)», «Дубляж, Вольга (CamRip)», «звука экранки»
+_CAM_VOICE_RE = re.compile(
+    r"(?<![\w])(?:ts|tc|cam|camrip|telesync|telecine|hdts|hdcam|line(?!\s*-?\s*masters?)|чистый\s+звук)(?![\w])|экранк\w*"
+    r"|звук\w*\s+(?:с|из)\s+кинотеатр", re.I)
+# (23) remaster / restoration; «Restore Point», «Restoran» are titles — whole words only, file names without folders
+_REMASTER_RE = re.compile(
+    r"remaster\w*|(?<![\w])restor(?:ed|ation)(?![\w])|реставр\w*|ремастер\w*|mastered\s+in\s+4k|criterion"
+    r"|(?<![\w])arrow[\s._-]*(?:video|films|academy)|\(arrow\)|(?<![\w])bfi(?![\w])|despeciali[sz]ed|(?<![\w])4k(?:77|80|83)(?![\w])",
+    re.I)
+_REMASTER_LABELS = {"criterion": "Criterion", "arrow": "Arrow", "bfi": "BFI"}
+# (28) black-and-white / colour versions (tracker text; IMDb colour info is titles.color, applied in films/rank.py)
+_BW_RE = re.compile(r"(?<![\w])ч\s*[/\\]\s*б(?![\w])|ч[её]рно[\s-]*бел\w*\s+верси|black\s*(?:&|and)\s*(?:white|chrome)"
+                    r"|noir[\s._]*(?:edition|ver(?:sion)?)(?![\w])|(?<![\w])чб(?![\w])", re.I)
+_COLORIZED_RE = re.compile(r"колориз\w*|colou?ri[sz]ed|цветн\w+\s+верси|colou?r[\s._]+ver(?:sion)?(?![\w])", re.I)
+# (39) «для КПК / телефона»
+_KPK_RE = re.compile(r"(?<![\w])(?:кпк|pda|ipod|iphone|3gp|psp)(?![\w])|на\s+мобильн\w*|для\s+(?:мобильн|телефон|смартфон)\w*",
+                     re.I)
+# R168(а): an uncensored («18+») voice-over
+_ADULT_RE = re.compile(r"18\s*\+|без\s+цензуры|uncensored|ненормативн\w*|нецензурн\w*", re.I)
+_ADULT_NOTE_RE = re.compile(r"(?:перевод|озвучк|озвучани|верси)\w*[^\n]{0,40}(?:ненормативн|18\s*\+|без\s+цензуры)"
+                            r"|(?:внимание|примечание)[^\n]{0,30}ненормативн", re.I)
+
+
+def _fps(val: str | None) -> float | None:
+    """'59.940 (60000/1001) FPS', '50,000 кадров/сек' → 59.94 / 50.0 (a real video frame rate: 10 … 300)."""
+    n = _num(val) if val else None
+    return n if n and 10 <= n <= 300 else None
+
+
+def _release_rules(out: dict, nm: dict | None, main_text: str, spoilers: list, mi: dict | None, fields: dict,
+                   w: list) -> None:
+    """Owner's survey answers about releases (2026-10-25), stored per release (films/sources/rutor.py `store_rules`):
+    has_ads (19, lowers), localized_video (20, raises), is_3d (21, excluded: «нет 3D-ТВ»), cam_source (22, TS/TC/CAM
+    picture or sound — excluded completely), remaster (23, «максимальный приоритет всегда»), video_color (28, bw /
+    colorized), fps (5, «60 fps — пометка в названии раздачи»), kpk (39, excluded), voice_18plus (R168(а)); per-track
+    `adult` / `cam` flags. The official / unofficial dub (25) needs the studio list from config — films/rank.py dub_official."""
+    name = (nm or {}).get("name") or out.get("name") or ""
+    tags = name.split("|", 1)[1] if "|" in name else ""
+    spoiler_text = "\n".join(b for _, b in spoilers)
+    all_text = main_text + "\n" + spoiler_text
+    short_lines = [ln for ln in all_text.split("\n") if ln.strip() and len(ln) <= 160]
+    labelled = [v for k in ("quality", "edition_info", "source_file", "note", "video") for _, v in fields.get(k, [])]
+    mi_names = []
+    if mi:
+        mi_names = [re.split(r"[/\\]", mi["general"].get("complete_name") or "")[-1], mi["general"].get("movie_name") or "",
+                    mi["general"].get("title") or ""]
+    tech = " | ".join(labelled + mi_names + [out.get("edition_info") or "", out.get("source_file") or ""])
+
+    # (19) ads: an explicit «есть» wins over a template «без рекламы» elsewhere on the page
+    # (the older «Примечание» check read «Без какой-либо рекламы» as ads — these patterns decide when they match)
+    yes = [ln for ln in short_lines if _ADS_YES_RE.search(ln) and not _ADS_NO_RE.search(ln)]
+    if yes:
+        out["has_ads"] = True
+    elif any(_ADS_NO_RE.search(ln) for ln in short_lines):
+        out["has_ads"] = False
+
+    # (20) localized video
+    loc = bool(nm and "localized" in nm["edition"]) or bool(_LOCALIZED_RE.search(name)) \
+        or any(_LOCALIZED_RE.search(ln) for ln in short_lines)
+    out["localized_video"] = loc
+
+    # (21) 3D
+    if not out.get("is_3d"):
+        mi_3d = bool(mi and any(re.search(r"(?i)\bmvc\b|multiview", " ".join(filter(None, [v.get("format"), v.get("codec_id")])))
+                                for v in mi["video"]))
+        if mi_3d or _3D_TEXT_RE.search(all_text) or _3D_TEXT_RE.search(" | ".join(mi_names)):
+            out["is_3d"] = True
+
+    # (22) TS / TC / CAM: the picture (source type), or the voice the release offers recorded in a cinema — a name tag
+    # («| D | TS», «| Line»), or RU/UK voice tracks whose best kind exists only as a cinema recording. A BDRemux whose
+    # Russian dub is clean keeps its place even if it also carries extra CamRip Ukrainian dubs (release 45632, «Терминатор 2»).
+    def _cam_in(ln: str) -> str | None:
+        m = _CAM_VOICE_RE.search(ln or "")
+        if not m or re.search(r"(?i)не\s*кинотеатр", ln):
+            return None
+        if m.group(0).lower() == "line" and (online_line or re.search(r"(?i)он-?\s*лайн|online", ln)):
+            return None   # «Line * он-лайн кинотеатр KinoPub» — taken from a streaming service, not recorded in a cinema
+        return m.group(0)
+
+    # rutor legend (torrent 140886): «Line (устаревшее обозначение: "Чистый звук") – звук напрямую записан с проектора»,
+    # CAM — «звук записанный в кинотеатре при посетителях», «Звук с TS» — all three are cinema sound.
+    cam = None
+    online_line = bool(re.search(r"(?i)(?<![\w])line(?![\w])[^\n]{0,20}(?:он-?\s*лайн|online)", all_text))
+    if out.get("source_type") in ("CAMRip", "TS", "TC"):
+        cam = out["source_type"]
+    elif nm and nm.get("audio_source") and not (re.search(r"(?i)^(?:line|чистый звук)$", nm["audio_source"]) and online_line):
+        cam = "звук: " + nm["audio_source"]
+    else:
+        # a voice track recorded in a cinema does not count as the release's voice; the release is excluded when no clean
+        # RU/UK voice remains. A «Перевод» line marks the tracks of its kind only when it names no clean source next to
+        # it («Дублированный (русский "BD CEE", украинский "Line")», release 21775)
+        trans_lines = [v for _, v in fields.get("translation", []) if v]
+        clean_src = re.compile(r"(?i)(?<![\w])(?:bd|blu-?ray|dvd|r5|web|itunes|лицензи\w*|netflix|amazon)(?![\w])")
+        cam_kinds = {_kind_in(v)[0] for v in trans_lines if _cam_in(v) and not clean_src.search(v)}
+        clean_kinds = {_kind_in(v)[0] for v in trans_lines if not _cam_in(v)}
+        voice = [a for a in out.get("audio") or [] if a.get("lang") in ("ru", "uk", None) and a.get("kind") in VOICE_RANK]
+        for a in voice:
+            hit = _cam_in(" ".join(str(a.get(k) or "") for k in ("raw", "title", "desc")))
+            if hit or (a["kind"] in cam_kinds and a["kind"] not in clean_kinds):
+                a["cam"] = hit or next(h for h in (_cam_in(v) for v in trans_lines) if h)
+        cam_tr = [a for a in voice if a.get("cam")]
+        clean_tr = [a for a in voice if not a.get("cam")]
+        if cam_tr and not clean_tr:
+            cam = "звук: " + cam_tr[0]["cam"]
+        elif cam_tr:
+            kinds = [a["kind"] for a in clean_tr]
+            best = min(kinds, key=VOICE_RANK.index)
+            if best != out.get("best_voice"):
+                w.append(f"voice {out.get('best_voice')} only as cinema sound ({cam_tr[0]['cam']}) — best voice {best}")
+                out["best_voice"] = best
+        elif not voice and cam_kinds:
+            cam = "звук: " + next(h for h in (_cam_in(v) for v in trans_lines) if h)
+        elif not voice and not trans_lines:
+            m = re.search(r"(?i)звук\w*\s+(?:с|из)\s+(ts|tc|cam\w*|экранк\w*|кинотеатр\w*)(?![\w])", all_text)
+            if m:
+                cam = "звук: " + m.group(1)
+    out["cam_source"] = cam
+
+    # (23) remaster / restoration
+    rem = None
+    if nm and "remastered" in nm["edition"]:
+        rem = next((x for x in nm["edition_raw"] + nm["upscale_hints"] if re.search(r"(?i)master|restor|реставр", x)),
+                   "Remastered")
+    if not rem and nm:
+        lab = next((x for x in nm["disc_labels"] if re.search(r"(?i)criterion|arrow|bfi", x)), None)
+        if lab:
+            rem = lab
+    if not rem:
+        # a generic «Remaster» only inside a MediaInfo file name is how fan «4K HDR Digital Remasters» of a 1080p disc are
+        # named (release 17550) — file names count for the boutique labels only
+        labelled_text = " | ".join(labelled + [out.get("edition_info") or "", out.get("source_file") or ""])
+        m = _REMASTER_RE.search(tags) or _REMASTER_RE.search(labelled_text)
+        if not m:
+            m2 = _REMASTER_RE.search(" | ".join(mi_names))
+            if m2 and re.search(r"(?i)criterion|arrow|bfi", m2.group(0)):
+                m = m2
+        if m:
+            rem = m.group(0).strip()
+    if rem:
+        k = next((v for kk, v in _REMASTER_LABELS.items() if kk in rem.lower()), None)
+        out["remaster"] = k or rem[:60]
+    else:
+        out["remaster"] = None
+
+    # (28) black-and-white / colorized
+    color = None
+    ed = (nm or {}).get("edition") or []
+    if "black_and_white" in ed or _BW_RE.search(tags) or _BW_RE.search(tech):
+        color = "bw"
+    if "colorized" in ed or _COLORIZED_RE.search(tags) or _COLORIZED_RE.search(tech):
+        color = "colorized" if color is None else color
+    out["video_color"] = color
+
+    # (5) frame rate: MediaInfo video track, else the «Видео:» line, else a «60 fps» name tag
+    fps = None
+    if mi and mi["video"]:
+        fps = _fps(mi["video"][0].get("frame_rate"))
+    if fps is None:
+        vline = " ".join(v for _, v in fields.get("video", []))
+        m = re.search(r"(\d{2,3}(?:[.,]\d+)?)\s*(?:fps|кадр)", vline, re.I)
+        fps = _fps(m.group(1)) if m else None
+    if fps is None and nm and nm.get("fps_tag"):
+        fps = float(nm["fps_tag"])
+    out["fps"] = round(fps, 3) if fps else None
+
+    # (39) КПК / phone rips: name tag, «Качество: HDRip | КПК», or a tiny picture (≤ 480 × 272: PSP / phone formats)
+    kpk = bool(nm and nm.get("kpk")) or bool(_KPK_RE.search(tags))
+    if not kpk:
+        kpk = any(_KPK_RE.search(v) for _, v in fields.get("quality", []))
+    vw, vh = out.get("video_width"), out.get("video_height")
+    if not kpk and vw and vh and vw <= 480 and vh <= 272:
+        kpk = True
+        w.append(f"tiny picture {vw}x{vh} — treated as a КПК / phone rip")
+    out["kpk"] = kpk
+
+    # R168(а): 18+ / uncensored professional voice-over
+    for a in out.get("audio") or []:
+        if _ADULT_RE.search(" ".join(str(a.get(k) or "") for k in ("raw", "title", "desc"))):
+            a["adult"] = True
+    pro = [a for a in out.get("audio") or [] if a.get("lang") in ("ru", "uk", None) and a.get("kind") in ("mvo", "dvo", "svo")]
+    adult = any(a.get("adult") for a in pro)
+    if not adult:
+        for _, val in fields.get("translation", []):
+            k, _ex = _kind_in(val)
+            if k in ("mvo", "dvo", "svo") and _ADULT_RE.search(val) and not re.search(r"(?i)любительск|amateur", val):
+                adult = True
+                break
+    if not adult and pro and any(_ADULT_NOTE_RE.search(ln) for ln in short_lines):
+        adult = True
+    out["voice_18plus"] = adult
 
 
 def parse_release_page(html: str) -> dict:
@@ -1915,9 +2132,15 @@ def parse_release_page(html: str) -> dict:
     else:
         vt = " ".join([vline, cline])
         out["video_codec"] = _norm_vcodec(vt)
-        m = re.search(r"(\d{3,4})\s*[xх×]\s*(\d{3,4})", vline)
-        if m:
-            out["video_width"], out["video_height"] = int(m.group(1)), int(m.group(2))
+        # «1 280 x 692» (thousands separated by a space) was read as 280 x 692 (release 17536); «DivX 5 640x480» is
+        # 640 x 480 (release 17344) — a spaced width counts only when it is a real frame width (≤ 4096)
+        m = re.search(r"(?<![\d\w])([1-4]\s\d{3})\s*[xх×]\s*(\d\s\d{3}|\d{3,4})(?!\d)", vline)
+        if m and int(m.group(1).replace(" ", "")) <= 4096:
+            out["video_width"], out["video_height"] = int(m.group(1).replace(" ", "")), int(m.group(2).replace(" ", ""))
+        else:
+            m = re.search(r"(\d{3,4})\s*[xх×]\s*(\d{3,4})", vline)
+            if m:
+                out["video_width"], out["video_height"] = int(m.group(1)), int(m.group(2))
         m = re.search(r"(\d{1,2})\s*(?:бит|bits?)\b", vline, re.I)
         if m:
             out["video_bit_depth"] = int(m.group(1))
@@ -2247,6 +2470,21 @@ def parse_release_page(html: str) -> dict:
             if a.get("kind") is None and a.get("lang") == "ru":
                 a["kind"] = name_kinds[0]
                 a["kind_source"] = f"name code {nm['voice_codes'][0]}"
+        # the only audio track, without language or kind (FlarrowFilms localized releases, «Аудио: AC-3, 192 kb/s,
+        # 2 channels»): it is the voice the name's single code describes — was best_voice 'none' (release 12257)
+        if len(audio) == 1 and audio[0].get("kind") is None and audio[0].get("lang") is None:
+            audio[0]["lang"], audio[0]["kind"] = "ru", name_kinds[0]
+            audio[0]["kind_source"] = f"name code {nm['voice_codes'][0]} (single unlabelled track)"
+            if audio[0].get("studio") is None and len(nm["studios"]) == 1:
+                audio[0]["studio"] = nm["studios"][0]
+    # no voice code, one studio of the rutor guide lists in the name and one unlabelled track: that studio's voice
+    # («Криптон / Krypton [s01] (2018) WEBRip 1080p | Flarrow Films», release 44362 — was best_voice 'none')
+    elif nm and not name_kinds and not nm["has_ukr"] and len(nm["studios"]) == 1 and len(audio) == 1 \
+            and audio[0].get("kind") is None and audio[0].get("lang") in (None, "ru") \
+            and _KIND_BY_STUDIO_KEY.get(_key(nm["studios"][0])):
+        audio[0]["lang"], audio[0]["kind"] = "ru", _KIND_BY_STUDIO_KEY[_key(nm["studios"][0])]
+        audio[0]["studio"] = nm["studios"][0]
+        audio[0]["kind_source"] = "rutor studio list (single unlabelled track, no voice code)"
     # 5) films produced in Russia/USSR (or Ukraine): the RU (UK) track without kind is the original
     origin = {_key(c) for c in out["countries"]}
     for a in audio:
@@ -2333,4 +2571,5 @@ def parse_release_page(html: str) -> dict:
     out["forced_subs"] = [x for x in _uniq(forced) if x != "orig"]
     if "orig" in forced:
         w.append("forced subtitles for 'original' language (language not named)")
+    _release_rules(out, nm, main_text, spoilers, mi, fields, w)
     return out

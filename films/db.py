@@ -621,6 +621,53 @@ MIGRATIONS = [
     );
     CREATE INDEX ix_disk_files_title ON disk_files(title_id);
     """,
+    # 16: metadata survey answers (owner, 2026-10-25) — title / people / Plex / store fields (films.title_meta,
+    # films/sources/imdb_specs.py, films/sources/plex.py). «в таблицу» = a sheet column, the rest DB only.
+    # credits get roles 'creator' / 'composer' / 'dop' / 'producer' (no schema change: credits.role is free text).
+    """
+    ALTER TABLE titles ADD COLUMN distributor TEXT;          -- shown: UA distributor > the only worldwide one > US (IMDb)
+    ALTER TABLE titles ADD COLUMN distributor_country TEXT;  -- UA / XWW / US / … — whose distributor `distributor` is
+    ALTER TABLE titles ADD COLUMN distributors TEXT;         -- JSON: every IMDb distribution credit {name, country, attrs}
+    ALTER TABLE titles ADD COLUMN keywords TEXT;             -- JSON: TMDB keywords (English; TMDB has no translations) — shown
+    ALTER TABLE titles ADD COLUMN is_miniseries INTEGER;     -- TMDB tv type = Miniseries (DB only)
+    ALTER TABLE titles ADD COLUMN cameras TEXT;              -- JSON: IMDb tech specs cameras (DB only)
+    ALTER TABLE titles ADD COLUMN film_format TEXT;          -- JSON {negative, printed, process}: IMDb tech specs (DB only)
+    ALTER TABLE titles ADD COLUMN color TEXT;                -- IMDb colorations: "Color" / "Black and White" / "Color | Black and White (…)"
+    ALTER TABLE titles ADD COLUMN filming_locations TEXT;    -- JSON: IMDb filming locations (DB only)
+    ALTER TABLE titles ADD COLUMN original_language TEXT;    -- TMDB ISO 639-1 (DB only; never sets no_dub_needed)
+    ALTER TABLE titles ADD COLUMN spoken_languages TEXT;     -- JSON ISO 639-1 list (TMDB, DB only)
+    ALTER TABLE titles ADD COLUMN homepage TEXT;             -- official site (TMDB homepage) — a link in the «Ссылки» cell
+    ALTER TABLE titles ADD COLUMN wikidata_id TEXT;          -- TMDB external_ids (season's own, else the series')
+    ALTER TABLE titles ADD COLUMN wiki_links TEXT;           -- JSON {uk, en, ru}: Wikipedia via Wikidata sitelinks — uk, else en shown
+    ALTER TABLE titles ADD COLUMN meta_checked_at TEXT;      -- when films.title_meta last filled the TMDB fields above
+
+    ALTER TABLE people ADD COLUMN name_uk TEXT;              -- Ukrainian spelling (TMDB person translations), DB only
+    ALTER TABLE people ADD COLUMN name_ru_source TEXT;       -- translation:ru-RU / also_known_as / original_cyrillic
+    ALTER TABLE people ADD COLUMN name_uk_source TEXT;
+    ALTER TABLE people ADD COLUMN names_checked_at TEXT;
+
+    ALTER TABLE plex_items ADD COLUMN added_at TEXT;         -- Plex addedAt (UTC) — shown only on «Обновить качество»
+
+    ALTER TABLE store_items ADD COLUMN purchased_at TEXT;          -- ISO date: YouTube «Приобретено» / Play order date
+    ALTER TABLE store_items ADD COLUMN purchased_at_source TEXT;   -- youtube_acquired / play_order
+    ALTER TABLE store_items ADD COLUMN wishlist_added_at TEXT;     -- ISO date the film entered the Google TV list
+    ALTER TABLE store_items ADD COLUMN wishlist_added_source TEXT; -- google_list (Google's own time) / gtv_guard / first_seen (upper bound)
+    """,
+    # 17: RELEASE rules from the metadata survey (owner, 2026-10-25; agent «release rules», films/parse/rutor.py
+    # `_release_rules`, films/rank.py `release_key`). Stored per release; 3D / TS-TC-CAM / КПК releases are also listed
+    # in excluded_releases (reason is_3d / cam / kpk; a re-parse that clears the flag sets reason 'lifted:<reason>').
+    """
+    ALTER TABLE releases ADD COLUMN has_ads INTEGER;         -- (19) built-in ads in the video: 1 / 0 (said «без рекламы») / NULL
+    ALTER TABLE releases ADD COLUMN localized_video INTEGER; -- (20) Russian on-screen titles / inserts («локализованная версия»)
+    ALTER TABLE releases ADD COLUMN is_3d INTEGER;           -- (21) 3D (no 3D TV) → excluded
+    ALTER TABLE releases ADD COLUMN cam_source TEXT;         -- (22) TS / TC / CAM picture or sound («звук с TS», Line) → excluded
+    ALTER TABLE releases ADD COLUMN remaster TEXT;           -- (23) Remastered / Restored / Criterion / Arrow / BFI … (what was found)
+    ALTER TABLE releases ADD COLUMN dub_official INTEGER;    -- (25) 1 official dub / 0 only unofficial dub ([dub_unofficial]) / NULL no dub
+    ALTER TABLE releases ADD COLUMN video_color TEXT;        -- (28) bw / colorized (tracker text) / NULL = colour or unknown
+    ALTER TABLE releases ADD COLUMN fps REAL;                -- (5) frame rate (MediaInfo / name), ≥ 50 shown as «60 fps»
+    ALTER TABLE releases ADD COLUMN is_kpk INTEGER;          -- (39) «для КПК / телефона» (PDA, Mobile, iPod, 3GP, ≤ 480 px wide) → excluded
+    ALTER TABLE releases ADD COLUMN voice_18plus INTEGER;    -- R168(а): a professional (mvo/dvo/svo) RU/UK track marked 18+ / uncensored
+    """,
 ]
 
 

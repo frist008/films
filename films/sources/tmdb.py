@@ -358,6 +358,14 @@ WRITER_JOBS = {"Screenplay", "Writer", "Story", "Novel", "Characters", "Original
                "Original Film Writer", "Head Writer", "Creator", "Novelist", "Musical", "Opera", "Poem",
                "Article", "Memoir", "Books", "Original Creator", "Original Idea", "Characters By",
                "Story By", "Written By"}
+# metadata survey (owner, 2026-10-25): DOP and producers are shown in the sheet, the composer is stored only.
+# Producers: a film's creative producers carry the job «Producer» (Executive / Co- / Associate Producer are financiers,
+# studio executives and line producers — not shown).  In TV the creative producers / showrunners are credited
+# «Executive Producer», while a season's «Producer» is a line / supervising producer, so seasons use Executive Producer.
+DOP_JOBS = {"Director of Photography"}
+MOVIE_PRODUCER_JOBS = {"Producer"}
+TV_PRODUCER_JOBS = {"Executive Producer"}
+COMPOSER_JOBS = {"Original Music Composer", "Music", "Composer"}
 _CYR = re.compile(r"[А-Яа-яЁё]")
 
 
@@ -390,6 +398,9 @@ def _movie_credits(credits: dict) -> dict:
         "writers": _people_by_job(crew, lambda c: c.get("department") == "Writing" and c.get("job") in WRITER_JOBS),
         "writing_other": _people_by_job(crew, lambda c: c.get("department") == "Writing"
                                         and c.get("job") not in WRITER_JOBS),
+        "dops": _people_by_job(crew, lambda c: c.get("job") in DOP_JOBS),
+        "producers": _people_by_job(crew, lambda c: c.get("job") in MOVIE_PRODUCER_JOBS),
+        "composers": _people_by_job(crew, lambda c: c.get("job") in COMPOSER_JOBS),
         "cast": [{"tmdb_id": c["id"], **_pname(c), "character": c.get("character") or None,
                   "order": c.get("order")} for c in cast],
     }
@@ -415,6 +426,9 @@ def _aggregate_credits(agg: dict) -> dict:
         "directors": grouped(lambda r: r["job"] in DIRECTOR_JOBS),
         "writers": grouped(lambda r: r["department"] == "Writing" and r["job"] in WRITER_JOBS),
         "writing_other": grouped(lambda r: r["department"] == "Writing" and r["job"] not in WRITER_JOBS),
+        "dops": grouped(lambda r: r["job"] in DOP_JOBS),
+        "producers": grouped(lambda r: r["job"] in TV_PRODUCER_JOBS),
+        "composers": grouped(lambda r: r["job"] in COMPOSER_JOBS),
         "cast": [{"tmdb_id": c["id"], **_pname(c),
                   "character": " / ".join(r["character"] for r in c.get("roles") or [] if r.get("character")) or None,
                   "episodes": c.get("total_episode_count"), "order": c.get("order")} for c in cast],
@@ -736,6 +750,7 @@ def season(conn, tv_id: int, season_number: int, max_age_days: float = DEFAULT_M
         "external_ids": {k: v for k, v in (b.get("external_ids") or {}).items() if v and k != "id"},
         "poster_path": b.get("poster_path"),
         **_aggregate_credits(b.get("aggregate_credits")),
+        "creators": (s or {}).get("created_by") or [],   # series creators, credited on every season (survey 2026-10-25)
         **tr,
     }
     return d
@@ -804,9 +819,61 @@ def person(conn, person_id: int, max_age_days: float = 180) -> dict | None:
     # `name` of a ru-RU response is already the Russian one when it exists; the original is the primary
     # translation's name (TMDB marks it primary: True)
     prim = next((t["data"]["name"] for t in tr if (t.get("data") or {}).get("primary") and t["data"].get("name")), None)
+    name_uk, src_uk = person_name_uk(b)
     return {"tmdb_id": b["id"], "name": prim or b.get("name"), "name_ru": name_ru, "name_ru_source": src,
+            "name_uk": name_uk, "name_uk_source": src_uk,
             "imdb_id": b.get("imdb_id") or ext.get("imdb_id") or None,
             "known_for_department": b.get("known_for_department")}
+
+
+_UK_ONLY = re.compile(r"[ІіЇїЄєҐґ]")
+_NOT_UK = re.compile(r"[ЫыЭэЁёЪъЎў]")
+
+
+def person_name_uk(b: dict) -> tuple[str | None, str | None]:
+    """Ukrainian spelling of a person's name (survey 2026-10-25: «украинское — хранить»): the uk translation, else an
+    also_known_as entry that is unmistakably Ukrainian (і/ї/є/ґ and none of ы/э/ё/ъ/ў)."""
+    tr = ((b.get("translations") or {}).get("translations")) or []
+    v, src = _translation(tr, "uk", "name", ("UA",))
+    if v:
+        return v, "translation:" + src
+    aka = [a for a in b.get("also_known_as") or [] if _UK_ONLY.search(a) and not _NOT_UK.search(a)]
+    return (aka[0], "also_known_as") if aka else (None, None)
+
+
+def _homepage(b: dict) -> str | None:
+    """Official site: TMDB `homepage` is translatable — the original-language translation's, else English, else any
+    (a ru-RU body often has it empty: Dune: Part Two)."""
+    tr = ((b.get("translations") or {}).get("translations")) or []
+    olang = b.get("original_language")
+    for lang in [x for x in (olang, "en") if x]:
+        v, _ = _translation(tr, lang, "homepage")
+        if v:
+            return v
+    if (b.get("homepage") or "").strip():
+        return b["homepage"].strip()
+    v = next(((t.get("data") or {}).get("homepage", "").strip() for t in tr
+              if ((t.get("data") or {}).get("homepage") or "").strip()), None)
+    return v or None
+
+
+def title_extras(b: dict | None, kind: str, season_body: dict | None = None) -> dict:
+    """Survey fields (owner, 2026-10-25) from a cached movie / tv body: keywords, official site, original and spoken
+    languages, Wikidata id (a season's own when it has one), miniseries flag.  Pure; unit-tested on fixtures."""
+    b = b or {}
+    kw = (b.get("keywords") or {})
+    kw = kw.get("keywords") if kind == "movie" else kw.get("results")
+    wd = ((season_body or {}).get("external_ids") or {}).get("wikidata_id") or (b.get("external_ids") or {}).get("wikidata_id")
+    langs = [x.get("iso_639_1") for x in b.get("spoken_languages") or [] if x.get("iso_639_1")]
+    return {
+        "keywords": [k["name"] for k in kw or [] if k.get("name")],
+        "homepage": _homepage(b),
+        "original_language": b.get("original_language") or None,
+        "spoken_languages": langs,
+        "wikidata_id": wd or None,
+        "series_wikidata_id": (b.get("external_ids") or {}).get("wikidata_id") or None,
+        "is_miniseries": (1 if b.get("type") == "Miniseries" else 0) if kind == "tv" and b.get("type") else None,
+    }
 
 
 # ----------------------------------------------------------------------------------------------

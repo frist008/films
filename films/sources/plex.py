@@ -510,15 +510,18 @@ def build_item(lib: dict, listed: dict, meta: dict) -> dict:
         "audio": media["entries"] + [item_entry],
         "view_count": int(listed.get("viewCount") or meta.get("viewCount") or 0),
         "last_viewed_at": ts_to_sql(listed.get("lastViewedAt") or meta.get("lastViewedAt")),
+        # Plex «date added» (survey 2026-10-25: shown only on «Обновить качество»)
+        "added_at": ts_to_sql(meta.get("addedAt") or listed.get("addedAt")),
     }
 
 
 UPSERT_ITEM = """
 INSERT INTO plex_items (rating_key, title_id, library, kind, plex_title, plex_year, guids, file_path,
-                        resolution, source_type, hdr, dv_profile, audio, view_count, last_viewed_at, synced_at)
+                        resolution, source_type, hdr, dv_profile, audio, view_count, last_viewed_at, synced_at, added_at)
 VALUES (:rating_key, :title_id, :library, :kind, :plex_title, :plex_year, :guids, :file_path,
-        :resolution, :source_type, :hdr, :dv_profile, :audio, :view_count, :last_viewed_at, :synced_at)
+        :resolution, :source_type, :hdr, :dv_profile, :audio, :view_count, :last_viewed_at, :synced_at, :added_at)
 ON CONFLICT(rating_key) DO UPDATE SET
+    added_at = COALESCE(excluded.added_at, plex_items.added_at), present = 1, removed_at = NULL,
     title_id = COALESCE(plex_items.title_id, excluded.title_id),
     library = excluded.library, kind = excluded.kind, plex_title = excluded.plex_title,
     plex_year = excluded.plex_year, guids = excluded.guids, file_path = excluded.file_path,
@@ -556,6 +559,13 @@ def scan_libraries(conn: sqlite3.Connection, px: Plex | None = None, log=print) 
         stats["items"] += len(rows)
         log(f"  [{lib['key']:>2}] {lib['title']}: {len(rows)} items")
     stats["stale"] = conn.execute("SELECT count(*) FROM plex_items WHERE synced_at < ?", (run_at,)).fetchone()[0]
+    # an item no library lists any more is kept (never deleted) but marked gone — the duplicate check
+    # (films.duplicates, survey 2026-10-25) and «what is downloaded» must not count a removed copy
+    if not stats["errors"]:
+        with conn:
+            stats["marked_removed"] = conn.execute(
+                "UPDATE plex_items SET present = 0, removed_at = ? WHERE synced_at < ? AND present = 1",
+                (run_at, run_at)).rowcount
     return stats
 
 

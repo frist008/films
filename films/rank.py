@@ -67,35 +67,230 @@ def hdr_rank(cls: str) -> int:
     return order.index(cls) if cls in order else len(order)
 
 
-def preferred_studios(cfg: dict, t: dict) -> list[str]:
+VOICED = ("dub", "mvo", "dvo", "svo", "avo", "amateur")
+PRO_VO = ("mvo", "dvo", "svo")
+RULE_EXCLUSIONS = ("is_3d", "cam", "kpk")   # excluded_releases.reason of the release rules (owner, 2026-10-25)
+
+
+def _nkey(s: str) -> str:
+    return re.sub(r"[\W_]+", "", (s or "").lower().replace("ё", "е"))
+
+
+def voice_preference(cfg: dict, t: dict, franchise_keys: set | frozenset = frozenset()) -> dict:
     """[voice_preference]: the owner's voice studios for one series («Для Рика и Морти озвучка «Кубик в Кубе» или
-    «Сыендук» — приоритет», 2026-10-25) — names in lower case, aliases included."""
-    for p in cfg.get("voice_preference", {}).get("series", []):
+    «Сыендук» — приоритет», 2026-10-25) or for every series of a franchise (R168(б), 2026-10-25: «Marvel и DC — всегда
+    FlarrowFilms», приоритет даже над 4K и HDR). Returns {"studios": [normalised names], "all_episodes": bool, "name": …};
+    all_episodes = the «серий N из M с этой озвучкой» row + extra row rule. franchise_keys: the title's franchise_members keys."""
+    vp = cfg.get("voice_preference", {})
+    for p in vp.get("series", []):
         if t.get("series_tmdb_id") == p.get("tmdb") or t.get("tmdb_id") == p.get("tmdb"):
-            return [x.lower() for x in p.get("studios", [])]
-    return []
+            return {"studios": [_nkey(x) for x in p.get("studios", [])], "all_episodes": bool(p.get("all_episodes")),
+                    "name": p.get("name")}
+    if t.get("kind") == "series" and franchise_keys:
+        for p in vp.get("franchises", []):
+            if set(p.get("keys", [])) & set(franchise_keys):
+                return {"studios": [_nkey(x) for x in p.get("studios", [])], "all_episodes": bool(p.get("all_episodes")),
+                        "name": p.get("name")}
+    return {"studios": [], "all_episodes": False, "name": None}
 
 
-def release_key(r: dict, cfg: dict, studios: list[str] | None = None) -> tuple:
-    """Smaller is better. A studio the owner prefers for this series first (studios), then voice — «дубляж важнее
-    качества всегда» (owner, 2026-10-24): dub > MVO > … > none, then HDR, 4K, source, bitrate."""
+def preferred_studios(cfg: dict, t: dict, franchise_keys: set | frozenset = frozenset()) -> list[str]:
+    """Old interface of voice_preference (normalised studio names only)."""
+    return voice_preference(cfg, t, franchise_keys)["studios"]
+
+
+def studio_hit(r: dict, studios: list[str]) -> bool:
+    """A preferred studio voices this release: track studio / title, or a tag of the release name (the parser does
+    not always tie a studio to a track — FlarrowFilms pages often carry one unlabelled audio track)."""
+    if not studios:
+        return False
+    tags = (r.get("name") or "").split("|", 1)[1] if "|" in (r.get("name") or "") else ""
+    names = _nkey(" ".join(str(a.get("studio") or "") + " " + str(a.get("title") or "") for a in _j(r.get("audio"), []))
+                  + " " + tags)
+    return any(s and s in names for s in studios)
+
+
+def unofficial_dub_studios(cfg: dict) -> set[str]:
+    return {_nkey(s) for s in cfg.get("dub_unofficial", {}).get("studios", [])}
+
+
+def _is_unofficial(studio_key: str, unoff: set[str]) -> bool:
+    """«Red Head Sound 18+» → redheadsound18 contains redheadsound; a short name («RHS») must match exactly."""
+    return bool(studio_key) and any(u == studio_key or (len(u) >= 5 and u in studio_key) for u in unoff)
+
+
+def dub_official(d: dict, cfg: dict) -> int | None:
+    """(25) owner, 2026-10-25: «официальный дубляж выше при выборе лучшей раздачи». d = parser output (audio tracks,
+    name_parsed). 1 = some RU/UK dub is official (said «Лицензия» / «официальный», or its studio is not in
+    [dub_unofficial] — cinema / platform dubs are rarely labelled), 0 = every dub is unofficial (said «неофициальный»,
+    or by a studio of [dub_unofficial]: Red Head Sound, Jaskier …), None = no dub."""
+    unoff = unofficial_dub_studios(cfg)
+    nm = d.get("name_parsed") or {}
+    dubs = [a for a in d.get("audio") or [] if a.get("kind") == "dub" and a.get("lang") in ("ru", "uk", None)]
+    if not dubs:
+        if d.get("best_voice") != "dub":
+            return None
+        if nm.get("licensed"):
+            return 1
+        st = [_nkey(s) for s in nm.get("studios") or []]
+        return 0 if st and all(_is_unofficial(s, unoff) for s in st) else 1
+    for a in dubs:
+        if a.get("official") is True:
+            return 1
+        if a.get("official") is False:
+            continue
+        sk = _nkey(a.get("studio") or "")
+        if _is_unofficial(sk, unoff):
+            continue
+        if not sk and nm.get("studios"):   # unlabelled dub track: the name's studios tell
+            st = [_nkey(s) for s in nm["studios"]]
+            if all(_is_unofficial(s, unoff) for s in st) and not nm.get("licensed"):
+                continue
+        return 1
+    return 0
+
+
+def title_is_bw(t: dict | None) -> bool:
+    """IMDb colorations (titles.color, filled by films/sources/imdb_specs.py): «Black and White» without «Color»."""
+    c = ((t or {}).get("color") or "").lower()
+    return "black and white" in c and "color" not in c.replace("colorized", "")
+
+
+def color_rank(r: dict, title_bw: bool = False) -> int:
+    """(28) «цветные версии в приоритете» (owner, 2026-10-25): native colour 0 < colorized 1 < black-and-white 2."""
+    vc = r.get("video_color")
+    if vc == "colorized":
+        return 1
+    if vc == "bw" or title_bw:
+        return 2
+    return 0
+
+
+def is_remaster(r: dict) -> bool:
+    """(23) restoration / remaster (Criterion, Arrow, BFI, Remastered, Restored, реставрация …); a fan AI upscale that
+    calls itself «remastered» is not one (trackers label only fan upscales — is_ai_upscale)."""
+    return bool(r.get("remaster")) and not r.get("is_ai_upscale")
+
+
+def release_key(r: dict, cfg: dict, studios: list[str] | None = None, ctx: dict | None = None) -> tuple:
+    """Smaller is better (owner's rules; 2026-10-24 … 2026-10-25):
+
+    1. remaster / restoration — «максимальный приоритет всегда; своим наличием автоматически фильтруют не-ремастеры того
+       же качества» (survey 23): a remaster beats every non-remaster of the same or a lower resolution. Deviations, both
+       from the owner's own words: a release of a HIGHER resolution than the best remaster is not pushed below it (a UHD
+       disc made from a new 4K scan is rarely labelled «Remastered» on rutor — «Горец», «Звонок»: 4K DV BDRemux vs a 1080p
+       «Remastered» BDRip; «того же качества»), and a remaster without any RU/UK voice does not win when the title has a
+       voiced release («дубляж важнее качества всегда»; the «нет озвучки» filter hides titles without any voice);
+    2. the owner's studio for this series ([voice_preference]: «Рик и Морти» — Кубик в Кубе; Marvel / DC series —
+       FlarrowFilms «даже над 4K и HDR», R168(б));
+    3. R168(а): a series without any dub — a professional (mvo/dvo/svo) «18+» / uncensored voice-over first;
+    4. voice — «дубляж важнее качества всегда»: dub > MVO > … > none; an official dub above an unofficial one (survey 25:
+       «официальный выше при выборе лучшей раздачи»);
+    5. AV1 lower (no hardware decoder on the TV, [tv]);
+    6. colour > colorized > black-and-white (28: «цветные версии в приоритете»);
+    7. HDR (HDR10+ = HDR10 on the owner's TV), 4K, then HD class (1080p+ / 720p / SD — added 2026-10-25 so that the
+       next rule compares like with like; before, below 4K only source and bitrate told 1080p from 480p);
+    8. built-in ads lower (19), localized video (Russian on-screen titles) higher (20). Deviation from the suggested order
+       (ads / localized before colour and HDR): the owner said they «снижает / повышает баллы» — a plus or minus, not a
+       priority; above HDR / 4K they made a 1080p WEB-DLRip with Russian titles beat a 4K HDR WEB-DL in 104 titles
+       («Асока», «Мандалорец») and a 480p rip beat a 1080p BDRemux («Восемь сотен»), so they decide within the same
+       picture class (HDR, 4K, HD class);
+    9. source, H.264-equivalent bitrate, seeders.
+    ctx (per title, from compute): any_voiced, series_no_dub, title_bw, remaster_res (resolution of the best voiced
+    remaster)."""
+    ctx = ctx or {}
     voice_rank = cfg["sort"]["voice_rank"]
-    pref = 0
-    if studios:
-        names = " ".join(str(a.get("studio") or "") + " " + str(a.get("title") or "") for a in _j(r.get("audio"), [])).lower()
-        pref = 0 if any(s in names for s in studios) else 1
-    source_rank = cfg["sort"]["source_rank"]
     v = r.get("best_voice") or "none"
+    res = r.get("resolution") or 0
+    if is_remaster(r) and (v in VOICED or not ctx.get("any_voiced")):
+        remaster = 0
+    elif ctx.get("remaster_res") is not None and res > ctx["remaster_res"]:
+        remaster = 0          # a higher resolution than any remaster: compared on its own merits
+    else:
+        remaster = 1
+    pref = (0 if studio_hit(r, studios) else 1) if studios else 0
+    adult = 0 if ctx.get("series_no_dub") and r.get("voice_18plus") else 1
+    unofficial = 1 if v == "dub" and r.get("dub_official") == 0 else 0
+    source_rank = cfg["sort"]["source_rank"]
     slow = 1 if r.get("video_codec") in tv_cfg().get("codecs_slow", []) else 0   # AV1: no hardware decoder on the TV
-    return (pref, voice_rank.index(v) if v in voice_rank else len(voice_rank), slow,
+    return (remaster, pref, adult, voice_rank.index(v) if v in voice_rank else len(voice_rank), unofficial, slow,
+            color_rank(r, ctx.get("title_bw", False)),
             hdr_rank(hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))),
-            0 if (r.get("resolution") or 0) >= 2160 else 1,
+            0 if res >= 2160 else 1,
+            0 if res >= 1080 else 1 if res >= 720 else 2,
+            1 if r.get("has_ads") else 0, 0 if r.get("localized_video") else 1,
             source_rank.index(r["source_type"]) if r.get("source_type") in source_rank else len(source_rank),
             -(r.get("h264_equiv_kbps") or 0),
             -(r.get("seeders") or 0))
 
 
-def describe(r: dict) -> str:
+def picture_key(r: dict, cfg: dict) -> tuple:
+    """Picture only (no voice): HDR class, 4K, source — what «лучшее, в каком он вообще выходил» compares (R168(в))."""
+    source_rank = cfg["sort"]["source_rank"]
+    return (hdr_rank(hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))),
+            0 if (r.get("resolution") or 0) >= 2160 else 1,
+            source_rank.index(r["source_type"]) if r.get("source_type") in source_rank else len(source_rank))
+
+
+def episodes_reached(r: dict) -> int | None:
+    """Last episode a season release contains: «1-5» → 5, «7» → 7; None = not stated (a whole-season pack)."""
+    m = re.findall(r"\d+", str(r.get("episodes") or ""))
+    return int(m[-1]) if m else None
+
+
+def studio_episodes(t: dict, best: dict, rels: list[dict], pref: dict) -> tuple[str | None, tuple | None, dict | None]:
+    """R168(б) (owner, 2026-10-25): «если у них вышли не все серии — строка сериала с пометкой «серий N из M с этой
+    озвучкой», ниже доп. строка с другой озвучкой, где вышло всё; когда FlarrowFilms выпустят всё — доп. строка не нужна».
+    rels sorted best first. M = titles.episodes_total (TMDB), else the furthest episode any release reached; a release
+    without episode numbers is a whole-season pack. Returns (note, (N, M), extra release or None)."""
+    studios = pref.get("studios") or []
+    if not (pref.get("all_episodes") and t.get("kind") == "series" and studio_hit(best, studios)):
+        return None, None, None
+    m_total = t.get("episodes_total") or max((x for x in (episodes_reached(r) for r in rels) if x), default=None)
+    n_best = episodes_reached(best) or m_total
+    if not (m_total and n_best):
+        return None, None, None
+    if n_best >= m_total:
+        return None, (n_best, m_total), None
+    note = f"серий {n_best} из {m_total} с этой озвучкой"
+    more = [r for r in rels if not studio_hit(r, studios) and (episodes_reached(r) or m_total) > n_best]
+    if not more:
+        return note, (n_best, m_total), None
+    full = max(episodes_reached(r) or m_total for r in more)
+    return note, (n_best, m_total), next(r for r in more if (episodes_reached(r) or m_total) == full)
+
+
+def max_quality(t: dict, best: dict | None, rels: list[dict], cfg: dict, pref: dict | None = None,
+                episodes: tuple[int, int] | None = None) -> bool:
+    """R168(в) «максимальное качество» (owner, 2026-10-25): the best release has
+    * the voice: a dub — for a series with a franchise studio rule (Marvel / DC → FlarrowFilms) that studio, with every
+      episode of the season out (`episodes` = (N, M));
+    * the picture: the best this title was ever released in — no release of the title (any voice, rutor / rutracker) has
+      a better HDR class, 4K or source (picture_key); a restoration / remaster beats every non-remaster; and when
+      blu-ray.com has reviewed a 4K disc of it (upscale_source = bluray_com) a sub-4K release is not the maximum.
+    At the maximum update-db looks for no alternative (rutracker queries skip it); otherwise it searches (a dub, a better
+    picture, FlarrowFilms episodes)."""
+    if not best or best.get("id") is None or not rels:
+        return False
+    pref = pref or {}
+    if pref.get("all_episodes") and pref.get("studios"):
+        if not studio_hit(best, pref["studios"]):
+            return False
+        if episodes and episodes[0] < episodes[1]:
+            return False
+    elif best.get("best_voice") != "dub":
+        return False
+    if not is_remaster(best) and any(is_remaster(r) and (r.get("resolution") or 0) >= (best.get("resolution") or 0)
+                                     for r in rels):
+        return False
+    if picture_key(best, cfg) > min(picture_key(r, cfg) for r in rels):
+        return False
+    if t.get("upscale_source") == "bluray_com" and (best.get("resolution") or 0) < 2160:
+        return False
+    return True
+
+
+def describe(r: dict, title_bw: bool = False) -> str:
     hdr = hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))
     parts = [str(r.get("resolution") or "SD"), r.get("source_type") or "?"]
     if hdr == "DV*":   # R31: DV not from the studio — rebuilt from HDR10 (1) or converted from HDR10+ (2)
@@ -103,6 +298,10 @@ def describe(r: dict) -> str:
                      + (" (DV: из HDR10+)" if r.get("dv_static_md") == 2 else " (DV: статические метаданные)"))
     elif hdr != "SDR":
         parts.append(hdr + (f" P{r['dv_profile']}" if hdr.startswith("DV") and r.get("dv_profile") else ""))
+    if (r.get("fps") or 0) >= 50:   # survey 5 (2026-10-25): «60 fps — пометка в названии раздачи»
+        parts.append(f"{round(r['fps'])} fps")
+    if color_rank(r, title_bw) == 2:   # survey 28: «в название раздачи добавлять «ч/б», если фильм чёрно-белый»
+        parts.append("ч/б")
     if r.get("best_voice"):
         parts.append(r["best_voice"])
     return " ".join(parts)
@@ -254,11 +453,21 @@ def compute(conn) -> list[dict]:
         "SELECT imdb_id FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)" % ",".join("?" * len(selected_keys)),
         sorted(selected_keys))} if selected_keys else set()
 
+    # franchise keys per IMDb id — the franchise voice rule of [voice_preference] (R168(б): Marvel / DC → FlarrowFilms)
+    vp_keys = {k for p in cfg.get("voice_preference", {}).get("franchises", []) for k in p.get("keys", [])}
+    fr_keys: dict[str, set] = {}
+    if vp_keys:
+        for imdb, key in conn.execute(
+                "SELECT imdb_id, franchise_key FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)"
+                % ",".join("?" * len(vp_keys)), sorted(vp_keys)):
+            fr_keys.setdefault(imdb, set()).add(key)
+
     rel_by_title: dict[int, list[dict]] = {}
     for r in conn.execute(
             """SELECT rt.title_id, r.* FROM release_titles rt JOIN releases r ON r.id = rt.release_id
-               WHERE NOT EXISTS (SELECT 1 FROM excluded_releases e      -- DV5-only etc. (R8): kept, never shown
-                                 WHERE e.source = r.source AND e.source_id = r.source_id)"""):
+               WHERE NOT EXISTS (SELECT 1 FROM excluded_releases e      -- DV5-only, 3D, TS/TC/CAM, КПК: kept, never shown
+                                 WHERE e.source = r.source AND e.source_id = r.source_id
+                                   AND e.reason NOT LIKE 'lifted:%')"""):
         rel_by_title.setdefault(r["title_id"], []).append(dict(r))
     plex_by_title: dict[int, list[dict]] = {}
     for p in conn.execute("SELECT * FROM plex_items WHERE title_id IS NOT NULL AND present = 1"):
@@ -276,6 +485,8 @@ def compute(conn) -> list[dict]:
            WHERE t.collection_id IS NOT NULL AND substr(w.source, -8) != '_partial'""")}
     credit_people: dict[int, set] = {}
     if people:
+        # every credit role counts, not only actor / director / writer: the owner's survey (2026-10-25, answers 15, 33–35)
+        # adds 'creator' (series creator «важная роль»), 'composer', 'dop' and 'producer' (written by films.title_meta)
         for tid, name, imdb, tm in conn.execute(
                 "SELECT c.title_id, p.name, p.imdb_id, p.tmdb_id FROM credits c JOIN people p ON p.id = c.person_id"):
             key = next((k for k in (f"tmdb:{tm}" if tm else None, imdb, name) if k and k in people), None)
@@ -321,10 +532,27 @@ def compute(conn) -> list[dict]:
             rels = [_qbt_release(queued[t["id"]])]   # queued from another tracker: its torrent is the row
         if not rels:
             continue  # watched-only / store-only titles appear on «Просмотренные», not here
-        studios = preferred_studios(cfg, t)
-        rels.sort(key=lambda r: release_key(r, cfg, studios))
+        pref = voice_preference(cfg, t, fr_keys.get(t.get("imdb_id") or t.get("series_imdb_id"), frozenset()))
+        studios = pref["studios"]
+        ctx = {"any_voiced": any((r.get("best_voice") or "none") in VOICED for r in rels),
+               "series_no_dub": t["kind"] == "series" and not any(r.get("best_voice") == "dub" for r in rels),
+               "title_bw": title_is_bw(t)}
+        # (23) «своим наличием автоматически фильтруют не-ремастеры того же качества» (owner, 2026-10-25): with a remaster
+        # at resolution R the non-remasters of resolution ≤ R rank below it and are not shown in any row (best / Open Matte
+        # / extended / original / AI)
+        rem = [r for r in rels if is_remaster(r) and ((r.get("best_voice") or "none") in VOICED or not ctx["any_voiced"])]
+        ctx["remaster_res"] = max((r.get("resolution") or 0) for r in rem) if rem else None
+        rels.sort(key=lambda r: release_key(r, cfg, studios, ctx))
+        all_rels = list(rels)
+        if rem:
+            rels = [r for r in rels if is_remaster(r) or (r.get("resolution") or 0) > ctx["remaster_res"]]
         best = rels[0]
         variants = [("Лучшее", best)]
+        # R168(б): the franchise studio (FlarrowFilms) has not voiced every episode yet → «серий N из M с этой озвучкой»
+        # on the best row and, right below it, the best release of another voice with more episodes (all, if any)
+        ep_note, episodes, extra = studio_episodes(t, best, rels, pref)
+        if extra is not None:
+            variants.append(("Все серии", extra))
         for label, pred in (("Open Matte", lambda r: "open_matte" in _j(r.get("edition"), [])),
                             ("Расширенная", lambda r: set(_j(r.get("edition"), [])) & {"extended", "directors_cut", "uncut", "unrated"})):
             cand = [r for r in rels if pred(r)]
@@ -425,9 +653,15 @@ def compute(conn) -> list[dict]:
         is_top = (t.get("imdb_id") or "") in top_imdb
         key = ((0, top_list.index(t["imdb_id"])) if is_top else (1 if t["id"] in urgent else 2, -score)) \
             + tuple(sort_vals[k] for k in cfg["sort"]["order"])
+        at_max = max_quality(t, best, all_rels, cfg, pref, episodes)
         for vi, (label, r) in enumerate(variants):
+            q = describe(r, ctx["title_bw"])
+            if vi == 0 and ep_note:
+                q += f" · {ep_note}"
             rows.append({"title": t, "variant": label, "variant_index": vi, "release": r,
-                         "quality": describe(r), "hidden_reasons": hidden, "upgrade": upgrade,
+                         "quality": q, "episodes_note": ep_note if vi == 0 else None, "max_quality": at_max,
+                         "voice_pref_all_episodes": pref["all_episodes"], "voice_pref_hit": studio_hit(best, studios),
+                         "hidden_reasons": hidden, "upgrade": upgrade,
                          "have": have, "queued": queued.get(t["id"]), "wanted": t["id"] in wanted,
                          "list_marker": list_marker.get(t["id"]) or auto_mark.get(t["id"]), "auto_mark": auto_mark.get(t["id"]),
                          "urgent": t["id"] in urgent, "top": is_top, "quality_watch": (t.get("imdb_id") or "") in qwatch, "score": score, "score_parts": {k: v for k, v in parts.items() if v},

@@ -168,3 +168,24 @@ animation_patterns = ["Аанг", "Airbender", "Легенда о Корре", "
 series = [
     {tmdb = 60625, name = "Рик и Морти", studios = ["Кубик в Кубе", "Кубик", "Kubik", "Сыендук", "Syenduk", "sndk"]},
 ]
+# R168(б), владелец 2026-10-25: «Marvel и DC — всегда FlarrowFilms», приоритет даже над 4K и HDR; лучшее качество — среди их
+# раздач. all_episodes = если у студии вышли не все серии сезона: «серий N из M с этой озвучкой» и ниже доп. строка с другой
+# озвучкой, где серий больше (все); когда студия выпустит всё — доп. строки нет. keys — franchise_members (config/franchises.toml).
+franchises = [
+    {keys = ["marvel", "dc"], name = "Marvel и DC — FlarrowFilms", all_episodes = true, studios = ["Flarrow Films", "FlarrowFilms", "Flarrow"]},
+]
+
+[dub_unofficial]
+# Неофициальный дубляж (опрос 25, владелец 2026-10-25: «официальный выше при выборе лучшей раздачи; студия видна в таблице»).
+# Официальный — сделан для кинопроката / платформы (на трекере «Лицензия», «Дублированный [Лицензия]», «официальный»).
+# Дубляж студии из этого списка считается неофициальным (если на странице не написано «официальный» / «лицензия»);
+# дубляж без студии или другой студии — официальным (прокатные дубляжи почти никогда не подписаны). Список можно дополнять:
+# имена сравниваются без регистра, пробелов и знаков («Red Head Sound» = «RedHeadSound»); после правки —
+# `python -X utf8 -m films.sources.rutor rules` (пересчёт из сохранённого разбора, страницы заново не разбираются).
+studios = [   # из описаний rutor «Дублированный (неофициальный) | …» (1 158 раздач Red Head Sound, 317 HDRezka, 158 Jaskier …)
+    "Red Head Sound", "RHS", "Read Head Sound", "Red Head Soud", "HDRezka Studio", "HDrezka", "Jaskier", "WinMedia",
+    "Dragon Studio", "Dragon Money Studio", "Flarrow Films", "FlarrowFilms", "Soundmasters", "Ultradox Studio", "TVShows",
+    "HotVoice", "заКАДРЫ", "Condor Films Studio", "Whiskey Sound", "HATE Studio", "StudioBand", "Echo Voice",
+    "RStudio Sound", "Левитация", "Всёпочесноку", "LE-Production", "Overtook Studio", "Progovory Band", "Bad Company Dub",
+    "RuDub",
+]

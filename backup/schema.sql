@@ -159,7 +159,7 @@ CREATE TABLE people (
         tmdb_id     INTEGER UNIQUE,
         name        TEXT NOT NULL,
         name_ru     TEXT
-    );
+    , name_uk TEXT, name_ru_source TEXT, name_uk_source TEXT, names_checked_at TEXT);
 CREATE TABLE person_crew (
         title_id        INTEGER NOT NULL REFERENCES titles(id),
         person_tmdb_id  INTEGER NOT NULL,
@@ -198,7 +198,7 @@ CREATE TABLE plex_items (
         view_count   INTEGER,
         last_viewed_at TEXT,
         synced_at    TEXT NOT NULL DEFAULT (datetime('now'))
-    , plex_guid TEXT, library_id INTEGER, video_codec TEXT, video_profile TEXT, video_bit_depth INTEGER, video_kbps INTEGER, h264_equiv_kbps INTEGER, width INTEGER, height INTEGER, container TEXT, size_bytes INTEGER, duration_min INTEGER, forced_subs TEXT, files TEXT, season INTEGER, episode INTEGER, show_title TEXT, original_title TEXT, edition TEXT, present INTEGER NOT NULL DEFAULT 1, removed_at TEXT);
+    , plex_guid TEXT, library_id INTEGER, video_codec TEXT, video_profile TEXT, video_bit_depth INTEGER, video_kbps INTEGER, h264_equiv_kbps INTEGER, width INTEGER, height INTEGER, container TEXT, size_bytes INTEGER, duration_min INTEGER, forced_subs TEXT, files TEXT, season INTEGER, episode INTEGER, show_title TEXT, original_title TEXT, edition TEXT, present INTEGER NOT NULL DEFAULT 1, removed_at TEXT, added_at TEXT);
 CREATE TABLE qbt_torrents (
         infohash        TEXT PRIMARY KEY,            -- v1 info-hash, lowercase hex (= releases.btih)
         name            TEXT,
@@ -258,7 +258,7 @@ CREATE TABLE releases (
         forced_subs   TEXT,                            -- JSON array of languages with forced subtitles (only forced are kept)
         details_parsed_at TEXT,
         first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
-        last_seen_at  TEXT NOT NULL DEFAULT (datetime('now')), source_detail TEXT, dv_profile_full TEXT, dv_fallback TEXT, dv_static_md INTEGER, is_ai_upscale INTEGER, parsed TEXT, parsed_version TEXT, page_skip INTEGER NOT NULL DEFAULT 0,
+        last_seen_at  TEXT NOT NULL DEFAULT (datetime('now')), source_detail TEXT, dv_profile_full TEXT, dv_fallback TEXT, dv_static_md INTEGER, is_ai_upscale INTEGER, parsed TEXT, parsed_version TEXT, page_skip INTEGER NOT NULL DEFAULT 0, has_ads INTEGER, localized_video INTEGER, is_3d INTEGER, cam_source TEXT, remaster TEXT, dub_official INTEGER, video_color TEXT, fps REAL, is_kpk INTEGER, voice_18plus INTEGER,
         UNIQUE (source, source_id)
     );
 CREATE TABLE responsibility (
@@ -305,7 +305,7 @@ CREATE TABLE store_items (
         discount_pct INTEGER,
         raw          TEXT,                           -- JSON of whatever else the page gave
         checked_at   TEXT NOT NULL DEFAULT (datetime('now')),
-        title_id     INTEGER REFERENCES titles(id),
+        title_id     INTEGER REFERENCES titles(id), purchased_at TEXT, purchased_at_source TEXT, wishlist_added_at TEXT, wishlist_added_source TEXT,
         PRIMARY KEY (store, item_id)
     );
 CREATE TABLE store_status (
@@ -382,7 +382,7 @@ CREATE TABLE titles (
         no_dub_needed    INTEGER NOT NULL DEFAULT 0,  -- manual: no dialogue / voiceover not needed
         created_at       TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
-    , country_codes TEXT, release_date_kind TEXT, trailer_ru_source TEXT, trailer_ru_subtitled INTEGER, collection_id INTEGER, tmdb_checked_at TEXT, trailer_ru_check TEXT, trailer_ru_checked_at TEXT, trailer_alt_url TEXT, trailer_alt_kind TEXT, trailer_alt_source TEXT);
+    , country_codes TEXT, release_date_kind TEXT, trailer_ru_source TEXT, trailer_ru_subtitled INTEGER, collection_id INTEGER, tmdb_checked_at TEXT, trailer_ru_check TEXT, trailer_ru_checked_at TEXT, trailer_alt_url TEXT, trailer_alt_kind TEXT, trailer_alt_source TEXT, distributor TEXT, distributor_country TEXT, distributors TEXT, keywords TEXT, is_miniseries INTEGER, cameras TEXT, film_format TEXT, color TEXT, filming_locations TEXT, original_language TEXT, spoken_languages TEXT, homepage TEXT, wikidata_id TEXT, wiki_links TEXT, meta_checked_at TEXT);
 CREATE TABLE tmdb_raw (
         kind        TEXT NOT NULL,                   -- movie / tv / season / collection / person / find / search
         key         TEXT NOT NULL,                   -- tmdb id, "tv_id/season", imdb id, or query string

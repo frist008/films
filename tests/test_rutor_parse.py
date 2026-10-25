@@ -337,5 +337,121 @@ class DvRebuildTest(unittest.TestCase):
             self.assertEqual(dv_rebuild(text)[0], want, text)
 
 
+def mk(name: str, *lines: str) -> dict:
+    """A minimal rutor page: <h1> + description lines (as the cached pages render them) + one meta row."""
+    desc = "<br />" + "<br />".join(lines)
+    return parse_release_page(f'<h1>{name}</h1><table id="details"><tr><td></td><td>{desc}</td></tr>'
+                              f'<tr><td class="header">Раздают</td><td>5</td></tr></table>')
+
+
+class ReleaseRulesTest(unittest.TestCase):
+    """Owner's metadata survey, release rules (2026-10-25). Names and description lines are from cached rutor pages
+    (release ids in comments)."""
+
+    def test_ads(self):
+        self.assertTrue(mk("Куда пропала Ванда / Wheres Wanda? [S01] (2024) WEBRip 1080p | P2 | ViruseProject",
+                           "Реклама - есть (пару видеовставок).")["has_ads"])                                # 12036
+        self.assertTrue(mk("X / X (2018) WEB-DL 1080p | P", "Присутствует аудио-реклама")["has_ads"])        # 15512
+        self.assertFalse(mk("X / X (2024) WEB-DL 1080p | D", "Примечание: Без какой-либо рекламы")["has_ads"])  # was True
+        self.assertFalse(mk("X / X (2024) WEB-DL 1080p | D", "Реклама: Полностью отсутствует")["has_ads"])
+        plot = ("Однажды скетчбук падает в пруд, и он вспоминает, что его самым большим успехом так и осталось участие в "
+                "популярной рекламе зубной пасты, а потом ему предлагают работу в фирме «Семья в аренду», где всё иначе.")
+        self.assertIsNone(mk("X / X (2024) WEB-DL 1080p | D", plot)["has_ads"])                              # 3353
+
+    def test_localized_and_single_unlabelled_track(self):
+        r = mk("Сорвиголова: Рожденный заново / Daredevil: Born Again [S02] (2026) WEB-DLRip 1080p | D | "
+               "Локализованная версия | Flarrow Films", "Качество: WEB-DLRip 1080p (Локализированный видеоряд)",
+               "Аудио: AC-3, 192 kb/s, 2 channels, 48.0 kHz")                                             # 12257
+        self.assertTrue(r["localized_video"])
+        self.assertEqual(r["best_voice"], "dub")              # was 'none': one track without language or kind
+        self.assertEqual(tracks(r, "ru"), [("dub", "Flarrow Films")])
+        self.assertTrue(mk("X / X (2025) WEB-DL 1080p | D", "Качество: WEB-DL 1080p | Частично локализованный видеоряд")
+                        ["localized_video"])                                                                # 17
+        # no voice code, only «| Flarrow Films» and one unlabelled track (release 44362) — the studio's voice-over
+        r = mk("Криптон / Krypton [s01] (2018) WEBRip 1080p | Flarrow Films",
+               "Звук: PCM (A_PCM/INT/LIT), 48 kHz, 1 ch, ~768 kb/s")
+        self.assertEqual((r["best_voice"], tracks(r, "ru")), ("mvo", [("mvo", "Flarrow Films")]))
+        self.assertFalse(mk("X / X (2025) WEB-DL 1080p | D", "Регион наводнили наёмники, которые пытаются локализовать "
+                            "угрозу")["localized_video"])
+
+    def test_3d(self):
+        self.assertTrue(mk("Гравитация / Gravity (2013) BDRip 1080p | 3D-Video | HSBS | Лицензия | 60 fps")["is_3d"])  # 29599
+        self.assertTrue(mk("Тачки 2 / Cars 2 (2011) BDRip 720p | 3D-Video / Анаглиф")["is_3d"])           # 32781
+        self.assertTrue(mk("Тролли / Trolls (2016) WEBRip 1080p от Ash61 | halfSBS | Лицензия")["is_3d"])
+        self.assertTrue(mk("Аватар / Avatar (2025) BDRip 1080p | D",
+                           "Формат 3D: Half OverUnder / Вертикальная анаморфная стереопара")["is_3d"])           # 2008
+        self.assertFalse(mk("Проклятье 3D / Sadako 3D (2012) HDRip от Scarabey | Лицензия")["is_3d"])      # title only
+
+    def test_ts_cam(self):
+        self.assertEqual(mk("Обезьяна / The Monkey (2025) WEB-DL 1080p | D | TS")["cam_source"], "звук: TS")   # 7506
+        self.assertEqual(mk("Одиссея / The Odyssey (2026) TS-HEVC 1080p | P")["cam_source"], "TS")           # 650
+        self.assertEqual(mk("Голый пистолет / The Naked Gun (2025) WEB-DL 1080p | D | Line")["cam_source"],
+                         "звук: Line")                                                                     # 5471
+        self.assertEqual(mk("Скуби-Ду / Scooby-Doo! (2014) BDRip 720p | Чистый звук")["cam_source"],
+                         "звук: Чистый звук")                  # legend: Line = «устаревшее обозначение: Чистый звук»
+        self.assertEqual(mk("Байкеры / The Bikeriders (2024) WEB-DLRip-AVC | D",
+                            "Перевод: профессиональный (дублированный) звук с TS")["cam_source"], "звук: TS")      # 10818
+        # a clean Russian voice stays; the Ukrainian cinema dub does not count as the release's voice (32166)
+        r = mk("Кот в сапогах 2 / Puss in Boots: The Last Wish (2022) WEB-DL-HEVC 1080p | Jaskier, TVShows",
+               "Аудио 1: AC-3, 6 ch, 384 kbps - Русский (MVO, Jaskier)",
+               "Аудио 2: AC-3, 2 ch, 192 kbps - Украинский (DUB, Line)")
+        self.assertIsNone(r["cam_source"])
+        self.assertEqual(r["best_voice"], "mvo")
+        # «Line * он-лайн кинотеатр KinoPub» — a stream, not a cinema recording (20094)
+        self.assertIsNone(mk("Райя и последний дракон / Raya and the Last Dragon (2021) WEB-DLRip | D",
+                             "Перевод: Дублированный - (Line * он-лайн кинотеатр KinoPub)")["cam_source"])
+        self.assertIsNone(mk("Я плюю на ваши могилы 3 / I Spit on Your Grave 3 (2015) BDRip 720p | L2",
+                             "Озвучивание: Любительское (двухголосое) [Line Masters]")["cam_source"])         # 41037
+
+    def test_remaster(self):
+        self.assertEqual(mk("Банды Нью-Йорка / Gangs of New York (2002) BDRip 1080p | Remastered")["remaster"],
+                         "Remastered")                                                                     # 37698
+        self.assertEqual(mk("Малхолланд Драйв / Mulholland Dr. (2001) BDRemux 1080p | D, P, A | Criterion Collection | "
+                            "JPN Transfer")["remaster"], "Criterion")                                      # 29375
+        self.assertEqual(mk("Плохие парни 2 / Bad Boys II (2003) BDRip 1080p | D, P, P2, A | 4K Remastered")["remaster"],
+                         "4K Remastered")                                                                  # 30951
+        self.assertIsNone(mk("Резервная копия / Restore Point (2023) BDRip 1080p от Generalfilm | D")["remaster"])  # 38869
+        self.assertIsNone(mk("Колония / Colony (2026) WEB-DL 1080p | D | Flarrow Films")["remaster"])   # not «Arrow»
+
+    def test_black_and_white(self):
+        self.assertEqual(mk("Паук-Нуар / Spider-Noir [S01] (2026) WEB-DL 1080p от Scarabey | D | Red Head Sound | "
+                            "Black & White")["video_color"], "bw")                                         # 12209
+        self.assertEqual(mk("Паук-Нуар / Spider-Noir [S01] (2026) UHD WEB-DL 2160p | 4K | HDR10+ | Dolby Vision Profile 8 "
+                            "| D, P, P2, A, L | Чёрно-белая версия")["video_color"], "bw")                    # 12010
+        self.assertEqual(mk("Паук-Нуар / Spider-Noir [S01] (2026) WEB-DL 1080p от Scarabey | D | Red Head Sound | "
+                            "Цветная версия")["video_color"], "colorized")                                 # 12210
+        self.assertEqual(mk("Логан / Logan (2017) BDRip 1080p | D",
+                            "Качество: BDRip 1080p | NOIR Edition (черно-белая версия фильма)")["video_color"], "bw")
+        self.assertIsNone(mk("X / X (2025) WEB-DL 1080p | D", "Добро и чёрно-белая мораль Мстителей")["video_color"])
+
+    def test_fps(self):
+        mi = ["Video", "ID : 1", "Format : AVC", "Width : 1 920 pixels", "Height : 800 pixels",
+              "Frame rate : 59.940 (60000/1001) FPS", "Audio", "Format : AC-3", "Frame rate : 93.750 FPS (512 SPF)"]
+        self.assertEqual(mk("Граф Монте-Кристо / Le Comte de Monte-Cristo (2024) BDRip 1080p от Талямбы | D", *mi)["fps"],
+                         59.94)                                                                            # 9492
+        self.assertEqual(mk("Гравитация / Gravity (2013) BDRip 1080p | HSBS | 60 fps")["fps"], 60.0)
+        r = mk("Реквием по мечте / Requiem for a Dream (2000) BDRip 720p",
+               "Видео: H.264, 1 280 x 692 (1.850); 23.976 fps; ~7 487 kbps")                                 # 17536
+        self.assertEqual((r["video_width"], r["video_height"], r["fps"]), (1280, 692, 23.976))  # was read as 280 x 692
+
+    def test_kpk(self):
+        self.assertTrue(mk("Тепло наших тел / Warm Bodies (2013) BDRip от R.G.RealMT | КПК | Open Matte | НТВ+")["kpk"])
+        self.assertTrue(mk("Жизнь Дэвида Гейла / The Life of David Gale (2003) HDRip-AVC | iPhone")["kpk"])  # 19069
+        self.assertTrue(mk("Как приручить дракона / Dragons (2011) HDRip | КПК от Gene")["kpk"])           # 16186
+        self.assertTrue(mk("X / X (2011) HDRip", "Качество: HDRip | КПК")["kpk"])
+        self.assertTrue(mk("X / X (2011) DVDRip", "Видео: XviD, 480 x 208 (2.35:1), 23.976 fps, 600 kbps")["kpk"])
+        self.assertFalse(mk("Секс по телефону / Sex on Phone (2025) WEBRip | L")["kpk"])                    # title word
+
+    def test_18plus_voice(self):
+        self.assertTrue(mk("Кровавая бойня / Carnage (2024) WEB-DLRip-AVC | P2 | ViruseProject",
+                           "Перевод: Профессиональный (двухголосый, закадровый) | ViruseProject | 18+")["voice_18plus"])  # 9415
+        self.assertTrue(mk("X / X [S01] (2025) WEB-DL 1080p | P | HDRezka Studio",
+                           "Аудио: AC3, 48 kHz, 2 ch, ~192.00 kbps avg | русский | MVO | HDRezka Studio | 18+")["voice_18plus"])
+        self.assertFalse(mk("X / X [S01] (2025) WEB-DL 1080p | L | LE-Production",
+                            "Аудио: AC3, 2 ch, 192 kbps | Любительский закадровый, LE-Production | 18+")["voice_18plus"])
+        self.assertFalse(mk("X / X (2025) WEB-DL 1080p | P", "Перевод: Профессиональный (многоголосый)",
+                            "Возраст: 18+")["voice_18plus"])                                          # age rating
+
+
 if __name__ == "__main__":
     unittest.main()

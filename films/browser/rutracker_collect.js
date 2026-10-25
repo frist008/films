@@ -134,6 +134,7 @@
     '4k': /(^|[^\w])(2160p|4K|UHD)([^\w]|$)/i,
     hdr: /(^|[^\w])(HDR10\+?|HDR|Dolby\s*Vision|DV|DoVi|HLG)([^\w]|$)/i,
     dub: /(^|[^\w])(Dub|DUB)([^\w]|$)|Дубл/,
+    flarrow: /Flarrow/i,   // R168: Marvel / DC series — FlarrowFilms voice (owner, 2026-10-25)
   };
   function needsMatch(title, need) {
     if (!need || !need.length || need.includes('any')) return true;
@@ -154,7 +155,7 @@
       for (let y = q.lo - 1; y <= Math.min(q.hi + 1, now + 1); y++) out.push(q.q + ' ' + y);
       return out;
     }
-    const words = { '4k': '2160p', hdr: 'HDR', dub: 'Dub' };
+    const words = { '4k': '2160p', hdr: 'HDR', dub: 'Dub', flarrow: 'Flarrow' };
     return (q.need || []).filter(n => words[n]).map(n => q.q + ' ' + words[n]);
   }
 

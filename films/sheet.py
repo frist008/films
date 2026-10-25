@@ -33,8 +33,11 @@ MAIN_COLUMNS = [
     ("Название", 260), ("Оригинальное название", 200), ("Год", 50), ("Тип", 80), ("Качество", 170),
     ("Озвучка", 230), ("Форс. субтитры", 80), ("Битрейт H.264-экв., Мбит/с", 90), ("Размер, ГБ", 70),
     ("IMAX", 45), ("IMDb", 50), ("RT критики", 60), ("RT зрители", 60), ("Жанры", 150), ("Длит., мин", 55),
-    ("Страны", 120), ("Режиссёр", 150), ("Сценарист", 150), ("В ролях", 260), ("Студия", 150),
-    ("Бюджет / сборы", 120), ("Сезон: серии, статус", 140), ("Ссылки", 200), ("У меня (Plex)", 170),
+    ("Страны", 120), ("Режиссёр", 150), ("Сценарист", 150),
+    ("Оператор", 130), ("Продюсеры", 170),   # survey 2026-10-25: DOP and producers «в таблицу»
+    ("В ролях", 260), ("Студия", 150),
+    ("Дистрибьютор", 140), ("Ключевые слова", 180),   # survey 2026-10-25: IMDb distributor, TMDB keywords
+    ("Бюджет / сборы", 120), ("Сезон: серии, статус", 140), ("Ссылки", 300), ("У меня (Plex)", 170),
     ("Апгрейд", 200), ("Магазин", 110), ("Франшиза", 150), ("Важные люди", 120), ("Почему скрыт", 140),
     ("title_id", 60), ("variant", 40),
 ]
@@ -203,14 +206,41 @@ def _money(v):
 
 
 def _people(conn) -> dict:
+    """title_id -> {role: [names]} as shown: Russian spelling, else the original (survey 2026-10-25: «русское в таблицу»;
+    TMDB person translations, films.title_meta people). Limits = films.title_meta.SHOWN_LIMITS (names fetched for those)."""
+    from .title_meta import SHOWN_LIMITS
     out: dict[int, dict] = {}
     for tid, role, name, job, ord_ in conn.execute(
-            """SELECT c.title_id, c.role, p.name, c.job, c.ord FROM credits c JOIN people p ON p.id = c.person_id
-               ORDER BY c.title_id, c.role, COALESCE(c.ord, 999)"""):
-        d = out.setdefault(tid, {"director": [], "writer": [], "actor": []})
-        if role in d and len(d[role]) < (5 if role == "actor" else 3):
+            """SELECT c.title_id, c.role, COALESCE(p.name_ru, p.name), c.job, c.ord FROM credits c
+               JOIN people p ON p.id = c.person_id
+               ORDER BY c.title_id, c.role, COALESCE(c.ord, 999), p.id"""):
+        d = out.setdefault(tid, {"director": [], "writer": [], "actor": [], "dop": [], "producer": []})
+        if role in d and len(d[role]) < SHOWN_LIMITS[role]:
             d[role].append(name)
     return out
+
+
+_COUNTRY_LABEL = {"UA": "Украина", "XWW": "мир", "US": "США"}
+
+
+def _distributor(t: dict) -> str | None:
+    """«Warner Bros. (США)» — the country tells whose distributor it is (imdb_specs.pick_distributor)."""
+    if not t.get("distributor"):
+        return None
+    c = t.get("distributor_country")
+    return t["distributor"] + (f" ({_COUNTRY_LABEL.get(c, c)})" if c else "")
+
+
+def _keywords(t: dict, n: int = 6) -> str | None:
+    """First n TMDB keywords as TMDB gives them (English only: TMDB has no keyword translations)."""
+    kw = _j(t.get("keywords"), [])
+    return ", ".join(kw[:n]) + (" …" if len(kw) > n else "") if kw else None
+
+
+def _wiki(t: dict) -> tuple[str, str | None]:
+    """Wikipedia link for the «Ссылки» cell: Ukrainian, else English (survey 2026-10-25: «Википедию (uk/en)»)."""
+    w = _j(t.get("wiki_links"), {})
+    return ("Вики", w["uk"]) if w.get("uk") else ("Вики (en)", w.get("en"))
 
 
 def _main_row(r: dict, people: dict, collections: dict) -> list:
@@ -250,15 +280,16 @@ def _main_row(r: dict, people: dict, collections: dict) -> list:
         _cell(round(rel["size_bytes"] / 1024 ** 3, 1) if rel.get("size_bytes") else None),
         _cell(bool(t.get("is_imax"))), _cell(t.get("imdb_rating")), _cell(t.get("rt_critics")), _cell(t.get("rt_audience")),
         _cell(", ".join(_j(t.get("genres"), []))), _cell(t.get("runtime_min")), _cell(", ".join(_j(t.get("countries"), []))),
-        _cell(", ".join(p.get("director", []))), _cell(", ".join(p.get("writer", []))), _cell(", ".join(p.get("actor", []))),
-        _cell(", ".join(_j(t.get("studios"), [])[:2])),
+        _cell(", ".join(p.get("director", []))), _cell(", ".join(p.get("writer", []))),
+        _cell(", ".join(p.get("dop", []))), _cell(", ".join(p.get("producer", []))), _cell(", ".join(p.get("actor", []))),
+        _cell(", ".join(_j(t.get("studios"), [])[:2])), _cell(_distributor(t)), _cell(_keywords(t)),
         _cell(" / ".join(x for x in (_money(t.get("budget_usd")), _money(t.get("box_office_usd"))) if x) or None),
         _cell(season_info),
         _links_cell([("Трейлер", t.get("trailer_ru_url")) if t.get("trailer_ru_url") else
                      ("Трейлер (" + {"uk": "укр", "original": "ориг.", "ru_sub": "рус. суб.", "any": "другой"}
                       .get(t.get("trailer_alt_kind"), "?") + ")", t.get("trailer_alt_url")),
                      ("IMDb", imdb_url), ("RT", t.get("rt_url")),
-                     ("Картинка", t.get("poster_url"))]),
+                     ("Картинка", t.get("poster_url")), _wiki(t), ("Сайт", t.get("homepage"))]),
         _cell(have_txt), _cell(", ".join(r["upgrade"])), _cell(store),
         _cell(collections.get(t.get("collection_id")) if r["franchise"] else None), _cell(", ".join(r["people_hits"])),
         _cell(", ".join(r["hidden_reasons"])), _cell(t["id"]), _cell(r["variant_index"]),
@@ -438,13 +469,29 @@ PLAYLIST_ABOUT = {
 }
 
 
-QUALITY_COLUMNS = [("Название", 260), ("Год", 50), ("Статус", 90), ("У меня", 220), ("Лучшее доступное", 300),
+QUALITY_COLUMNS = [("Название", 260), ("Год", 50), ("Статус", 90), ("У меня", 220), ("Добавлено в Plex", 90),
+                   ("Лучшее доступное", 300),
                    ("Что лучше", 260), ("Размер", 70), ("title_id", 60)]
 
 
-def _quality_rows(rows: list[dict]) -> list[list]:
+def plex_added(conn) -> dict[int, str]:
+    """title_id -> local date the present Plex copy was added (the latest copy when there are several)."""
+    from datetime import datetime, timezone
+    out = {}
+    for tid, ts in conn.execute("SELECT title_id, max(added_at) FROM plex_items WHERE present = 1 AND title_id IS NOT NULL "
+                                "AND added_at IS NOT NULL GROUP BY title_id"):
+        try:
+            out[tid] = datetime.strptime(ts, "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc).astimezone().strftime("%Y-%m-%d")
+        except ValueError:
+            out[tid] = ts[:10]
+    return out
+
+
+def _quality_rows(rows: list[dict], added: dict | None = None) -> list[list]:
     """«Обновить качество» (owner, 2026-10-24): films from his rutor list that he owns (downloaded / queued) — the best
-    release vs his copy; «дубляж важнее качества всегда», so voice upgrades come first, then other upgrades, then the rest."""
+    release vs his copy; «дубляж важнее качества всегда», so voice upgrades come first, then other upgrades, then the rest.
+    `added`: plex_added() — Plex «date added», shown only on this tab (survey 2026-10-25)."""
+    added = added or {}
     out = []
     for r in rows:
         if not r.get("quality_watch") or r["variant_index"] or "видел" in r["hidden_reasons"]:
@@ -461,7 +508,8 @@ def _quality_rows(rows: list[dict]) -> list[list]:
         size = rel.get("size_bytes")
         key = (0 if voice_up else 1 if why else 2, -(t.get("imdb_rating") or 0))
         out.append((key, [_cell(t["title_ru"] or t["title_original"], link=url), _cell(t.get("year")), _cell(status),
-                          _cell(mine), _cell(r["quality"] + (f" — {rel.get('name')}" if rel.get("name") else ""), link=rel.get("url")),
+                          _cell(mine), _cell(added.get(t["id"])),
+                          _cell(r["quality"] + (f" — {rel.get('name')}" if rel.get("name") else ""), link=rel.get("url")),
                           _cell("; ".join(why) if why else "лучше нет"), _cell(f"{size / 2**30:.1f} ГБ" if size else None),
                           _cell(t["id"])]))
     return [row for _, row in sorted(out, key=lambda x: x[0])]
@@ -595,7 +643,7 @@ def _rebuild(conn) -> dict:
     people = _people(conn)
     collections = {r[0]: r[1] for r in conn.execute("SELECT id, name_ru FROM collections")}
     tabs = {t: [] for t in MARK_TABS}
-    quality = _quality_rows(rows)
+    quality = _quality_rows(rows, plex_added(conn))
     rows = [r for r in rows if not r.get("quality_watch")]   # those live only on «Обновить качество» (owner, 2026-10-24)
     for r in rows:
         if not r["hidden_reasons"]:

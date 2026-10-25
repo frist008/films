@@ -61,6 +61,8 @@ BATCH = 25                 # ids per GraphQL request (100 also works; 25 keeps r
 MIN_INTERVAL_S = 1.0       # <= 1 request / s (owner's limit is 2 / s)
 MAX_ATTEMPTS = 6
 DEFAULT_MAX_AGE_DAYS = 30
+# node keys added to QUERY later: a cached node without one of them is re-fetched (metadata survey 2026-10-25)
+REQUIRED_NODE_KEYS = ("distributors",)
 
 _SPEC_FIELDS = """
   aspectRatios { total items { aspectRatio attributes { text } } }
@@ -93,8 +95,9 @@ query($ids: [ID!]!) { titles(ids: $ids) {
   akas(first: 250) { total edges { node { text country { id text } language { id text } attributes { text } } } }
   releaseDates(first: 250) { total edges { node { day month year country { id } attributes { text } } } }
   keywords(first: 50) { total edges { node { text } } }
-  filmingLocations(first: 10) { total edges { node { text } } }
+  filmingLocations(first: 25) { total edges { node { text } } }
   companyCredits(first: 50) { total edges { node { company { id companyText { text } } category { id text } countries { id } attributes { text } } } }
+  distributors: companyCredits(first: 250, filter: { categories: ["distribution"] }) { total edges { node { company { id companyText { text } } countries { id } attributes { text } } } }
   episodes { seasons { number } episodes(first: 1) { total } }
   series { series { id } }
   technicalSpecifications { %s }
@@ -187,6 +190,8 @@ def ensure(tconsts: list[str], max_age_days: float | None = DEFAULT_MAX_AGE_DAYS
     todo = []
     for t in tconsts:
         rec = load_cached(t, max_age_days)
+        if rec is not None and fetch and rec.get("node") and any(k not in rec["node"] for k in REQUIRED_NODE_KEYS):
+            rec = None   # cached before a field was added to QUERY
         if rec is None:
             if fetch:
                 todo.append(t)
@@ -463,6 +468,83 @@ def akas_for(node: dict | None, country: str) -> list[dict]:
     return out
 
 
+# --- metadata survey (owner, 2026-10-25): distributor, colour, cameras / film format, filming locations -----------
+
+_HOME_VIDEO = re.compile(r"\b(DVD|Blu-?ray|VHS|Laser-?disc|UMD)\b", re.I)
+
+
+def distribution_credits(node: dict | None) -> list[dict]:
+    """IMDb distribution credits in IMDb's order -> [{name, country (first id), countries, attrs}]."""
+    out = []
+    for e in (((node or {}).get("distributors") or {}).get("edges") or []):
+        n = (e or {}).get("node") or {}
+        name = ((n.get("company") or {}).get("companyText") or {}).get("text")
+        if not name:
+            continue
+        cs = [c.get("id") for c in n.get("countries") or [] if c and c.get("id")]
+        out.append({"name": name, "country": cs[0] if cs else None, "countries": cs, "attrs": _attrs(n)})
+    return out
+
+
+def pick_distributor(credits: list[dict]) -> tuple[str | None, str | None, str]:
+    """The distributor / rights holder shown in the sheet -> (name, country, rule).
+
+    Owner (survey 2026-10-25): Ukrainian or worldwide if it can be told, otherwise the US one.  Home-video credits
+    (DVD / Blu-ray) are not rights holders for a viewer and are skipped.  Order:
+      1. 'ua'  — a Ukrainian credit (theatrical first);
+      2. 'xww' — the worldwide credit, only when exactly one company holds it (a Netflix / Apple / Amazon original);
+                 several worldwide companies are VOD storefronts (Dune: Part Two: Amazon, Apple TV+, HBO Max) — skipped;
+      3. 'us'  — the US credit: theatrical, then TV, then VOD, then any;
+      4. 'first' — the first theatrical credit of any country, else the first credit at all.
+    """
+    rights = [c for c in credits if not any(_HOME_VIDEO.search(a) for a in c["attrs"])]
+    if not rights:
+        return None, None, "none"
+
+    def theatrical_first(cs):
+        for want in ("theatrical", "tv", "vod", None):
+            for c in cs:
+                if want is None or any(a.lower() == want for a in c["attrs"]):
+                    return c
+        return None
+
+    ua = [c for c in rights if "UA" in c["countries"]]
+    if ua:
+        c = theatrical_first(ua)
+        return c["name"], "UA", "ua"
+    ww = [c for c in rights if "XWW" in c["countries"]]
+    if len({c["name"] for c in ww}) == 1:
+        return ww[0]["name"], "XWW", "xww"
+    us = [c for c in rights if "US" in c["countries"]]
+    if us:
+        c = theatrical_first(us)
+        return c["name"], "US", "us"
+    # a Russian distributor only when nobody else is listed (the owner is in Ukraine)
+    pool = [c for c in rights if c["country"] not in ("RU", "BY")] or rights
+    c = next((c for c in pool if any(a.lower() == "theatrical" for a in c["attrs"])), pool[0])
+    return c["name"], c["country"], "first"
+
+
+def color_text(specs: dict | None) -> str | None:
+    """IMDb colorations as one string: 'Color', 'Black and White', 'Color | Black and White (flashback scenes)'."""
+    vals = list(dict.fromkeys(display(v, a) for v, a in spec_items(specs, "colorations", "text")))
+    return " | ".join(vals) or None
+
+
+def film_format(specs: dict | None) -> dict | None:
+    """{negative, printed, process} display lists (only the non-empty ones), None when IMDb lists none."""
+    out = {k: [display(v, a) for v, a in spec_items(specs, key, field)]
+           for k, key, field in (("negative", "negativeFormats", "negativeFormat"),
+                                 ("printed", "printedFormats", "printedFormat"), ("process", "processes", "process"))}
+    out = {k: v for k, v in out.items() if v}
+    return out or None
+
+
+def filming_locations(node: dict | None) -> list[str]:
+    return [e["node"]["text"] for e in (((node or {}).get("filmingLocations") or {}).get("edges") or [])
+            if (e or {}).get("node") and e["node"].get("text")]
+
+
 def summarize(rec: dict | None) -> dict:
     """Everything `run` derives from one cache record (also what `show` prints)."""
     node = (rec or {}).get("node") or {}
@@ -488,6 +570,12 @@ def summarize(rec: dict | None) -> dict:
         "negative_formats": [display(v, a) for v, a in spec_items(specs, "negativeFormats", "negativeFormat")],
         "printed_formats": [display(v, a) for v, a in spec_items(specs, "printedFormats", "printedFormat")],
         "spec_truncated": truncated,
+        "color": color_text(specs),
+        "film_format": film_format(specs),
+        "filming_locations": filming_locations(node),
+        "distribution": distribution_credits(node),
+        **dict(zip(("distributor", "distributor_country", "distributor_rule"),
+                   pick_distributor(distribution_credits(node)))),
         **money(node),
         "poster_url": poster(node),
         "ua_akas": akas_for(node, "UA"),
@@ -532,6 +620,9 @@ def _targets(conn, limit: int | None = None, ids: list[str] | None = None) -> di
     return by
 
 
+META_KEYS = ("color", "cameras", "film_format", "filming_locations", "distributor")
+
+
 def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> dict:
     """Write derived values; one short transaction per tconst group of rows.  Returns counters + lists."""
     now = _now()
@@ -539,7 +630,8 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                          "imax_null", "aspect_set", "sound_set", "budget_filled", "gross_filled",
                          "budget_non_usd", "gross_non_usd", "budget_skipped_series", "gross_skipped_series",
                          "budget_disagree_kept", "gross_disagree_kept", "poster_set", "poster_missing_on_imdb", "poster_kept",
-                         "upscale_upscaled", "upscale_native", "upscale_unknown")}
+                         "upscale_upscaled", "upscale_native", "upscale_unknown",
+                         *(k + "_set" for k in META_KEYS))}
     lists = {"not_found": [], "redirects": [], "non_usd": [], "di_conflicts": [], "imax_notes": [],
              "spec_truncated": [], "uk_candidates": [], "year_mismatch": [], "money_disagree": []}
     for t, rows in targets.items():
@@ -585,7 +677,19 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                     "sound_mix": json.dumps(s["sound_mix"], ensure_ascii=False) if s["sound_mix"] else None,
                     "is_imax": s["is_imax"],
                     "imax_source": s["imax_source"],
+                    # metadata survey (owner, 2026-10-25): distributor shown, the rest DB only
+                    "color": s["color"],
+                    "cameras": json.dumps(s["cameras"], ensure_ascii=False) if s["cameras"] else None,
+                    "film_format": json.dumps(s["film_format"], ensure_ascii=False) if s["film_format"] else None,
+                    "filming_locations": (json.dumps(s["filming_locations"], ensure_ascii=False)
+                                          if s["filming_locations"] else None),
+                    "distributor": s["distributor"],
+                    "distributor_country": s["distributor_country"],
+                    "distributors": (json.dumps([{k: d[k] for k in ("name", "country", "attrs")} for d in s["distribution"]],
+                                                ensure_ascii=False) if s["distribution"] else None),
                 }
+                for k in META_KEYS:
+                    st[k + "_set"] += sets[k] is not None
                 st["di_set"] += s["di_resolution"] is not None
                 # R32: upscale verdict from the master format — a 4K release of a 2K / HD master is a studio upscale.
                 # A verdict from another source (blu-ray.com, manual) is never overwritten.
@@ -648,7 +752,8 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                 if cur.rowcount == 0 and guard:
                     # a concurrent writer filled one of the guarded columns meanwhile: write only the spec columns
                     base = {k: sets[k] for k in ("di_resolution", "aspect_ratios", "sound_mix", "is_imax", "imax_source",
-                                                 "upscale_verdict", "upscale_source") if k in sets}
+                                                 "upscale_verdict", "upscale_source", *META_KEYS,
+                                                 "distributor_country", "distributors") if k in sets}
                     conn.execute(f"UPDATE titles SET {', '.join(f'{k} = ?' for k in base)} WHERE id = ?",
                                  [*base.values(), r["id"]])
                     log(f"    title {r['id']}: guarded column changed concurrently, wrote specs only")

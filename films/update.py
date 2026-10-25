@@ -118,7 +118,8 @@ def snapshot(conn) -> dict:
             "q": r["quality"], "hidden": r["hidden_reasons"], "up": r["upgrade"],
             "have": _have(r["have"]) if r["upgrade"] else None,
             "int": _interesting(r), "rel": not any(x == "видел" or x.startswith("не интересен") for x in r["hidden_reasons"]),
-            "am": r["auto_mark"], "fs": r["first_seen"]}
+            "am": r["auto_mark"], "fs": r["first_seen"],
+            "mx": bool(r.get("max_quality"))}   # R168(в): at «максимальное качество» — no alternative is searched
     # best voice / HDR / 4K / disc over ALL releases (the «Лучшее» row puts voice first, so it may not be the 4K one)
     for tid, voice, hdr, dvs, res, src in conn.execute(
             """SELECT rt.title_id, r.best_voice, r.hdr, r.dv_static_md, r.resolution, r.source_type
@@ -145,6 +146,8 @@ def snapshot(conn) -> dict:
         "sync": {s: t for s, t in conn.execute("SELECT source, last_run_at FROM sync_state")},
         "open_issues": conn.execute("SELECT count(*) FROM match_issues WHERE resolved_at IS NULL").fetchone()[0],
         "excluded": conn.execute("SELECT count(*) FROM excluded_releases").fetchone()[0],
+        "excluded_by": {k: n for k, n in conn.execute(
+            "SELECT reason, count(*) FROM excluded_releases WHERE reason NOT LIKE 'lifted:%' GROUP BY 1")},
     }
 
 
@@ -436,9 +439,18 @@ def report(conn, run: sqlite3.Row, a: dict, b: dict, events: list) -> str:
                 f"SELECT name, url FROM releases WHERE id IN ({','.join('?' * len(chunk))}) ORDER BY name", chunk)]
     issues = conn.execute("SELECT count(*) FROM match_issues WHERE resolved_at IS NULL").fetchone()[0]
     L.append(f"\nОткрытых match_issues: {issues} (в начале прогона {a['open_issues']}).")
-    exc = conn.execute("SELECT count(*) FROM excluded_releases").fetchone()[0]
-    if exc > a["excluded"]:
-        L.append(f"Не сохранено раздач только с DV Profile 5: {exc - a['excluded']}.")
+    # excluded releases by rule (kept in the DB, never shown): DV5-only (R8), 3D / TS-TC-CAM / КПК (survey 2026-10-25)
+    exc_names = {"dv5_only": "только DV Profile 5", "is_3d": "3D", "cam": "звук или видео TS / TC / CAM",
+                 "kpk": "для КПК / телефона"}
+    was = a.get("excluded_by") or ({"dv5_only": a["excluded"]} if a.get("excluded") else {})
+    for reason, n in conn.execute("SELECT reason, count(*) FROM excluded_releases WHERE reason NOT LIKE 'lifted:%' "
+                                  "GROUP BY 1 ORDER BY 1"):
+        if n > was.get(reason, 0):
+            L.append(f"Исключено новых раздач ({exc_names.get(reason, reason)}): {n - was.get(reason, 0)}.")
+    mx = [t for t, s in b["titles"].items() if s.get("mx") and s.get("rel")]
+    L.append(f"Тайтлов с «максимальным качеством» (дубляж + лучшая картинка, какая выходила; у Marvel / DC — "
+             f"FlarrowFilms, все серии): {len(mx)} — для них альтернативы не ищем (rutracker и др.); "
+             f"новых с прошлого прогона: {sum(1 for t in mx if not (a['titles'].get(t) or {}).get('mx'))}.")
     gaps = []
     for t, d in nt:
         x = lab.get(t) or {}
@@ -454,6 +466,7 @@ def report(conn, run: sqlite3.Row, a: dict, b: dict, events: list) -> str:
     L += ["", "Источники полного прогона, не обновлявшиеся в этом прогоне (ошибка или шаг пропущен — проверить):" if stale
           else "Все источники полного прогона обновлены."]
     L += [f"- {s} — последний раз {_local(t)}" for s, t in stale]
+    from .duplicates import report_lines as _duplicates; L += _duplicates(conn)  # noqa: E702 — survey 2026-10-25: a duplicate film in Plex/Jellyfin = «срочно говорить мне»
     L += ["", "## Новые типы метаданных", "",
           "Скрипт их не видит: если при разборе встретился повторяющийся тип, которого нет в схеме, — дописать сюда и "
           "спросить владельца по одному (CLAUDE.md, п. 4).", "",

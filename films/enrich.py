@@ -45,6 +45,11 @@ def _credits(conn, title_id: int, d: dict):
         rows.append((p, "writer", None, None, ", ".join(p.get("jobs") or []), p.get("episodes")))
     for p in d.get("cast") or []:
         rows.append((p, "actor", p.get("character"), p.get("order"), None, p.get("episodes")))
+    # metadata survey (owner, 2026-10-25): creator / composer stored, DOP / producers shown (films.title_meta backfills)
+    for key, role in (("creators", "creator"), ("dops", "dop"), ("producers", "producer"), ("composers", "composer")):
+        for i, p in enumerate(d.get(key) or []):
+            p = p if "name" in p and "tmdb_id" in p else {"tmdb_id": p["id"], **tmdb._pname(p)}
+            rows.append((p, role, None, i, ", ".join(p.get("jobs") or []) or None, p.get("episodes")))
     for p, role, character, order, job, episodes in rows:
         conn.execute("""INSERT OR IGNORE INTO credits (title_id, person_id, role, character, ord, job, episodes)
                         VALUES (?, ?, ?, ?, ?, ?, ?)""",

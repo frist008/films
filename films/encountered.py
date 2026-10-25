@@ -282,7 +282,8 @@ def run_match(conn, log=print) -> dict:
 def upgrades(conn, groups: list[dict], new_ids: set[int]) -> list[str]:
     """Downloaded titles whose best linked release (now) is new from this run and better than the owner's Plex copy."""
     cfg = rank.settings()
-    excluded = {r[0] for r in conn.execute("SELECT source_id FROM excluded_releases WHERE source = 'rutor'")}
+    excluded = {r[0] for r in conn.execute(
+        "SELECT source_id FROM excluded_releases WHERE source = 'rutor' AND reason NOT LIKE 'lifted:%'")}
     out = []
     for g in groups:
         for tid in g["title_ids"]:

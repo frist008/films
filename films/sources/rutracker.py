@@ -84,6 +84,10 @@ def store_parsed(conn, rid: int, d: dict, version: str) -> None:
          _js(d.get("hdr")), d.get("dv_profile"), d.get("dv_profile_full"), d.get("dv_fallback"), d.get("is_imax_cut"),
          _js(d.get("edition")), d.get("is_upscale"), 1 if d.get("is_upscale") else None,
          _js(d.get("audio")), d.get("best_voice"), _js(d.get("forced_subs")), _js(d), version, rid))
+    # release rules of the owner's survey (2026-10-25): ads / localized / 3D / TS-CAM / remaster / dub / colour / fps / КПК
+    from .rutor import store_rules
+    sid, name = conn.execute("SELECT source_id, name FROM releases WHERE id = ?", (rid,)).fetchone()
+    store_rules(conn, rid, "rutracker", sid, name, d)
 
 
 def _parser_version(kind: str) -> str:
@@ -125,12 +129,18 @@ def _names(t: dict) -> list[str]:
     return out
 
 
-def _needs(rel: dict | None) -> list[str]:
-    """What the best rutor release lacks (R9). No release at all -> anything rutracker has."""
+def _needs(rel: dict | None, row: dict | None = None) -> list[str]:
+    """What the best rutor release lacks (R9). No release at all -> anything rutracker has. A title already at
+    «максимальное качество» (rank.max_quality, R168(в): a dub + the best picture it was ever released in) needs nothing —
+    no alternative is searched; a Marvel / DC series whose best release is not a complete FlarrowFilms one needs 'flarrow'."""
     if not rel:
         return ["any"]
+    if row is not None and row.get("max_quality"):
+        return []
     from ..rank import hdr_class, _j
     need = []
+    if row is not None and row.get("voice_pref_all_episodes") and (row.get("episodes_note") or not row.get("voice_pref_hit")):
+        need.append("flarrow")
     if (rel.get("resolution") or 0) < 2160:
         need.append("4k")
     if hdr_class(_j(rel.get("hdr"), []), rel.get("dv_static_md")) in ("none", "", None, "SDR"):
@@ -216,7 +226,7 @@ def build_queries(conn, extras: list[str] = (), limit: int | None = None, log=pr
         if not t:
             continue
         row = best_by_title.get(tid)
-        need = _needs(row["release"] if row else None)
+        need = _needs(row["release"] if row else None, row)
         if need:
             qs.add_title(dict(t), need, "watchlist", open_end=t["kind"] == "series")
             n_want += 1
@@ -248,7 +258,7 @@ def build_queries(conn, extras: list[str] = (), limit: int | None = None, log=pr
         rel = r["release"]
         if rel.get("source") not in (None, "rutor"):
             continue                                        # already a rutracker / queued release
-        need = _needs(rel)
+        need = _needs(rel, r)
         if need:
             qs.add_title(r["title"], need, "r9:" + ",".join(need))
             n_r9 += 1
@@ -321,7 +331,8 @@ def load_payloads(paths: list[str]) -> list[dict]:
 
 
 def _excluded(conn) -> set[str]:
-    return {r[0] for r in conn.execute("SELECT source_id FROM excluded_releases WHERE source='rutracker'")}
+    return {r[0] for r in conn.execute(
+        "SELECT source_id FROM excluded_releases WHERE source='rutracker' AND reason NOT LIKE 'lifted:%'")}
 
 
 def _upsert(conn, t: str, name: str, category: str, row: dict, topic: dict | None) -> tuple[int, bool]:

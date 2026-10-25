@@ -113,7 +113,8 @@ def in_years(name: str, years: list[int]) -> bool:
 
 def upsert(conn, rows: list[dict], category: str) -> int:
     new = 0
-    excluded = {r[0] for r in conn.execute("SELECT source_id FROM excluded_releases WHERE source='rutor'")}
+    excluded = {r[0] for r in conn.execute(
+        "SELECT source_id FROM excluded_releases WHERE source='rutor' AND reason NOT LIKE 'lifted:%'")}
     with conn:
         for r in rows:
             if r["source_id"] in excluded:
@@ -260,6 +261,69 @@ def h264_equiv(codec: str | None, bit_depth: int | None, height: int | None, kbp
     return round(kbps * f["uhd" if (height or 0) >= 1440 else "hd"])
 
 
+RULE_REASONS = ("cam", "is_3d", "kpk")   # excluded_releases.reason of the release rules, first match wins
+
+
+def store_rules(conn, rid: int, source: str, source_id: str, name: str, d: dict, cfg: dict | None = None) -> str | None:
+    """Release rules of the owner's metadata survey (2026-10-25) → releases columns, and the excluded ones into
+    excluded_releases (never DELETE): TS/TC/CAM («такие раздачи исключать полностью», reason 'cam'), 3D («нет 3D-ТВ —
+    исключать фильтром», 'is_3d'), КПК / phone rips ('kpk'). A re-parse that clears the flag marks the row
+    'lifted:<reason>' (rank / collectors ignore those); DV5 rows are left alone. Caller holds the transaction.
+    d = films.parse.rutor.parse_release_page output (or the stored `parsed` JSON). Returns the exclusion reason."""
+    from .. import rank
+    cfg = cfg or settings()
+    conn.execute(
+        """UPDATE releases SET has_ads=?, localized_video=?, is_3d=?, cam_source=?, remaster=?, dub_official=?,
+               video_color=?, fps=?, is_kpk=?, voice_18plus=? WHERE id=?""",
+        (None if d.get("has_ads") is None else int(bool(d["has_ads"])), int(bool(d.get("localized_video"))),
+         int(bool(d.get("is_3d"))), d.get("cam_source"), d.get("remaster"), rank.dub_official(d, cfg),
+         d.get("video_color"), d.get("fps"), int(bool(d.get("kpk"))), int(bool(d.get("voice_18plus"))), rid))
+    reason = "cam" if d.get("cam_source") else "is_3d" if d.get("is_3d") else "kpk" if d.get("kpk") else None
+    cur = conn.execute("SELECT reason FROM excluded_releases WHERE source = ? AND source_id = ?", (source, source_id)).fetchone()
+    if reason:
+        if cur is None:
+            conn.execute("INSERT INTO excluded_releases (source, source_id, reason, name) VALUES (?, ?, ?, ?)",
+                         (source, source_id, reason, name))
+        elif cur[0] in RULE_REASONS or cur[0].startswith("lifted:"):
+            if cur[0] != reason:
+                conn.execute("UPDATE excluded_releases SET reason = ?, excluded_at = datetime('now') "
+                             "WHERE source = ? AND source_id = ?", (reason, source, source_id))
+    elif cur is not None and cur[0] in RULE_REASONS:
+        conn.execute("UPDATE excluded_releases SET reason = 'lifted:' || reason, excluded_at = datetime('now') "
+                     "WHERE source = ? AND source_id = ?", (source, source_id))
+    return reason
+
+
+def apply_rules(conn, source: str | None = None) -> dict:
+    """Re-derive the release-rule columns and exclusions from the stored parse (`releases.parsed`) — no page is parsed
+    again. For a changed [dub_unofficial] list in config/settings.toml:  python -X utf8 -m films.sources.rutor rules"""
+    import json
+    cfg = settings()
+    st = {"releases": 0, "cam": 0, "is_3d": 0, "kpk": 0}
+    rows = conn.execute("SELECT id, source, source_id, name, parsed FROM releases WHERE parsed IS NOT NULL"
+                        + (" AND source = ?" if source else ""), (source,) if source else ()).fetchall()
+    for i in range(0, len(rows), 2000):
+        with conn:
+            for rid, src, sid, name, parsed in rows[i:i + 2000]:
+                r = store_rules(conn, rid, src, sid, name, json.loads(parsed), cfg)
+                st["releases"] += 1
+                if r:
+                    st[r] += 1
+    # releases never parsed (no cached page): the rules the name alone shows («| КПК |», «3D-Video», «TS», «Remastered»)
+    import html as _h
+    from ..parse import rutor as parser
+    st["name_only"] = 0
+    rows = conn.execute("SELECT id, source, source_id, name FROM releases WHERE parsed IS NULL"
+                        + (" AND source = ?" if source else ""), (source,) if source else ()).fetchall()
+    with conn:
+        for rid, src, sid, name in rows:
+            r = store_rules(conn, rid, src, sid, name, parser.parse_release_page(f"<h1>{_h.escape(name, quote=False)}</h1>"), cfg)
+            st["name_only"] += 1
+            if r:
+                st[r] += 1
+    return st
+
+
 def parse_pages(conn, reparse: bool = False, delete_dv5: bool = True, ids: list[int] | None = None) -> dict:
     """Run films.parse.rutor over cached pages and fill release columns. DV-profile-5-only releases are
     remembered in excluded_releases (owner: never store them) and removed — or, with delete_dv5=False, kept with
@@ -267,7 +331,8 @@ def parse_pages(conn, reparse: bool = False, delete_dv5: bool = True, ids: list[
     import json
     from ..parse import rutor as parser
 
-    factors = settings()["codec_efficiency"]
+    cfg = settings()
+    factors = cfg["codec_efficiency"]
     version = str(Path(parser.__file__).stat().st_mtime_ns)
     rows = conn.execute(
         f"""SELECT r.id, r.source_id, r.name FROM releases r JOIN release_raw w ON w.release_id = r.id
@@ -311,6 +376,9 @@ def parse_pages(conn, reparse: bool = False, delete_dv5: bool = True, ids: list[
                  1 if d.get("is_upscale") else None,  # trackers only ever label fan upscales
                  js(d.get("audio")), d.get("best_voice"), js(d.get("forced_subs")),
                  js(d), version, rid))
+            excl = store_rules(conn, rid, "rutor", sid, name, d, cfg)   # survey 2026-10-25: 3D / TS-CAM / КПК excluded
+            if excl:
+                stats[f"excluded_{excl}"] = stats.get(f"excluded_{excl}", 0) + 1
             stats["parsed"] += 1
         if i % 1000 == 0:
             print(f"  parsed {i}/{len(rows)}", file=sys.stderr, flush=True)
@@ -372,3 +440,7 @@ if __name__ == "__main__":
         print(fetch_pages(conn, int(sys.argv[2]) if len(sys.argv) > 2 else None))
     elif cmd == "dv-flags":
         print(json.dumps(dv_flags(conn), ensure_ascii=False, indent=1))
+    elif cmd == "rules":       # release rules (survey 2026-10-25) from the stored parse, e.g. after editing [dub_unofficial]
+        print(json.dumps(apply_rules(conn), ensure_ascii=False, indent=1))
+    elif cmd == "reparse":     # parse every cached rutor page again (after a parser change); nothing is deleted
+        print(json.dumps(parse_pages(conn, reparse=True, delete_dv5=False), ensure_ascii=False, indent=1))

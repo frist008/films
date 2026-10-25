@@ -275,8 +275,62 @@ def _season_titles(conn, tconst: str, b, p: dict, category: str, seasons: list[i
     return ids
 
 
+_REDIRECTS: dict[str, str] | None = None
+
+
+def imdb_redirects() -> dict[str, str]:
+    """IMDb ids merged into another one ({old: canonical}), as the IMDb GraphQL cache recorded them (imdb_specs: status
+    «redirect»). An old id on a tracker page made a duplicate title («Стук в хижине»: tt15679400 → tt8272064, 2026-10-25)."""
+    global _REDIRECTS
+    if _REDIRECTS is None:
+        import glob
+        import gzip
+        from .sources import imdb_specs
+        _REDIRECTS = {}
+        for path in glob.glob(str(imdb_specs.CACHE_DIR / "tt*.json.gz")):
+            try:
+                r = json.loads(gzip.open(path).read())
+            except (OSError, ValueError):
+                continue
+            if r.get("status") == "redirect" and r.get("canonical"):
+                _REDIRECTS[r["tconst"]] = r["canonical"]
+    return _REDIRECTS
+
+
+def canonical_imdb(tconst: str | None) -> str | None:
+    return imdb_redirects().get(tconst, tconst) if tconst else tconst
+
+
+def merge_redirected_titles(conn, log=print) -> dict:
+    """Titles whose IMDb id IMDb has merged into another: no canonical title yet → the id is replaced; a canonical title
+    exists → the duplicate's release links move to it (the duplicate keeps its row, just without releases, so it is not
+    shown; nothing is deleted from the data)."""
+    out = {"renamed": 0, "merged": 0}
+    with conn:
+        for old, new in imdb_redirects().items():
+            dup = conn.execute("SELECT id FROM titles WHERE imdb_id = ? AND season_number IS NULL", (old,)).fetchone()
+            if not dup:
+                continue
+            main = conn.execute("SELECT id FROM titles WHERE imdb_id = ? AND season_number IS NULL", (new,)).fetchone()
+            if not main:
+                conn.execute("UPDATE titles SET imdb_id = ? WHERE id = ?", (new, dup[0]))
+                out["renamed"] += 1
+                log(f"  title {dup[0]}: {old} → {new}")
+                continue
+            if not conn.execute("SELECT 1 FROM release_titles WHERE title_id = ?", (dup[0],)).fetchone():
+                continue   # merged earlier
+            conn.execute("INSERT OR IGNORE INTO release_titles (release_id, title_id, how) SELECT release_id, ?, "
+                         "coalesce(how, '') || ' imdb_redirect' FROM release_titles WHERE title_id = ?", (main[0], dup[0]))
+            conn.execute("DELETE FROM release_titles WHERE title_id = ?", (dup[0],))
+            conn.execute("UPDATE releases SET title_id = ? WHERE title_id = ?", (main[0], dup[0]))
+            out["merged"] += 1
+            log(f"  title {dup[0]} ({old}) merged into {main[0]} ({new})")
+    return out
+
+
 def match_releases(conn, retry_issues: bool = False) -> dict:
     """Link every parsed, not-yet-linked release to its title(s)."""
+    merged = merge_redirected_titles(conn, log=lambda *_: None)
     if retry_issues:
         # superseded, not deleted (nothing is deleted from the DB): the retry writes a fresh issue if it is still unmatched
         with conn:
@@ -287,12 +341,12 @@ def match_releases(conn, retry_issues: bool = False) -> dict:
              AND NOT EXISTS (SELECT 1 FROM release_titles t WHERE t.release_id = r.id)
              AND NOT EXISTS (SELECT 1 FROM match_issues m WHERE m.release_id = r.id AND m.resolved_at IS NULL)""").fetchall()
     stats = {"releases": len(pending), "linked": 0, "via_page_imdb": 0, "via_resolve": 0, "via_tmdb": 0,
-             "issues": {}, "season_assumed_1": 0}
+             "issues": {}, "season_assumed_1": 0, "imdb_redirects": merged}
     for i, (rid, category, parsed) in enumerate(pending, 1):
         p = json.loads(parsed)
         np = p.get("name_parsed") or {}
         y1, y2 = _years(p)
-        tconst, how, tmdb_id = p.get("imdb_id"), "imdb_page", None
+        tconst, how, tmdb_id = canonical_imdb(p.get("imdb_id")), "imdb_page", None
         b = _basics(conn, tconst) if tconst else None
         kind = _kind(p, category, b)
         seasons = np.get("seasons") or []
