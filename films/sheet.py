@@ -352,6 +352,33 @@ def _grouped(rs: list[dict], groups: dict[int, str]) -> list[dict]:
     return sorted(rs, key=key)
 
 
+def _blocks(ordered: list[dict], groups: dict[int, str]) -> list[tuple[int, int, str]]:
+    """Outlines (owner, 2026-10-25: «Когда что-то одна франшиза — жирнющая обводка границ без внутренностей; когда 2–3
+    строки об одном фильме просто разного качества — пунктирная обводка»): (first row, last row, 'franchise' | 'variants')
+    as 0-based indexes into `ordered`. A franchise / collection / series block = consecutive rows of one group with ≥ 2
+    titles; a variants block = consecutive rows of one title (best + Open Matte / original / AI …)."""
+    out = []
+    i = 0
+    while i < len(ordered):
+        g = groups.get(ordered[i]["title"]["id"])
+        j = i
+        while g and j + 1 < len(ordered) and groups.get(ordered[j + 1]["title"]["id"]) == g:
+            j += 1
+        if g and len({r["title"]["id"] for r in ordered[i:j + 1]}) > 1:
+            out.append((i, j, "franchise"))
+        i = j + 1
+    i = 0
+    while i < len(ordered):
+        j = i
+        while j + 1 < len(ordered) and ordered[j + 1]["title"]["id"] == ordered[i]["title"]["id"]:
+            j += 1
+        if j > i:
+            out.append((i, j, "variants"))
+        i = j + 1
+    # dashed first, thick after: where the two meet on an edge the franchise outline wins
+    return sorted(out, key=lambda b: b[2] == "franchise")
+
+
 def _roi(t: dict) -> int | None:
     """Payback in % for the «Бюджет / сборы» colour: box office ÷ (2.5 × production budget). Rule of thumb of the industry
     (owner 2026-10-25: «у окупаемости для фильмов есть что-то вроде формулы, там не простая математика»): cinemas keep
@@ -490,7 +517,7 @@ WATCHED_COLUMNS = [("Название", 300), ("Год", 50), ("Видел", 90)
 
 # ---------------------------------------------------------------------------------------------- write
 
-def _write(sh, ws, columns, rows, mark_col: bool):
+def _write(sh, ws, columns, rows, mark_col: bool, blocks: list | None = None):
     sheet_id = ws.id
     header = [{"userEnteredValue": {"stringValue": h}, "userEnteredFormat": {
         "textFormat": {"bold": True}, "backgroundColor": {"red": 0.93, "green": 0.93, "blue": 0.93},
@@ -535,6 +562,15 @@ def _write(sh, ws, columns, rows, mark_col: bool):
     fmt.append({"setBasicFilter": {"filter": {"range": {"sheetId": sheet_id, "startRowIndex": 0,
                                                          "endRowIndex": len(rows) + 1, "startColumnIndex": 0,
                                                          "endColumnIndex": ncol}}}})
+    # outlines: franchise block — thick, the variant rows of one title — dashed; nothing inside (see _blocks)
+    visible = [i for i, (h, _) in enumerate(columns) if h not in ("title_id", "variant", "list", "state", "roi")
+               and not h.startswith("f:")]
+    last_col = max(visible) + 1 if visible else ncol
+    for a, b, kind in blocks or []:
+        line = {"style": "SOLID_THICK" if kind == "franchise" else "DASHED", "color": {"red": 0, "green": 0, "blue": 0}}
+        fmt.append({"updateBorders": {"range": {"sheetId": sheet_id, "startRowIndex": a + 1, "endRowIndex": b + 2,
+                                                "startColumnIndex": 0, "endColumnIndex": last_col},
+                                      "top": line, "bottom": line, "left": line, "right": line}})
     hidden = [i for i, (h, _) in enumerate(columns) if h in ("title_id", "variant", "list", "state", "roi") or h.startswith("f:")]
     for i in hidden:
         fmt.append({"updateDimensionProperties": {"range": {"sheetId": sheet_id, "dimension": "COLUMNS",
@@ -644,7 +680,8 @@ PLAYLIST_ABOUT = {
 
 QUALITY_COLUMNS = [("Название", 300), ("Год", 50), ("У меня", 220), ("Добавлено в Plex", 90),
                    ("Лучшее доступное", 300),
-                   ("Что лучше", 260), ("Size, GB", 70), ("title_id", 60)]
+                   ("Что лучше", 260), ("Мой размер, GB", 80), ("Новый размер, GB", 80), ("title_id", 60)]
+# ↑ owner 2026-10-25: «надо добавить колонку старого размера и нового, потому что сейчас колонка размера ничего не даёт»
 
 
 def plex_added(conn) -> dict[int, str]:
@@ -680,12 +717,17 @@ def _quality_rows(rows: list[dict], added: dict | None = None) -> list[list]:
             continue   # owner 2026-10-25: only films with an improvement («там должны быть фильмы только с улучшениями»)
         voice_up = any(w.startswith(("вышла озвучка", "вышел дубляж")) for w in why)
         size = rel.get("size_bytes")
+        old = (have or {}).get("size_bytes")
+        worse = rank.downgrade_reasons(have, rel) if have else []
         key = (0 if voice_up else 1, -(t.get("imdb_rating") or 0))
         # no «Статус» column: everything here is downloaded («оно там всё скачано же, зачем это писать?»)
         out.append((key, [_cell(_names(t["title_ru"], t["title_original"]), link=url), _cell(t.get("year")),
                           _cell(mine), _cell(added.get(t["id"])),
-                          _cell(r["quality"] + (f" — {rel.get('name')}" if rel.get("name") else ""), link=rel.get("url")),
-                          _cell("; ".join(why)), _cell(round(size / 2**30, 1) if size else None),
+                          # what the new release is worse at — on a new line in the same cell (owner, 2026-10-25)
+                          _cell(r["quality"] + (f" — {rel.get('name')}" if rel.get("name") else "")
+                                + (NL + "хуже: " + "; ".join(worse) if worse else ""), link=rel.get("url")),
+                          _cell("; ".join(why)), _cell(round(old / 2**30, 1) if old else None),
+                          _cell(round(size / 2**30, 1) if size else None),
                           _cell(t["id"])]))
     return [row for _, row in sorted(out, key=lambda x: x[0])]
 
@@ -908,8 +950,11 @@ def _rebuild(conn) -> dict:
         if not r["hidden_reasons"]:
             shown[_tab(r["title"])].append(r)
     groups = _group_keys(conn, rows)
+    blocks: dict[str, list] = {}
     for tab, rs in shown.items():
-        tabs[tab] = [_main_row(r, people, collections) for r in _grouped(rs, groups)]
+        ordered = _grouped(rs, groups)
+        tabs[tab] = [_main_row(r, people, collections) for r in ordered]
+        blocks[tab] = _blocks(ordered, groups)
     # watched titles never appear outside «Просмотренные» (owner, 2026-10-23)
     order = [*((t, MAIN_COLUMNS, tabs[t], True) for t in MARK_TABS), ("Обновить качество", QUALITY_COLUMNS, quality, False),
              # no «Просмотренные» (owner 2026-10-25: «лист вообще бесполезный, для купить есть свой лист»)
@@ -919,7 +964,7 @@ def _rebuild(conn) -> dict:
     # «Баллы» first: the media tabs' formulas refer to it
     for title, cols, data, marks in sorted(order, key=lambda o: o[0] != "Баллы"):
         ws = _ws(sh, title, len(data) + 1, len(cols))
-        _write(sh, ws, cols, data, marks)
+        _write(sh, ws, cols, data, marks, blocks.get(title))
         stats[title] = len(data)
     names = [o[0] for o in order]
     for ws in sh.worksheets():  # the default empty first sheet of a new spreadsheet

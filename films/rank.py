@@ -327,7 +327,38 @@ def plex_quality(p: dict) -> dict:
     kinds = {a.get("kind") for a in audio if a.get("lang") in ("ru", "uk")}
     return {"resolution": p.get("resolution"), "hdr": _j(p.get("hdr"), []), "dv_profile": p.get("dv_profile"),
             "source_type": p.get("source_type"), "has_ru_uk": bool(langs & {"ru", "uk"}),
-            "voice": next((k for k in ("dub", "mvo", "dvo", "svo", "avo", "amateur") if k in kinds), None)}
+            "voice": next((k for k in ("dub", "mvo", "dvo", "svo", "avo", "amateur") if k in kinds), None),
+            "size_bytes": p.get("size_bytes") or _plex_size(p)}
+
+
+def _plex_size(p: dict) -> int | None:
+    """File size from the stored Plex parts (plex_items.audio keeps every stream, «part» entries carry `size`); several
+    versions → the largest one (owner 2026-10-25: «Мой размер» on «Обновить качество»)."""
+    by_media: dict = {}
+    for e in _j(p.get("audio"), []):
+        if e.get("stream") == "part" and e.get("size"):
+            by_media[e.get("media", 0)] = by_media.get(e.get("media", 0), 0) + int(e["size"])
+    return max(by_media.values()) if by_media else None
+
+
+VOICE_ORDER = ("dub", "mvo", "dvo", "svo", "avo", "amateur")
+
+
+def downgrade_reasons(have: dict, best: dict) -> list[str]:
+    """What the best release is WORSE at than the downloaded file (owner, 2026-10-25: «Если что-то хуже, например
+    озвучка, то надо писать это с новой строки в графе, там где лучше») — shown on «Обновить качество» under the release."""
+    worse = []
+    bv, hv = best.get("best_voice"), have.get("voice")
+    if hv in VOICE_ORDER and (bv not in VOICE_ORDER or VOICE_ORDER.index(bv) > VOICE_ORDER.index(hv)):
+        worse.append(f"озвучка {bv or 'нет'} (у меня {hv})")
+    elif have.get("has_ru_uk") and (bv or "none") in ("none", "original"):
+        worse.append("нет RU/UA озвучки (у меня есть)")
+    if have.get("resolution") and (best.get("resolution") or 0) < have["resolution"]:
+        worse.append(f"разрешение {best.get('resolution')} (у меня {have['resolution']})")
+    hb, hh = hdr_class(_j(best.get("hdr"), []), best.get("dv_static_md")), hdr_class(have.get("hdr") or [])
+    if hdr_rank(hb) > hdr_rank(hh):
+        worse.append(f"{hb} (у меня {hh})")
+    return worse
 
 
 def upgrade_reasons(have: dict, best: dict, cfg: dict) -> list[str]:
@@ -367,6 +398,10 @@ def excluded_for(conn, d: dict) -> set[int]:
         out |= {r[0] for r in conn.execute(
             f"""SELECT t.id FROM titles t JOIN franchise_members m ON m.imdb_id = coalesce(t.imdb_id, t.series_imdb_id)
                 WHERE m.franchise_key IN ({q}) AND m.confidence != 'review'""", d["exclude_franchises"])}
+    if d.get("exclude_imdb"):   # single titles the owner took for himself («Хитрый Койот — это моё желание», 2026-10-25)
+        q = ",".join("?" * len(d["exclude_imdb"]))
+        out |= {r[0] for r in conn.execute(f"SELECT id FROM titles WHERE coalesce(imdb_id, series_imdb_id) IN ({q})",
+                                           d["exclude_imdb"])}
     if d.get("exclude_title_patterns"):
         rx = re.compile("|".join(d["exclude_title_patterns"]), re.I)
         out |= {tid for tid, ru, orig in conn.execute("SELECT id, title_ru, title_original FROM titles")
@@ -616,7 +651,7 @@ def compute(conn) -> list[dict]:
             if flt["hide_downloaded"] and not upgrade:
                 hidden.append("скачано")
         elif disk_by_title.get(t["id"]):   # on disk, not in Plex (Jellyfin only / no media server): quality from the name
-            have = max((disks.name_quality(f["path"]) for f in disk_by_title[t["id"]]),
+            have = max((dict(disks.name_quality(f["path"]), size_bytes=f.get("size_bytes")) for f in disk_by_title[t["id"]]),
                        key=lambda q: ((q["resolution"] or 0), -hdr_rank(hdr_class(q["hdr"]))))
             upgrade = upgrade_reasons(have, best, cfg) if have["resolution"] else []   # unknown resolution: no claim
             if flt["hide_downloaded"] and not upgrade:
