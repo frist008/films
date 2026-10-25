@@ -55,3 +55,7 @@ Claude не вписывает ключи/токены в веб-формы и �
   «Редактор»; ни GCP, ни Firebase не позволяют редактору выйти самому — только владелец может убрать.
 - N4K Game Collection и Sky Children of the Light Map удалены владельцем (в ожидании удаления 30 дней, можно восстановить).
 - Новый проект на <google.main> всё равно не создаётся (удаляемые занимают лимит) → проект `films-db` на <google.cloud>.
+
+## Публикация OAuth-приложения (privacy policy)
+
+Страница политики конфиденциальности — GitHub Pages репозитория (Settings → Pages → `main`, `/docs`): `https://<логин GitHub>.github.io/films/privacy` (главная — `…/films/`). Включено 2026-10-25. Дальше — владелец: подтвердить домен `<логин GitHub>.github.io` в Google Search Console (аккаунт <google.cloud>) и в консоли GCP `films-db` → OAuth consent screen указать главную и privacy, затем «Publish app».
