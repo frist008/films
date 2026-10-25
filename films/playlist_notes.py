@@ -163,8 +163,12 @@ def visible_order() -> dict[int, int]:
     (owner, 2026-10-24: «сортировка в плейлистах … такая же по приоритету, как и в итоговом документе»)."""
     global _VISIBLE
     if _VISIBLE is None:
-        from . import rank
-        rows = rank.compute(db.connect())
+        from . import rank, sheet
+        conn = db.connect()
+        rows = rank.compute(conn)
+        # the sheet's own order: franchises / collections / a series' seasons kept together (owner 2026-10-25: «сортировка
+        # плейлистов тоже очень важна»)
+        rows = sheet._grouped(rows, sheet._group_keys(conn, rows))
         _VISIBLE, i = {}, 0
         for r in rows:
             if r["variant_index"] == 0 and not r["hidden_reasons"] and r["title"]["id"] not in _VISIBLE:

@@ -955,9 +955,9 @@ survey = "r2-122"
 
 [[franchise]]
 key = "tmdb_762512"
-name = "Король Лев (Перезапуск)"
+name = "Король Лев — вся франшиза (классика и перезапуск)"
 scope = "all"
-tmdb_collections = [762512]
+tmdb_collections = [762512, 94032]   # + классика 1994–2004 (2026-10-25: «франшизы Король Лев»)
 survey = "r2-123"
 # мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
 animation = "ask"
@@ -1866,7 +1866,7 @@ source = "games"   # состав — films.sources.games (game_adaptations) + f
 [[franchise]]
 key = "dragon_ball"
 name = "Dragon Ball — вся вселенная"
-scope = "all"
+scope = "none"   # владелец 2026-10-25: «Я не интересуюсь Dragon Ball … Его скрыть» (правило «игры владельца — все годы» тут отменено им самим)
 tmdb_collections = []
 source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
 anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать

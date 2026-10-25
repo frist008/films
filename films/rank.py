@@ -654,6 +654,23 @@ def compute(conn) -> list[dict]:
             "RT": round(max(0, (fresh.rt_score(t) or 0) - 50) * wts.get("rt_per_point_over_50", 0), 1),
         }
         score = round(sum(parts.values()), 1)
+        # the same points as coefficients of the weights, so the sheet can compute «Баллы» by formula from the «Баллы» tab
+        # constants (owner 2026-10-25: «каждое медиа имеет формулу, которая обращается к этим константам»)
+        ppp = wts.get("people_per_point", 0)
+        factors = {
+            "owner_want": int(lm == "want"), "owner_maybe": int(lm == "maybe"), "owner_possible": int(lm == "possible"),
+            "watchlist": int(t["id"] in wanted), "upgrade": int(bool(upgrade)), "franchise": int(bool(franchise)),
+            "imax": int(bool(t.get("is_imax"))),
+            "auto_want": int(am == "want" and not lm), "auto_maybe": int(am == "maybe" and not lm),
+            "new_since": int(bool(fresh.is_new(first_seen, t["id"]))),
+            "people_per_point": round(parts["люди"] / ppp, 2) if ppp else 0,
+            **{f"hdr.{k}": int(hdr_best == k) for k in (wts.get("hdr") or {})},
+            "uhd": int((best.get("resolution") or 0) >= 2160),
+            **{f"voice.{k}": int((best.get("best_voice") or "none") == k) for k in (wts.get("voice") or {})},
+            "wishlist": int(t["id"] in wishlist),
+            "imdb_per_point_over_5": round(max(0, (t.get("imdb_rating") or 0) - 5), 1),
+            "rt_per_point_over_50": round(max(0, (fresh.rt_score(t) or 0) - 50), 1),
+        }
         is_top = (t.get("imdb_id") or "") in top_imdb
         key = ((0, top_list.index(t["imdb_id"])) if is_top else (1 if t["id"] in urgent else 2, -score)) \
             + tuple(sort_vals[k] for k in cfg["sort"]["order"])
@@ -669,6 +686,7 @@ def compute(conn) -> list[dict]:
                          "have": have, "queued": queued.get(t["id"]), "wanted": t["id"] in wanted,
                          "list_marker": list_marker.get(t["id"]) or auto_mark.get(t["id"]), "auto_mark": auto_mark.get(t["id"]),
                          "urgent": t["id"] in urgent, "top": is_top, "quality_watch": (t.get("imdb_id") or "") in qwatch, "score": score, "score_parts": {k: v for k, v in parts.items() if v},
+                         "factors": factors,
                          "first_seen": first_seen.get(t["id"]),
                          "franchise": franchise,
                          "people_hits": sorted(person_hits),
