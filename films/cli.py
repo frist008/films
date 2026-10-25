@@ -40,6 +40,11 @@ def cmd_match(args):
     db.migrate(conn)
     print(json.dumps(match.match_releases(conn, retry_issues=args.retry_issues), ensure_ascii=False, indent=1))
     print(json.dumps({"exact_name_year": match.link_exact_names(conn)}, ensure_ascii=False))   # R144
+    # owner 2026-10-25: unidentified releases go to the sheet without data; tracker-only rows are identified again first
+    from . import tracker_only
+    res = tracker_only.run(conn)
+    res["create"].pop("made", None)
+    print(json.dumps({"tracker_only": res}, ensure_ascii=False, default=str))
 
 
 def cmd_enrich(args):

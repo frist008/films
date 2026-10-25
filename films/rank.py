@@ -586,6 +586,9 @@ def compute(conn) -> list[dict]:
             hidden.append("не интересен (правило)")
         cid = t.get("collection_id")
         is_member = (t.get("imdb_id") or t.get("series_imdb_id")) in member_imdb
+        if t.get("tracker_only") and not is_member:
+            # a tracker-only row (no IMDb / TMDB, films/tracker_only.py) of an owner's anime franchise, matched by name
+            is_member = _j(t.get("tracker_meta"), {}).get("franchise") in selected_keys
         in_franchise_scope = (cid in franchise_years and (t.get("year") or 0) >= franchise_years[cid]) or is_member
         owner_pick = (t.get("imdb_id") or "") in top_imdb or t["id"] in wanted or t["id"] in queued or t["id"] in list_marker             or t["id"] in urgent             or (resp.get(t["id"]) or {}).get("source") == "manual" and (resp.get(t["id"]) or {}).get("person") not in (None, "—")
         # ↑ the owner asked for it (his lists, Дима's / Яна's manual lists): no year / cartoon-series rule

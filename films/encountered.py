@@ -274,6 +274,9 @@ def run_match(conn, log=print) -> dict:
     with locks.lock("match", timeout=60):
         res = _retry(match.match_releases, conn)
         res["exact_name_year"] = _retry(match.link_exact_names, conn)
+        from . import tracker_only   # unidentified releases → tracker-only titles; those identified again first
+        res["tracker_only"] = _retry(tracker_only.run, conn, log=lambda *_: None)
+        res["tracker_only"]["create"].pop("made", None)
     return res
 
 

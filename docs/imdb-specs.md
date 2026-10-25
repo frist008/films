@@ -50,7 +50,8 @@ python -X utf8 -m unittest tests.test_imdb_specs
 `di_resolution`, `aspect_ratios`, `sound_mix`, `is_imax`, `imax_source` (перезаписываются при каждом прогоне);
 `upscale_verdict` / `upscale_source = 'imdb_di'` из `di_resolution` (R32; не трогается, если вердикт дал другой источник —
 см. `docs/research-codecs-upscale.md` §2.5);
-`poster_url`/`poster_source='imdb'`/`poster_checked_at` — только где `poster_url IS NULL` (если у IMDb постера нет —
+`poster_url`/`poster_source='imdb'`/`poster_checked_at` — только где `poster_url IS NULL` (нет у IMDb — дальше RT → TMDB →
+трекер, см. «Постер» ниже; если у IMDb постера нет —
 ставится только `poster_checked_at`; строка-«фильм», чей IMDb id — сериал/эпизод **той же** работы с тем же названием
 и годом ±1, получает постер, хотя тех. характеристики ей не пишутся — `poster_same_work`);
 `budget_usd`/`box_office_usd` — только где NULL, только USD, только фильмы. `updated_at` не трогается.
@@ -133,6 +134,26 @@ to Camp, The Damned, 96 Minutes, X, Terrifier…) и «IMAX Enhanced»/«IMAX Bl
 `primaryImage.url` из того же ответа, нормализованный `imdb.poster_url()` (`…._V1_.jpg`). Сверено с suggestion-API
 (`v3.sg.media-imdb.com/suggestion/x/{tconst}.json`, `imdb.suggest()`): 15/15 случайных — тот же URL, так что
 отдельный запрос не нужен. Сезонам ставится постер сериала.
+
+**Порядок источников постера** (владелец, 2026-10-25: «Да, TMDB — когда на IMDb и RT нет; а когда и там нет — с источников
+торрента»): **IMDb → Rotten Tomatoes → TMDB → картинка со страницы раздачи**. Код — `films/posters.py`; полный прогон
+`imdb_specs run` (без `--ids` / `--limit`) в конце сам вызывает `posters.fill()` (итог — `last_run.json → poster_fallback`);
+отдельно: `python -X utf8 -m films.posters run [--ids …] [--no-check] [--dry]`, сводка `python -X utf8 -m films.posters stats`.
+- Цели: тайтлы с раздачей (связь не `wrong_link…`, строка не `duplicate_of`), у которых `poster_url IS NULL`, плюс все
+  с `poster_source` `tracker` или `tmdb` (появившийся позже постер IMDb / RT заменяет их — страницы RT приходят с
+  `films ratings rt`).
+- `imdb` — тот же `primaryImage` (кэш GraphQL, с теми же защитами `suspect_link` / `poster_same_work`); `rt` —
+  `rt_pages.poster_url` страницы тайтла (сезон → его страница, иначе страница сериала; заполняет `films ratings rt`);
+  `tmdb` — `poster_path` (сезон → постер сезона, иначе сериала) как `https://image.tmdb.org/t/p/original/…`;
+  `tracker` — первая картинка описания раздачи из `release_raw` (уже скачано; значки рейтингов `s.rutor.info/imdb/*.gif`
+  и gif пропускаются, **картинки Кинопоиска не берутся никогда**; ссылка на большую картинку вокруг превью — берётся она;
+  у rutracker — `<var class="postImg" title=…>`).
+- Ссылки трекеров протухают (картинки живут на imageban / fastpic …), поэтому картинка пишется, только если отвечает
+  (HTTP 200, `image/*`); в `titles.poster_release_id` — раздача, чья страница её дала, в `poster_alive_at` — когда она
+  отвечала. **Каждое обновление перепроверяет** такие строки: сначала IMDb / RT / TMDB, потом сама картинка; мёртвая —
+  берётся заново из кэша страниц других раздач тайтла, затем со свежей страницы rutor (обычный HTTP, только rutor, без
+  браузера); не нашлось — `poster_url` очищается (ищется снова в следующий раз), строка — в отчёте `none_list` с причиной.
+- `poster_source`: `imdb` / `rt` / `tmdb` / `tracker`.
 
 ### Украинское название (только отчёт, `title_uk` не пишется)
 aka с `country.id = 'UA'` — см. §4.

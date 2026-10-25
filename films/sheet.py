@@ -166,12 +166,20 @@ def _cell(v, link: str | None = None, bold: bool = False):
     return c
 
 
-def _links_cell(links: list[tuple[str, str]]):
+def _links_cell(links: list[tuple[str, str]], note: str | None = None):
+    """«Трейлер · IMDb · RT · Картинка …» as one cell of links; `note` — plain text before them (a tracker-only title:
+    «нет в TMDB/IMDb — данные только с трекера», owner 2026-10-25)."""
     links = [(t, u) for t, u in links if u]
     if not links:
-        return {}
+        return _cell(note) if note else {}
     text, runs, pos = "", [], 0
+    if note:
+        text, pos = note, len(note)
+        runs.append({"startIndex": 0, "format": {}})
+        links = [("", None)] + links
     for i, (t, u) in enumerate(links):
+        if u is None:
+            continue   # the note's placeholder
         if i:
             runs.append({"startIndex": pos, "format": {}})
             text += " · "
@@ -243,6 +251,9 @@ def _wiki(t: dict) -> tuple[str, str | None]:
     return ("Вики", w["uk"]) if w.get("uk") else ("Вики (en)", w.get("en"))
 
 
+TRACKER_ONLY_NOTE = "нет в TMDB/IMDb — данные только с трекера"   # films/tracker_only.py (owner, 2026-10-25)
+
+
 def _main_row(r: dict, people: dict, collections: dict) -> list:
     t, rel = r["title"], r["release"]
     resp = r["responsible"]
@@ -289,7 +300,8 @@ def _main_row(r: dict, people: dict, collections: dict) -> list:
                      ("Трейлер (" + {"uk": "укр", "original": "ориг.", "ru_sub": "рус. суб.", "any": "другой"}
                       .get(t.get("trailer_alt_kind"), "?") + ")", t.get("trailer_alt_url")),
                      ("IMDb", imdb_url), ("RT", t.get("rt_url")),
-                     ("Картинка", t.get("poster_url")), _wiki(t), ("Сайт", t.get("homepage"))]),
+                     ("Картинка", t.get("poster_url")), _wiki(t), ("Сайт", t.get("homepage"))],
+                    note=TRACKER_ONLY_NOTE if t.get("tracker_only") else None),
         _cell(have_txt), _cell(", ".join(r["upgrade"])), _cell(store),
         _cell(collections.get(t.get("collection_id")) if r["franchise"] else None), _cell(", ".join(r["people_hits"])),
         _cell(", ".join(r["hidden_reasons"])), _cell(t["id"]), _cell(r["variant_index"]),

@@ -675,6 +675,19 @@ MIGRATIONS = [
     ALTER TABLE titles ADD COLUMN duplicate_of INTEGER REFERENCES titles(id);  -- this row is that title (links moved there)
     ALTER TABLE titles ADD COLUMN imdb_id_wrong TEXT;                         -- the wrong IMDb id the row carried
     """,
+    # 19: owner, 2026-10-25 — «Добавлять в таблицу просто без данных, раз не удаётся найти»: a release that neither IMDb
+    # nor TMDB identifies gets a title built from the tracker data alone (films/tracker_only.py; release_titles.how =
+    # 'tracker_only'); every match run tries to identify it again and, once found, moves its links to the real title
+    # (old link → how 'wrong_link: …', the row → duplicate_of; nothing is deleted). Posters (owner, same day: «TMDB — когда
+    # на IMDb и RT нет; а когда и там нет — с источников торрента»): poster_source imdb / rt / tmdb / tracker; a tracker
+    # image keeps the release whose page gave it, so it is re-checked (and re-taken from the page) at every update.
+    """
+    ALTER TABLE titles ADD COLUMN tracker_only INTEGER NOT NULL DEFAULT 0;   -- 1 = no IMDb / TMDB: data from the tracker only
+    ALTER TABLE titles ADD COLUMN tracker_meta TEXT;          -- JSON: release ids, names, matcher problem / candidates, franchise
+    ALTER TABLE titles ADD COLUMN identify_checked_at TEXT;   -- last re-identification attempt of a tracker_only row
+    ALTER TABLE titles ADD COLUMN poster_release_id INTEGER REFERENCES releases(id);  -- poster_source 'tracker': its page
+    ALTER TABLE titles ADD COLUMN poster_alive_at TEXT;       -- poster_source 'tracker': when the image last answered
+    """,
 ]
 
 

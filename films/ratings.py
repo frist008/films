@@ -104,6 +104,7 @@ def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30, never_c
             """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
                FROM titles WHERE rt_checked_at IS NULL
                  AND coalesce(title_original, title_latin, title_ru, title_uk) IS NOT NULL
+                 AND coalesce(tracker_only, 0) = 0   -- no data but the tracker's: a name-only RT hit would be a guess
                ORDER BY year DESC""").fetchall()
     else:
         rows = conn.execute(

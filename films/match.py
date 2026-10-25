@@ -744,115 +744,121 @@ def match_releases(conn, retry_issues: bool = False) -> dict:
              "issues": {}, "season_assumed_1": 0, "imdb_redirects": merged, "packs": 0, "pack_parts": 0,
              "packs_retried": packs}
     for i, (rid, category, parsed) in enumerate(pending, 1):
-        p = json.loads(parsed)
-        np = p.get("name_parsed") or {}
-        y1, y2 = _years(p)
-        tconst, how, tmdb_id = canonical_imdb(p.get("imdb_id")), "imdb_page", None
-        seasons = _seasons(np)
-        b = _page_record(conn, tconst) if tconst else None
-        exclude, mismatch = frozenset(), None
-        why = _page_id_distrust(b, np, seasons, y1, y2) if tconst else None
-        if tconst and not why and _film_not_series(conn, p, category, b, seasons, y1, tconst):
-            why = "series id for a film release (TMDB has the film)"
-        if why:
-            # the page links something else than the release (an episode, a podcast, a film for a season pack …) —
-            # resolved by name instead, that id excluded (34 titles were made from such ids, fixed 2026-10-25)
-            exclude, mismatch = frozenset({tconst}), {"page_imdb": tconst, "imdb_type": b["title_type"], "why": why}
-            tconst, b = None, None
-        elif b is not None and b["title_type"] == "unknown":
-            b = None   # an older id TMDB does not know either: the page link is the only evidence, as before
-        kind = _kind(p, category, b)
-
-        def issue(problem, candidates):
+        def issue(problem, candidates, rid=rid):
             with conn:
                 _issue(conn, rid, problem, candidates)
             stats["issues"][problem] = stats["issues"].get(problem, 0) + 1
 
-        if kind == "movie" and _is_pack(np.get("name") or "", y1, y2, seasons):
-            # multi-film pack: the page links only the first film — linked to every film it holds (the page's list of
-            # IMDb ids, else the TMDB collection); recorded as a resolved 'collection_pack' issue, an open one if not
-            try:
-                tids, info = _link_pack(conn, rid, p, category, y1, y2)
-            except LookupError as e:
-                tids, info = None, {"page_imdb": tconst, "years": [y1, y2], "error": str(e)}
-            if not tids:
-                issue("collection_pack", info)
-                continue
-            _resolve_pack_issue(conn, rid, info)
-            stats["linked"] += 1
-            stats["packs"] += 1
-            stats["pack_parts"] += len(tids)
-            continue
-        if tconst and b is not None and not _page_year_ok(conn, tconst, b, kind, p, y1, y2, seasons):
-            # the page links another title (often an earlier part: «Коты Эрмитажа 2 (2026)» -> «Коты Эрмитажа» 2023):
-            # resolved by name instead, that title excluded
-            exclude = frozenset({tconst})
-            mismatch = {"page_imdb": tconst, "imdb_year": b["start_year"], "release_years": [y1, y2]}
-            tconst = None
-        if not tconst:
-            src, key, cands = _resolve(conn, p, category, kind, y1, y2, seasons, exclude)
-            if src is None and mismatch and (mismatch.get("why") or "").endswith("for a season release"):
-                # no series of that name either: the film the page names is the release («Бэтмен и Робин [01x01-15]
-                # (1949)» — a serial IMDb and TMDB keep as one film)
-                src, key, cands = "imdb", mismatch["page_imdb"], "imdb_page"
-                kind = "movie"
-            if src is None:
-                issue("imdb_year_mismatch", dict(mismatch, candidates=cands)) if mismatch else issue(key, cands)
-                continue
-            if src == "imdb":
-                tconst, how = key, cands or "imdb_resolve"   # on success the third item names a special rule
-                b = _page_record(conn, tconst) if how == "imdb_page" else _basics(conn, tconst)
-                kind = "movie" if how == "imdb_page" else _kind(p, category, b)
-            else:
-                tmdb_id, how = key, cands or "tmdb_search"
-                kind = {"tmdb_as_movie": "movie", "tmdb_as_series": "series"}.get(how, kind)
-        if kind == "series" and not seasons:
-            # "[1-8 из 8]" style or a miniseries: no season number written -> season 1, counted — only when the year fits
-            # season 1 («Интерны [101-153] (2012)», «Sword Art Online: Alicization - War of Underworld (2019)» are later
-            # seasons of shows begun in 2010 / 2012: left for review, never put on season 1)
-            start = (tmdb._year((tmdb.tv_raw(conn, tmdb_id) or {}).get("first_air_date")) if tmdb_id
-                     else (b["start_year"] if b is not None else None))
-            if not _season_fit("series", [1], y1, y2, start) or (y1 and y2 and y2 - y1 >= 2):
-                # … nor for a span of three years and more: the whole show («Аватар: Легенда об Аанге (2005-2008)»)
-                issue("series_no_season", {"imdb": tconst, "tmdb_id": tmdb_id, "series_start": start,
-                                           "release_years": [y1, y2], "how": how})
-                continue
-            seasons = [1]
-            stats["season_assumed_1"] += 1
-        try:
-            with conn:
-                if tmdb_id and kind == "movie":
-                    tids = [_tmdb_movie_title(conn, tmdb_id)]
-                elif tmdb_id:
-                    tids = [ensure_season(conn, tmdb_id, s) for s in seasons]
-                elif kind == "movie":
-                    tids = [_movie_title(conn, tconst, b, p, category)]
-                else:
-                    tids = _season_titles(conn, tconst, b, p, category, seasons)
-                if None in tids:
-                    raise LookupError(f"TMDB has no {'movie' if kind == 'movie' else 'season ' + str(seasons)}")
-                if kind == "series" and how not in ("imdb_page", "tmdb_dub_year"):   # the dub rule checked its years
-                    _check_season_years(conn, tids, y1, y2, tconst, tmdb_id, b)
-                for tid in tids:
-                    conn.execute("INSERT OR IGNORE INTO release_titles (release_id, title_id, how) VALUES (?, ?, ?)",
-                                 (rid, tid, how))
-                    # a title made earlier out of tracker scope (watched / bought / TMDB) now has a tracker release
-                    conn.execute("UPDATE titles SET tracker_category = ? WHERE id = ? AND tracker_category IS NULL",
-                                 (category, tid))
-        except SeasonYearMismatch as e:
-            issue("season_year_mismatch", {"imdb": tconst, "tmdb_id": tmdb_id, "how": how, "seasons": seasons,
-                                           "release_years": [y1, y2], "season_years": e.args[0]})
-            continue
-        except (LookupError, sqlite3.IntegrityError) as e:
-            issue("tmdb_no_title", {"tmdb_id": tmdb_id, "kind": kind, "seasons": seasons, "error": str(e)})
-            continue
-        stats["linked"] += 1
-        stats[{"imdb_page": "via_page_imdb", "imdb_resolve": "via_resolve", "tmdb_search": "via_tmdb",
-               "imdb_agree": "via_agree", "tmdb_dub_year": "via_dub_year", "tmdb_as_movie": "via_other_kind", "tmdb_director": "via_director",
-               "tmdb_as_series": "via_other_kind"}[how]] += 1
+        match_one(conn, rid, category, json.loads(parsed), stats, issue)
         if i % 2000 == 0:
             print(f"  matched {i}/{len(pending)}", file=sys.stderr, flush=True)
     return stats
+
+
+def match_one(conn, rid: int, category: str, p: dict, stats: dict, issue) -> list[int] | None:
+    """Identify one parsed release and link it to its title(s) → the title ids, or None after `issue(problem,
+    candidates)` (match_releases writes it to match_issues; the tracker-only re-identification passes a no-op)."""
+    np = p.get("name_parsed") or {}
+    y1, y2 = _years(p)
+    tconst, how, tmdb_id = canonical_imdb(p.get("imdb_id")), "imdb_page", None
+    seasons = _seasons(np)
+    b = _page_record(conn, tconst) if tconst else None
+    exclude, mismatch = frozenset(), None
+    why = _page_id_distrust(b, np, seasons, y1, y2) if tconst else None
+    if tconst and not why and _film_not_series(conn, p, category, b, seasons, y1, tconst):
+        why = "series id for a film release (TMDB has the film)"
+    if why:
+        # the page links something else than the release (an episode, a podcast, a film for a season pack …) —
+        # resolved by name instead, that id excluded (34 titles were made from such ids, fixed 2026-10-25)
+        exclude, mismatch = frozenset({tconst}), {"page_imdb": tconst, "imdb_type": b["title_type"], "why": why}
+        tconst, b = None, None
+    elif b is not None and b["title_type"] == "unknown":
+        b = None   # an older id TMDB does not know either: the page link is the only evidence, as before
+    kind = _kind(p, category, b)
+
+    if kind == "movie" and _is_pack(np.get("name") or "", y1, y2, seasons):
+        # multi-film pack: the page links only the first film — linked to every film it holds (the page's list of
+        # IMDb ids, else the TMDB collection); recorded as a resolved 'collection_pack' issue, an open one if not
+        try:
+            tids, info = _link_pack(conn, rid, p, category, y1, y2)
+        except LookupError as e:
+            tids, info = None, {"page_imdb": tconst, "years": [y1, y2], "error": str(e)}
+        if not tids:
+            issue("collection_pack", info)
+            return None
+        _resolve_pack_issue(conn, rid, info)
+        stats["linked"] += 1
+        stats["packs"] += 1
+        stats["pack_parts"] += len(tids)
+        return tids
+    if tconst and b is not None and not _page_year_ok(conn, tconst, b, kind, p, y1, y2, seasons):
+        # the page links another title (often an earlier part: «Коты Эрмитажа 2 (2026)» -> «Коты Эрмитажа» 2023):
+        # resolved by name instead, that title excluded
+        exclude = frozenset({tconst})
+        mismatch = {"page_imdb": tconst, "imdb_year": b["start_year"], "release_years": [y1, y2]}
+        tconst = None
+    if not tconst:
+        src, key, cands = _resolve(conn, p, category, kind, y1, y2, seasons, exclude)
+        if src is None and mismatch and (mismatch.get("why") or "").endswith("for a season release"):
+            # no series of that name either: the film the page names is the release («Бэтмен и Робин [01x01-15]
+            # (1949)» — a serial IMDb and TMDB keep as one film)
+            src, key, cands = "imdb", mismatch["page_imdb"], "imdb_page"
+            kind = "movie"
+        if src is None:
+            issue("imdb_year_mismatch", dict(mismatch, candidates=cands)) if mismatch else issue(key, cands)
+            return None
+        if src == "imdb":
+            tconst, how = key, cands or "imdb_resolve"   # on success the third item names a special rule
+            b = _page_record(conn, tconst) if how == "imdb_page" else _basics(conn, tconst)
+            kind = "movie" if how == "imdb_page" else _kind(p, category, b)
+        else:
+            tmdb_id, how = key, cands or "tmdb_search"
+            kind = {"tmdb_as_movie": "movie", "tmdb_as_series": "series"}.get(how, kind)
+    if kind == "series" and not seasons:
+        # "[1-8 из 8]" style or a miniseries: no season number written -> season 1, counted — only when the year fits
+        # season 1 («Интерны [101-153] (2012)», «Sword Art Online: Alicization - War of Underworld (2019)» are later
+        # seasons of shows begun in 2010 / 2012: left for review, never put on season 1)
+        start = (tmdb._year((tmdb.tv_raw(conn, tmdb_id) or {}).get("first_air_date")) if tmdb_id
+                 else (b["start_year"] if b is not None else None))
+        if not _season_fit("series", [1], y1, y2, start) or (y1 and y2 and y2 - y1 >= 2):
+            # … nor for a span of three years and more: the whole show («Аватар: Легенда об Аанге (2005-2008)»)
+            issue("series_no_season", {"imdb": tconst, "tmdb_id": tmdb_id, "series_start": start,
+                                       "release_years": [y1, y2], "how": how})
+            return None
+        seasons = [1]
+        stats["season_assumed_1"] += 1
+    try:
+        with conn:
+            if tmdb_id and kind == "movie":
+                tids = [_tmdb_movie_title(conn, tmdb_id)]
+            elif tmdb_id:
+                tids = [ensure_season(conn, tmdb_id, s) for s in seasons]
+            elif kind == "movie":
+                tids = [_movie_title(conn, tconst, b, p, category)]
+            else:
+                tids = _season_titles(conn, tconst, b, p, category, seasons)
+            if None in tids:
+                raise LookupError(f"TMDB has no {'movie' if kind == 'movie' else 'season ' + str(seasons)}")
+            if kind == "series" and how not in ("imdb_page", "tmdb_dub_year"):   # the dub rule checked its years
+                _check_season_years(conn, tids, y1, y2, tconst, tmdb_id, b)
+            for tid in tids:
+                conn.execute("INSERT OR IGNORE INTO release_titles (release_id, title_id, how) VALUES (?, ?, ?)",
+                             (rid, tid, how))
+                # a title made earlier out of tracker scope (watched / bought / TMDB) now has a tracker release
+                conn.execute("UPDATE titles SET tracker_category = ? WHERE id = ? AND tracker_category IS NULL",
+                             (category, tid))
+    except SeasonYearMismatch as e:
+        issue("season_year_mismatch", {"imdb": tconst, "tmdb_id": tmdb_id, "how": how, "seasons": seasons,
+                                       "release_years": [y1, y2], "season_years": e.args[0]})
+        return None
+    except (LookupError, sqlite3.IntegrityError) as e:
+        issue("tmdb_no_title", {"tmdb_id": tmdb_id, "kind": kind, "seasons": seasons, "error": str(e)})
+        return None
+    stats["linked"] += 1
+    stats[{"imdb_page": "via_page_imdb", "imdb_resolve": "via_resolve", "tmdb_search": "via_tmdb",
+           "imdb_agree": "via_agree", "tmdb_dub_year": "via_dub_year", "tmdb_as_movie": "via_other_kind", "tmdb_director": "via_director",
+           "tmdb_as_series": "via_other_kind"}[how]] += 1
+    return tids
 
 
 def link_exact_names(conn) -> dict:

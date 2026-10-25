@@ -25,7 +25,8 @@ IMDb has no season entity, so specs / poster are series-level and written to eve
   * sound_mix         <- JSON list of display strings, e.g. ["Dolby Atmos", "IMAX 6-Track", "DTS (DTS: X)"]
   * is_imax, imax_source <- imax_verdict()
   * budget_usd / box_office_usd <- only where NULL, only USD, only movies (see apply())
-  * poster_url (+ poster_source='imdb', poster_checked_at) <- only where poster_url is NULL
+  * poster_url (+ poster_source='imdb', poster_checked_at) <- only where poster_url is NULL; a full run then calls
+    films.posters.fill: no IMDb poster -> Rotten Tomatoes -> TMDB -> the tracker page image (owner, 2026-10-25)
   * title_uk is NOT written: UA akas are only counted for the report (owner has not chosen the source).
 
 Raw responses are cached per tconst in data/cache/imdb_specs/{tconst}.json.gz (the whole GraphQL node --
@@ -895,6 +896,11 @@ def run(conn, limit: int | None = None, max_age_days: float = DEFAULT_MAX_AGE_DA
         "money_disagree": lists["money_disagree"],
         "uk_candidates_all": lists["uk_candidates"],
     }
+    if ids is None and limit is None:
+        # owner 2026-10-25: no IMDb poster → Rotten Tomatoes → TMDB → the tracker page's own image (films/posters.py);
+        # tracker images are re-checked here too (they expire)
+        from .. import posters
+        report["poster_fallback"] = posters.fill(conn, fetch_imdb=False, log=log)
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     (CACHE_DIR / "last_run.json").write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
     return report
