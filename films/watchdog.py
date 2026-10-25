@@ -55,7 +55,10 @@ def report() -> str:
             continue
         text = f.read_text(encoding="utf-8", errors="replace").splitlines()
         own = "AGENT_" + f.stem.removeprefix("agent_").upper() + "_OK"   # only its own marker, not another agent's quoted
-        if any(own in l for l in text[-5:]):
+        last = next((l.strip() for l in reversed(text) if l.strip()), "")
+        # done: its own marker, or a marker closing its last line (sub-logs write the parent's), or a final «finished …»
+        if (any(own in l for l in text[-5:]) or re.search(r"AGENT_\w+_OK\W*$", last)
+                or re.match(r"\S+( \S+)? finished\b", last)):
             if age < 60:
                 lines.append(f"  агент {f.stem}: закончил ({age:.0f} мин назад)")
             continue
