@@ -73,5 +73,25 @@ def report() -> str:
 AGENT_STALL_MIN = 20   # agents write PROGRESS at least every 10 minutes
 
 
+def owner_report() -> str:
+    """Short report for the owner himself, shown by the hook as a system message every 10 minutes (owner, 2026-10-25:
+    «Не вижу прогресса каждые 10 минут от агента, который должен опрашивать. Опять баги?» — the full report went only into
+    Claude's context and was not relayed). Running agents: percent, ETA, current step; stalled ones flagged."""
+    full = report().splitlines()
+    agents = [l.strip().removeprefix("агент ").removeprefix("agent_") for l in full if l.strip().startswith("агент ")]
+    running = [a for a in agents if "закончил" not in a]
+    done = [a.split(":")[0] for a in agents if "закончил" in a]
+    procs = sum(1 for l in full if l.strip().startswith("▶"))
+    head = f"Сторож {time.strftime('%H:%M')} (каждые 10 мин): "
+    if not running:
+        return head + f"фоновых агентов нет; процессов проекта {procs}" + (f"; недавно закончили: {', '.join(done)}" if done else "")
+    lines = [head + f"работают {len(running)}, процессов {procs}"]
+    lines += ["• " + a for a in running]
+    if done:
+        lines.append("закончили: " + ", ".join(done))
+    return "\n".join(lines)
+
+
 if __name__ == "__main__":
-    print(report())
+    import sys
+    print(owner_report() if "--owner" in sys.argv else report())

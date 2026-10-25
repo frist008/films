@@ -155,6 +155,21 @@ def main(mode: str) -> None:
     if missing:
         why.append("В PLAN.md открытые пункты ссылаются на логи, которых нет (обещан запуск, а его не было): "
                    + ", ".join(missing[:6]) + " — запустить или исправить запись в плане.")
+    # bug journal (owner, 2026-10-25: «Баги настолько часто, что исправлять надо кардинально»): every bug the owner
+    # caught has a code guard (hook / test / module) in docs/bugs.md — the guard paths must exist, a row without one fails
+    bugs = ROOT / "docs" / "bugs.md"
+    if bugs.exists():
+        bad = []
+        for line in bugs.read_text(encoding="utf-8").splitlines():
+            cells = [c.strip() for c in line.strip().strip("|").split("|")]
+            if len(cells) < 4 or not re.match(r"\d{4}-\d\d-\d\d", cells[0]):
+                continue
+            paths = re.findall(r"`([\w./-]+\.(?:sh|py|js|toml))", cells[3])
+            if not paths or any(not (ROOT / p).exists() for p in paths):
+                bad.append(cells[1][:50])
+        if bad:
+            why.append("docs/bugs.md: у бага нет стража (хук / тест / модуль) или путь не существует: " + " | ".join(bad[:5])
+                       + " — баг не считается исправленным, пока его повтор не ловит код.")
     if not why and net_note:
         print(json.dumps({"systemMessage": net_note}, ensure_ascii=False))
         return

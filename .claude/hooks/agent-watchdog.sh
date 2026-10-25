@@ -29,7 +29,7 @@ if tool == "CronCreate":
     if (ti.get("prompt") or "").startswith(PROMPT):
         text = tr if isinstance(tr, str) else json.dumps(tr, ensure_ascii=False)
         import re
-        m = re.search(r"job ([0-9a-f]{6,})", text or "")
+        m = re.search(r"job ([0-9a-f]{6,})", text or "") or re.search(r'"id":\s*"([0-9a-f]{6,})"', text or "")
         os.makedirs(os.path.dirname(marker), exist_ok=True)
         json.dump({"id": m.group(1) if m else None, "session": sid, "at": time.time()}, open(marker, "w", encoding="utf-8"))
     sys.exit(0)
