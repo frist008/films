@@ -30,6 +30,16 @@
             "timeout": 15
           }
         ]
+      },
+      {
+        "matcher": "AskUserQuestion",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/youtube-guard.sh\" post",
+            "timeout": 15
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -74,6 +84,16 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/playlist-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude-in-chrome__.*|mcp__Claude_Browser__.*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/youtube-guard.sh\" pre",
             "timeout": 15
           }
         ]
