@@ -263,7 +263,7 @@ python -m films.sources.qbittorrent owned    # раздачи из адресо�
 python -m films.sources.rutracker queries    # rutracker: список запросов (сбор — один JS-вызов в Chrome)
 python -m films.bridge                       # локальный приёмник данных из Chrome
 ```
-Остальные команды появляются по мере реализации — см. PLAN.md. **Код с обратной косой (``, `\d`, пути Windows) — только инструментом Edit/Write, не через python-heredoc в bash**: там `` превращается в управляющий символ (так ломались шаблоны DV/4K, путь в `disk_map.json`, хук вопросов — 2026-10-25); ловит `tests/test_source_hygiene.py`. Все скрипты: Python 3.12, зависимости в
+Остальные команды появляются по мере реализации — см. PLAN.md. **Код с обратной косой (`\b`, `\d`, пути Windows) — только инструментом Edit/Write, не через python-heredoc в bash**: там `\b` превращается в управляющий символ (так ломались шаблоны DV/4K, путь в `disk_map.json`, хук вопросов — 2026-10-25); ловит `tests/test_source_hygiene.py`. Все скрипты: Python 3.12, зависимости в
 `requirements.txt`. На Windows запускать с `-X utf8` или `PYTHONUTF8=1` (консоль cp1251 ломает кириллицу).
 
 ## Решения (журнал)

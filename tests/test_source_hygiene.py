@@ -29,7 +29,8 @@ class TestNoControlChars(unittest.TestCase):
     def test_sources(self):
         bad = []
         for p in list((ROOT / "films").rglob("*.py")) + list((ROOT / "films").rglob("*.js")) + list((ROOT / ".claude").rglob("*.py")) \
-                + list((ROOT / ".claude").rglob("*.sh")) + list((ROOT / "config").glob("*.toml")):
+                + list((ROOT / ".claude").rglob("*.sh")) + list((ROOT / "config").glob("*.toml")) \
+                + list(ROOT.glob("*.md")) + list((ROOT / ".claude").rglob("*.md")) + list((ROOT / "docs").glob("*.md")):
             text = p.read_text(encoding="utf-8", errors="replace")
             for n, line in enumerate(text.splitlines(), 1):
                 if any(ord(c) < 32 and c not in ALLOWED for c in line):
