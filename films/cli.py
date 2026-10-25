@@ -63,7 +63,8 @@ def cmd_ratings(args):
     if args.source in ("imdb", "all"):
         print(json.dumps(ratings.imdb_ratings(conn), ensure_ascii=False))
     if args.source in ("rt", "all"):
-        print(json.dumps(ratings.rt_ratings(conn, args.limit, args.recheck_days), ensure_ascii=False))
+        print(json.dumps(ratings.rt_ratings(conn, args.limit, args.recheck_days, recent_days=args.recent_days),
+                         ensure_ascii=False))
 
 
 def cmd_link(args):
@@ -194,6 +195,8 @@ def main():
     p.add_argument("source", choices=["imdb", "rt", "all"])
     p.add_argument("--limit", type=int)
     p.add_argument("--recheck-days", type=float, default=30)
+    p.add_argument("--recent-days", type=int, default=None,
+                   help="rt: update-db step 5 — released in the last N days + titles with releases and no RT score")
     p.set_defaults(func=cmd_ratings)
     p = sub.add_parser("link", help="link Jellyfin, Plex (downloaded/watched) and stores (owned/wishlist) to titles")
     p.add_argument("what", choices=["jellyfin", "plex", "stores", "all"])

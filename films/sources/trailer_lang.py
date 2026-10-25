@@ -45,6 +45,7 @@ import json
 import re
 import shutil
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -85,7 +86,10 @@ _FILLER = re.compile(r"субтитр|dimatorzok|продолжение след
 _TAGS = re.compile(r"\[[^\]]*\]|\([^)]*\)")
 _WORD = re.compile(r"\w{2,}")
 _CYR_ANY = re.compile(r"[а-яёіїєґ]{3,}", re.I)
+# «Please sign in. This helps protect our community» and «Sign in to confirm your age» are per-video sign-in walls
+# (checked 2026-10-25: other videos still download right after) — skill trailer-check 3б (Chrome), not a block
 _BLOCK = re.compile(r"429|Too Many Requests|not a bot|confirm you.re not|unusual traffic", re.I)
+ALT_BUDGET_S = 180   # per title: checking alternative trailers stops after 3 min (owner 2026-10-25: «10 мин без движения — плохо»)
 
 
 def is_filler(text: str | None) -> bool:
@@ -449,7 +453,15 @@ def check_titles(ids: list[int], dry_run: bool = False, log=print) -> dict:
             check = "no_speech"
         else:
             new = None                  # not Russian, or no decidable speech: a confirmed Russian alternative wins
+            started = time.monotonic()
             for alt in _alternatives(yt, conn, tid, vid):
+                if time.monotonic() - started > ALT_BUDGET_S:
+                    # each candidate = audio download + speech recognition; «Восемь сотен» held the run 12 min
+                    # (2026-10-25) — the title stays as it is (unconfirmed), the next run goes on from the cache
+                    det["alt_timeout"] = True
+                    stats["alt_timeout"] = stats.get("alt_timeout", 0) + 1
+                    log(f"  {tid}: alternatives over {ALT_BUDGET_S} s — left unconfirmed")
+                    break
                 if check_video(yt, alt, cache)["verdict"] == "ru":
                     new = alt
                     break

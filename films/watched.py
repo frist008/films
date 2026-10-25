@@ -66,6 +66,11 @@ def _discover_scrobble(px, pid: str):
     r.raise_for_status()
 
 
+# library files that still exist: a file the last scan no longer saw (present = 0) has no ratingKey on the server any
+# more — asking Plex for it is a 404 that stopped `watched from-jellyfin` (2026-10-25, ratingKey 19244)
+PRESENT_ITEMS = "SELECT rating_key FROM plex_items WHERE title_id = ? AND coalesce(present, 1) = 1"
+
+
 def mark_episode(conn, series_imdb: str, season: int, episode: int, dry_run: bool = False, px=None,
                  jellyfin: bool = True) -> dict:
     """One episode watched in Plex: the library file of that episode (if any) and Plex Discover (account).
@@ -74,8 +79,7 @@ def mark_episode(conn, series_imdb: str, season: int, episode: int, dry_run: boo
     out = {"series_imdb_id": series_imdb, "season": season, "episode": episode, "plex": [], "dry_run": dry_run}
     row = conn.execute("SELECT id FROM titles WHERE series_imdb_id = ? AND season_number = ?", (series_imdb, season)).fetchone()
     if row:
-        for (rk,) in conn.execute("SELECT rating_key FROM plex_items WHERE title_id = ? AND episode = ?",
-                                  (row[0], episode)).fetchall():
+        for (rk,) in conn.execute(PRESENT_ITEMS + " AND episode = ?", (row[0], episode)).fetchall():
             meta = px.get(f"/library/metadata/{rk}")
             vc = ((meta.get("MediaContainer") or {}).get("Metadata") or [{}])[0].get("viewCount", 0)
             if not vc and not dry_run:
@@ -142,7 +146,7 @@ def mark(conn, title_id: int, dry_run: bool = False, db_source: str | None = "ma
     # NEVER re-scrobble what Plex already has as watched: every scrobble adds a history entry «now» and moves
     # lastViewedAt — it destroys the owner's real chronology (the owner, 2026-10-23: «не трогай мои фильмы, где была
     # чёткая история, когда я что посмотрел»).
-    for (rk,) in conn.execute("SELECT rating_key FROM plex_items WHERE title_id = ?", (title_id,)).fetchall():
+    for (rk,) in conn.execute(PRESENT_ITEMS, (title_id,)).fetchall():
         meta = px.get(f"/library/metadata/{rk}")
         vc = ((meta.get("MediaContainer") or {}).get("Metadata") or [{}])[0].get("viewCount", 0)
         if not vc and not dry_run:

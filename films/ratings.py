@@ -95,11 +95,50 @@ def _store_page(conn, page: dict, url: str, kind: str, season: int | None, paren
          json.dumps(page.get("info"), ensure_ascii=False, default=str) if page.get("info") else None, title_id))
 
 
+def _rt_ambiguous(conn, tid: int, candidates: list[dict], fetch=None, fetch_season=None) -> bool:
+    """An ambiguous RT search: first the triage rule (match_triage.rt_decide — year + director, duplicate stub pages,
+    the only page listing the season); decided → the page is written, True. Otherwise one 'rt_ambiguous' issue per title,
+    ever: no new row when one exists for that title, open or closed (triage closed 434 of them as rt_decided /
+    rt_undecided and every run used to recreate them, 2026-10-25). Returns False (the caller marks the title checked)."""
+    from . import match_triage
+    fetch = fetch or (lambda u: rt.fetch(u))
+    fetch_season = fetch_season or (lambda u, s: rt.fetch(u, season_pages=[s]))
+    t = dict(conn.execute("SELECT * FROM titles WHERE id = ?", (tid,)).fetchone())
+    cands = [{k: c.get(k) for k in ("url", "title", "year", "score")} for c in candidates]
+    page, why = match_triage.rt_decide(conn, t, cands, fetch)
+    if page:
+        with conn:
+            match_triage._write_rt(conn, t, page["url"], page, fetch_season)
+        return True
+    with conn:
+        known = conn.execute("SELECT 1 FROM match_issues WHERE problem = 'rt_ambiguous' "
+                             "AND json_extract(candidates, '$.title_id') = ? LIMIT 1", (tid,)).fetchone()
+        if not known:
+            conn.execute("INSERT INTO match_issues (problem, candidates) VALUES ('rt_ambiguous', ?)",
+                         (json.dumps({"title_id": tid, "candidates": cands[:5], "triage": why}, ensure_ascii=False),))
+    return False
+
+
+RECHECK_SQL = """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
+    FROM titles t WHERE coalesce(title_original, title_latin, title_ru, title_uk) IS NOT NULL
+      AND coalesce(tracker_only, 0) = 0
+      AND (rt_checked_at IS NULL OR rt_checked_at < datetime('now', '-20 hours'))   -- not again within one run
+      AND ((release_date BETWEEN date('now', ?) AND date('now'))                    -- released in the last N days
+           OR (rt_critics IS NULL AND rt_audience IS NULL                           -- or never had an RT score …
+               AND EXISTS (SELECT 1 FROM release_titles r WHERE r.title_id = t.id)  -- … and has a release (shown) …
+               AND (rt_checked_at IS NULL OR rt_checked_at < datetime('now', '-7 days'))))  -- … weekly (≈3 000 titles,
+    ORDER BY year DESC"""                                                            # ~5 s each: not every run)
+
+
 def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30, never_checked: bool = False,
-               stop_on_block: bool = False) -> dict:
+               stop_on_block: bool = False, recent_days: int | None = None) -> dict:
     """never_checked: every title with rt_checked_at NULL, TMDB-checked or not (R5).
+    recent_days: update-db step 5 — titles released in the last N days and titles with releases but no RT score yet
+    (RECHECK_SQL), whenever they were last checked (except within the last 20 h: the same run's step 4).
     stop_on_block: the first 403/429 stops the run (stats['blocked'] = the error), nothing is retried around it."""
-    if never_checked:
+    if recent_days:
+        rows = conn.execute(RECHECK_SQL, (f"-{int(recent_days)} days",)).fetchall()
+    elif never_checked:
         rows = conn.execute(
             """SELECT id, kind, season_number, series_imdb_id, title_original, title_latin, title_ru, title_uk, year
                FROM titles WHERE rt_checked_at IS NULL
@@ -123,13 +162,12 @@ def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30, never_c
                 b = conn.execute("SELECT start_year FROM imdb_basics WHERE tconst = ?", (series_imdb,)).fetchone()
                 series_start = b[0] if b else None
             res = rt.find([t_orig, t_lat, t_ru, t_uk], year, kind, people=_people(conn, tid), series_start=series_start)
+            if res["status"] == "ambiguous" and _rt_ambiguous(conn, tid, res["candidates"]):
+                stats["matched"] += 1
+                stats["ambiguous_decided"] = stats.get("ambiguous_decided", 0) + 1
+                continue
             if res["status"] != "matched":
                 with conn:
-                    if res["status"] == "ambiguous":
-                        conn.execute("INSERT INTO match_issues (problem, candidates) VALUES ('rt_ambiguous', ?)",
-                                     (json.dumps({"title_id": tid, "candidates": [
-                                         {k: c.get(k) for k in ("url", "title", "year", "score")} for c in res["candidates"][:5]]},
-                                         ensure_ascii=False),))
                     conn.execute("UPDATE titles SET rt_checked_at = datetime('now') WHERE id = ?", (tid,))
                 stats[res["status"]] += 1
                 continue

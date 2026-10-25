@@ -96,6 +96,48 @@ class TestUploadDate(unittest.TestCase):
         self.assertFalse(tl.uploaded_too_early("garbage", "2025-04-16"))
 
 
+class TestAlternativesBudget(unittest.TestCase):
+    def test_alternatives_stop_after_budget(self):
+        """2026-10-25: «Восемь сотен» held the check 12 min on alternatives — over ALT_BUDGET_S the title is left as is."""
+        import sqlite3
+        from unittest import mock
+        from films import db
+        conn = sqlite3.connect(":memory:")
+        conn.row_factory = sqlite3.Row
+        db.migrate(conn)
+        conn.execute("INSERT INTO titles (id, kind, title_original, title_ru, year, trailer_ru_url) VALUES "
+                     "(1, 'movie', 'X', 'Икс', 2020, 'https://www.youtube.com/watch?v=AAAAAAAAAAA')")
+        conn.commit()
+        checked = []
+        clock = iter(range(0, 10_000, 100))          # every monotonic() call: +100 s
+        def fake_check(yt, vid, cache):
+            checked.append(vid)
+            return {"verdict": "unknown", "method": "speech"}
+        with mock.patch.object(tl.db, "connect", return_value=conn), \
+                mock.patch.object(tl.yt_mod, "YouTube"), mock.patch.object(tl, "_load_checks", return_value={}), \
+                mock.patch.object(tl, "check_video", side_effect=fake_check), \
+                mock.patch.object(tl, "_alternatives", return_value=[f"ALT{i:08d}" for i in range(10)]), \
+                mock.patch.object(tl, "_no_dialogue", return_value=False), \
+                mock.patch.object(tl.time, "monotonic", side_effect=lambda: next(clock)), \
+                mock.patch.object(tl.shutil, "rmtree"):
+            st = tl.check_titles([1], dry_run=True, log=lambda m: None)
+        self.assertEqual(st.get("alt_timeout"), 1)
+        self.assertEqual(st["unknown"], 1)
+        self.assertLess(len(checked), 1 + 10)        # not every alternative was audio-checked
+
+
+class TestBlockMessages(unittest.TestCase):
+    def test_bot_checks_stop_the_run(self):
+        for msg in ("Sign in to confirm you're not a bot", "HTTP Error 429: Too Many Requests"):
+            self.assertTrue(tl._BLOCK.search(msg), msg)
+
+    def test_per_video_sign_in_walls_are_not_a_block(self):
+        # 2026-10-25: right after p-saH5hQ8m8 refused, other videos downloaded fine — a per-video wall (skill 3б)
+        for msg in ("ERROR: [youtube] i0PBnOAi-GY: Sign in to confirm your age. This video may be inappropriate for some users.",
+                    "ERROR: [youtube] p-saH5hQ8m8: Please sign in. This helps protect our community. Use --cookies"):
+            self.assertFalse(tl._BLOCK.search(msg), msg)
+
+
 class TestConfirmedChecks(unittest.TestCase):
     def test_check_values(self):
         self.assertIn("teaser_only", tl.CONFIRMED)

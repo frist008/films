@@ -29,7 +29,9 @@ FIELDS = {
     "русский трейлер": "trailer_ru_url IS NULL",
     "постер": "poster_url IS NULL",
     "бюджет (фильмы)": "budget_usd IS NULL AND kind = 'movie'",
-    "IMAX проверен": "imax_source IS NULL AND kind = 'movie'",
+    # imdb_specs writes imax_source only for IMAX films; checked-and-not-IMAX is is_imax = 0 with no source
+    # (counting imax_source IS NULL showed 64 % «unchecked» instead of 13 %, 2026-10-25)
+    "IMAX проверен": "is_imax IS NULL AND kind = 'movie'",
 }
 
 
