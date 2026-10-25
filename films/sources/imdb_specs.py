@@ -27,7 +27,9 @@ IMDb has no season entity, so specs / poster are series-level and written to eve
   * budget_usd / box_office_usd <- only where NULL, only USD, only movies (see apply())
   * poster_url (+ poster_source='imdb', poster_checked_at) <- only where poster_url is NULL; a full run then calls
     films.posters.fill: no IMDb poster -> Rotten Tomatoes -> TMDB -> the tracker page image (owner, 2026-10-25)
-  * title_uk is NOT written: UA akas are only counted for the report (owner has not chosen the source).
+  * title_uk (+ title_uk_source) <- the IMDb Ukrainian aka (pick_uk_title), only where title_uk is empty: owner,
+    2026-10-25 — IMDb is the fallback while TMDB has no Ukrainian title (TMDB's title replaces it in films.enrich).
+    `uk` fills that alone for every title from the cache / the dataset akas, without a full specs run.
 
 Raw responses are cached per tconst in data/cache/imdb_specs/{tconst}.json.gz (the whole GraphQL node --
 specs, box office, akas, keywords, companies, release dates … -- so new fields can be extracted later
@@ -99,6 +101,7 @@ query($ids: [ID!]!) { titles(ids: $ids) {
   filmingLocations(first: 25) { total edges { node { text } } }
   companyCredits(first: 50) { total edges { node { company { id companyText { text } } category { id text } countries { id } attributes { text } } } }
   distributors: companyCredits(first: 250, filter: { categories: ["distribution"] }) { total edges { node { company { id companyText { text } } countries { id } attributes { text } } } }
+  otherCompanies: companyCredits(first: 250, filter: { categories: ["miscellaneous"] }) { total edges { node { company { id companyText { text } } category { id text } countries { id } attributes { text } } } }
   episodes { seasons { number } episodes(first: 1) { total } }
   series { series { id } }
   technicalSpecifications { %s }
@@ -116,7 +119,7 @@ def _now() -> str:
 # network + cache
 # ----------------------------------------------------------------------------------------------
 
-def _post(ids: list[str], log=print) -> dict:
+def _post(ids: list[str], log=print, query: str | None = None) -> dict:
     """One GraphQL request for up to BATCH ids -> {id: node}.  Rate-limited, retried with backoff."""
     global _last_request
     last_err = None
@@ -126,7 +129,7 @@ def _post(ids: list[str], log=print) -> dict:
             time.sleep(wait)
         _last_request = time.time()
         try:
-            r = requests.post(GQL_URL, json={"query": QUERY, "variables": {"ids": ids}}, headers=HEADERS, timeout=60)
+            r = requests.post(GQL_URL, json={"query": query or QUERY, "variables": {"ids": ids}}, headers=HEADERS, timeout=60)
             if r.status_code == 200:
                 j = r.json()
                 nodes = (j.get("data") or {}).get("titles")
@@ -240,6 +243,77 @@ def ensure(tconsts: list[str], max_age_days: float | None = DEFAULT_MAX_AGE_DAYS
         if done % (BATCH * 10) == 0 or done == len(todo):
             log(f"    {done}/{len(todo)}")
     return recs, failures
+
+
+OTHER_COMPANIES_QUERY = """
+query($ids: [ID!]!) { titles(ids: $ids) { id
+  otherCompanies: companyCredits(first: 250, filter: { categories: ["miscellaneous"] }) { total edges { node { company { id companyText { text } } category { id text } countries { id } attributes { text } } } }
+} }
+"""
+
+
+def ensure_other_companies(tconsts: list[str], log=print) -> dict:
+    """Back-fill node.otherCompanies into cache records fetched before 2026-10-25 whose companyCredits list was cut
+    at 50 (one small query per 25 ids instead of re-fetching whole nodes).  -> counters."""
+    todo = []
+    for t in tconsts:
+        rec = load_cached(t)
+        node = (rec or {}).get("node")
+        if not node or "otherCompanies" in node:
+            continue
+        cc = node.get("companyCredits") or {}
+        if (cc.get("total") or 0) > len(cc.get("edges") or []):
+            todo.append(t)
+    st = {"checked": len(tconsts), "fetched": 0, "failed": 0}
+    for i in range(0, len(todo), BATCH):
+        chunk = todo[i:i + BATCH]
+        try:
+            nodes = _post(chunk, log=log, query=OTHER_COMPANIES_QUERY)
+        except RuntimeError as e:
+            log(f"  !! {e}")
+            st["failed"] += len(chunk)
+            continue
+        for t in chunk:
+            rec = load_cached(t)
+            got = (nodes.get(t) or {}).get("otherCompanies")
+            if rec and rec.get("node") is not None and got is not None:
+                rec["node"]["otherCompanies"] = got
+                rec["other_companies_fetched_at"] = _now()
+                _save(rec)
+                st["fetched"] += 1
+        if (i // BATCH) % 10 == 9:
+            log(f"    otherCompanies {min(i + BATCH, len(todo))}/{len(todo)}")
+    return st
+
+
+def refresh_imax(conn, tconsts: list[str] | None = None, log=print) -> dict:
+    """Recompute only is_imax / imax_source from the cache (any age) for the given tconsts (all when None) --
+    a targeted pass after a change of the IMAX rule, without a full specs run.  -> counters + changed rows."""
+    targets = _targets(conn, ids=tconsts) if tconsts else _targets(conn)
+    st = {"tconsts": len(targets), "rows": 0, "changed": 0, "to_1": 0, "to_0": 0, "to_null": 0}
+    changed = []
+    for t, rows in targets.items():
+        rec = load_cached(t)
+        if not rec or not rec.get("node"):
+            continue
+        s = summarize(rec)
+        with conn:
+            for r in rows:
+                if suspect_link(r["kind"], r["year"], s["type"], s["year"]):
+                    continue
+                st["rows"] += 1
+                old = conn.execute("SELECT is_imax, imax_source, title_original FROM titles WHERE id = ?", (r["id"],)).fetchone()
+                if (old["is_imax"], old["imax_source"]) == (s["is_imax"], s["imax_source"]):
+                    continue
+                conn.execute("UPDATE titles SET is_imax = ?, imax_source = ?, updated_at = datetime('now') WHERE id = ?",
+                             (s["is_imax"], s["imax_source"], r["id"]))
+                st["changed"] += 1
+                st[{1: "to_1", 0: "to_0", None: "to_null"}[s["is_imax"]]] += 1
+                changed.append({"title_id": r["id"], "tconst": t, "title": old["title_original"], "year": r["year"],
+                                "was": [old["is_imax"], old["imax_source"]], "now": [s["is_imax"], s["imax_source"]],
+                                "evidence": s["imax_evidence"][:3], "notes": [n for n in s["imax_notes"] if "pre_dmr" in n]})
+    st["changed_rows"] = changed
+    return st
 
 
 # ----------------------------------------------------------------------------------------------
@@ -392,6 +466,8 @@ IMAX_SOURCES = [
     ("imdb_process", "processes", "process"),        # "IMAX DMR", "IMAX 3D", "Filmed for IMAX"
     ("imdb_printed", "printedFormats", "printedFormat"),     # "70 mm (IMAX)", "D-Cinema (IMAX)", "IMAX DMR blow-up"
     ("imdb_aspect", "aspectRatios", "aspectRatio"),  # "1.43 : 1 (IMAX)", "1.90 : 1 (IMAX version)"
+    # sound alone counts (checked 2026-10-25 on 15 random sound-only titles: 13 confirmed IMAX by Wikipedia, 2 not
+    # contradicted; the one false hit, Raiders 1981, is a re-release -> the pre-DMR rule in imax_verdict)
     ("imdb_sound", "soundMixes", "text"),            # "IMAX 6-Track", "IMAX 12-Track", "Sonics-DDP (IMAX version)"
     ("imdb_lab", "laboratories", "laboratory"),      # "… (IMAX prints)"
 ]
@@ -418,6 +494,13 @@ _IMAX_NOT_FIRST_RUN = re.compile(r"re-?release|re-?issue|anniversary|fan (event|
                                  r"BFI\b|premiere", re.I)
 
 
+# what an "IMAX" company credit has to say to count (2026-10-25, every attribute seen in the cache): optimized /
+# (specially) formatted for IMAX theatres, filmed for IMAX, IMAX cameras; a bare "acknowledgement", "thanks",
+# "courtesy of: <IMAX documentary footage>" (Tomorrowland, Dark Phoenix) or "specialty cameras" is only noted
+_IMAX_CREDIT_COUNTS = re.compile(r"optimi[sz]e|formatted|filmed (for|with)|shot with|IMAX 3D|"
+                                 r"cameras?( and| &)? lenses|camera equipment|IMAX 65mm cameras|IMAX (film )?cameras", re.I)
+
+
 def _edge_nodes(node: dict | None, key: str) -> list[dict]:
     return [(e or {}).get("node") or {} for e in (((node or {}).get(key) or {}).get("edges") or [])]
 
@@ -426,14 +509,24 @@ def node_imax(node: dict | None) -> tuple[list[str], list[str], list[str]]:
     """IMAX evidence from the rest of the IMDb node -> (sources, evidence, notes); see the comment above."""
     sources, evidence, notes = [], [], []
     year = ((node or {}).get("releaseYear") or {}).get("year")
-    for n in _edge_nodes(node, "companyCredits"):
+    # companyCredits(first: 50) is cut short for big releases (Zootopia 2: 108 credits, the IMAX one beyond the 50th);
+    # otherCompanies = every "Other companies" credit (added 2026-10-25; ensure_other_companies() back-fills old caches)
+    seen_credit = set()
+    credits = []
+    for n in _edge_nodes(node, "companyCredits") + _edge_nodes(node, "otherCompanies"):
+        k = ((n.get("company") or {}).get("id"), (n.get("category") or {}).get("id"), tuple(_attrs(n)))
+        if k not in seen_credit:
+            seen_credit.add(k)
+            credits.append(n)
+    for n in credits:
         comp = n.get("company") or {}
         name = (comp.get("companyText") or {}).get("text") or ""
         if comp.get("id") != IMAX_COMPANY_ID and name.strip().upper() != "IMAX":
             continue
         cat = (n.get("category") or {}).get("id")
         attrs = _attrs(n)
-        if cat == "miscellaneous" and not any(_IMAX_NOT_FIRST_RUN.search(a) for a in attrs):
+        if (cat == "miscellaneous" and not any(_IMAX_NOT_FIRST_RUN.search(a) for a in attrs)
+                and any(_IMAX_CREDIT_COUNTS.search(a) for a in attrs)):
             if "imdb_company" not in sources:
                 sources.append("imdb_company")
             evidence.append(f"companyCredits: {display(name, attrs)} [{cat}]")
@@ -458,6 +551,10 @@ def node_imax(node: dict | None) -> tuple[list[str], list[str], list[str]]:
         else:
             notes.append(f"imax_release_not_counted: {where} ({', '.join(attrs)})")
     return sources, evidence, notes
+
+
+IMAX_DMR_FROM = 2002   # IMAX DMR (a feature remastered for IMAX on release) exists since 2002 (Apollo 13 / Attack of the Clones)
+IMAX_PRE_DMR_PROOF = {"imdb_camera", "imdb_negative", "imdb_release"}  # shot on IMAX / IMAX release dated with the film
 
 
 def imax_verdict(specs: dict | None, node: dict | None = None) -> tuple[int | None, list[str], list[str], list[str]]:
@@ -491,6 +588,12 @@ def imax_verdict(specs: dict | None, node: dict | None = None) -> tuple[int | No
         sources += [s for s in n_src if s not in sources]
         evidence += n_ev
         notes += n_notes
+    year = ((node or {}).get("releaseYear") or {}).get("year")
+    if sources and year and int(year) < IMAX_DMR_FROM and not set(sources) & IMAX_PRE_DMR_PROOF:
+        # a film made before IMAX DMR (2002) and not shot on IMAX: its IMAX print / mix / remaster is a later
+        # re-release (Raiders 1981 → 2023, Jurassic Park → 2013 3D, Titanic → 2012), not "шёл в IMAX" on release
+        notes.append(f"imax_rerelease_pre_dmr ({year}): " + "; ".join(evidence))
+        return (0 if has_specs(specs) else None), [], [], notes
     if sources:
         return 1, sources, evidence, notes
     if has_specs(specs):
@@ -521,14 +624,87 @@ def poster(node: dict | None) -> str | None:
     return imdb_ds.poster_url(url) if url else None
 
 
-def akas_for(node: dict | None, country: str) -> list[dict]:
+def akas_for(node: dict | None, country: str, language: str | None = None) -> list[dict]:
+    """Akas of `country` (and, when `language` is given, of that language in any country), in IMDb's order."""
     out = []
     for e in (((node or {}).get("akas") or {}).get("edges") or []):
         n = (e or {}).get("node") or {}
-        if ((n.get("country") or {}).get("id") or "").upper() == country.upper() and n.get("text"):
-            out.append({"text": n["text"], "language": (n.get("language") or {}).get("id"),
-                        "attributes": _attrs(n)})
+        c = ((n.get("country") or {}).get("id") or "").upper()
+        lang = (n.get("language") or {}).get("id")
+        if n.get("text") and (c == country.upper() or (language and (lang or "").lower() == language.lower())):
+            out.append({"text": n["text"], "language": lang, "attributes": _attrs(n)})
     return out
+
+
+# --- Ukrainian title fallback (owner, 2026-10-25, metadata survey: «Украинские названия с IMDb — запасной источник,
+# если у TMDB нет UK-названия») ----------------------------------------------------------------------------------
+# An IMDb aka of region UA (or language uk) becomes titles.title_uk only while title_uk is empty; TMDB's Ukrainian
+# title, when it appears later, replaces it (films.enrich).  Choice among several akas:
+#   * skipped: working / festival / literal / informal / pre-release / promotional / short / video-game titles and
+#     the per-season titles of a series ("second season title") — a season row carries the series name, as with TMDB;
+#   * skipped: text without Cyrillic (a Latin "One Piece" filed under UA is not a Ukrainian title) and text with
+#     letters Ukrainian does not have (ы э ъ ё — a Russian title filed under UA), and language other than uk;
+#   * preferred: an aka without attributes (IMDb's main title for Ukraine) > "new title" > "alternative title"
+#     > anything else that is left; within a class IMDb's order.
+_UK_SKIP_ATTR = re.compile(r"working|festival|literal|informal|pre-?release|promotional|short|video game|"
+                           r"season title|episode|copyright|bootleg|fake|cable|complete title|series title", re.I)
+_UK_NOT_UK = re.compile(r"[ыэъёЫЭЪЁ]")
+_CYR = re.compile(r"[А-Яа-яІіЇїЄєҐґ]")
+
+
+def _uk_rank(attrs: list[str]) -> int | None:
+    a = [x.strip().lower() for x in attrs if x and x.strip()]
+    if any(_UK_SKIP_ATTR.search(x) for x in a):
+        return None
+    if not a:
+        return 0
+    if a == ["new title"]:
+        return 1
+    if a == ["alternative title"]:
+        return 2
+    return 3
+
+
+def pick_uk_title(akas: list[dict]) -> tuple[str | None, str | None]:
+    """Best Ukrainian title among IMDb akas [{text, language, attributes}] -> (title, kind) or (None, None).
+    kind = '' (main title) or the aka's attributes joined by ', ' (e.g. 'new title')."""
+    best = None
+    for i, a in enumerate(akas or []):
+        text = (a.get("text") or "").strip()
+        lang = (a.get("language") or "").lower()
+        if not text or (lang and lang != "uk") or _UK_NOT_UK.search(text):
+            continue
+        if not _CYR.search(text):
+            if re.search(r"[A-Za-z]", text):
+                continue        # a Latin title filed under UA; a title of digits only («1917») is kept
+        else:
+            # IMDb's Ukrainian akas sometimes carry a Latin "i" for «і» («Покемон Фiльм: Бiле»)
+            text = re.sub(r"(?<=[А-Яа-яІіЇїЄєҐґ'’])i|i(?=[А-Яа-яІіЇїЄєҐґ])", "і", text)
+            text = re.sub(r"(?<=[А-Яа-яІіЇїЄєҐґ'’])I|I(?=[А-Яа-яІіЇїЄєҐґ])", "І", text)
+        rank = _uk_rank(a.get("attributes") or [])
+        if rank is None:
+            continue
+        if best is None or (rank, i) < best[0]:
+            best = ((rank, i), text, ", ".join(x for x in (a.get("attributes") or []) if x))
+    return (best[1], best[2]) if best else (None, None)
+
+
+def uk_title_for(rec: dict | None, dataset_akas: list[dict] | None = None) -> tuple[str | None, str | None]:
+    """(title_uk, title_uk_source) from a GraphQL cache record, else from the IMDb dataset akas (region UA)."""
+    node = (rec or {}).get("node")
+    if node:
+        title, kind = pick_uk_title(akas_for(node, "UA", "uk"))
+        if title:
+            return title, "imdb_aka" + (f":{kind}" if kind else "")
+    if dataset_akas:
+        # the dataset's UA akas carry neither types nor attributes here: the first fitting one in IMDb's order
+        title, kind = pick_uk_title([{"text": a.get("title"), "language": a.get("language"),
+                                      "attributes": [x for x in (a.get("attributes") or "").split(",") if x]}
+                                     for a in dataset_akas
+                                     if not re.search(r"working|festival", a.get("types") or "", re.I)])
+        if title:
+            return title, "imdb_dataset_aka"
+    return None, None
 
 
 # --- metadata survey (owner, 2026-10-25): distributor, colour, cameras / film format, filming locations -----------
@@ -856,10 +1032,16 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                     conn.execute(f"UPDATE titles SET {', '.join(f'{k} = ?' for k in base)} WHERE id = ?",
                                  [*base.values(), r["id"]])
                     log(f"    title {r['id']}: guarded column changed concurrently, wrote specs only")
-                if r["title_uk"] is None and s["ua_akas"]:
+                if not r["title_uk"] and s["ua_akas"]:
+                    uk, uk_src = uk_title_for(rec)
                     lists["uk_candidates"].append({"title_id": r["id"], "tconst": t, "season": r["season_number"],
                                                    "title_original": r["title_original"],
-                                                   "ua_akas": [a["text"] for a in s["ua_akas"]]})
+                                                   "ua_akas": [a["text"] for a in s["ua_akas"]], "chosen": uk})
+                    if uk:
+                        # owner 2026-10-25: IMDb's Ukrainian aka is the fallback while TMDB has no Ukrainian title
+                        cur = conn.execute("UPDATE titles SET title_uk = ?, title_uk_source = ? "
+                                           "WHERE id = ? AND coalesce(title_uk, '') = ''", (uk, uk_src, r["id"]))
+                        st["title_uk_filled"] = st.get("title_uk_filled", 0) + cur.rowcount
             conn.execute("COMMIT")
         except Exception:
             conn.execute("ROLLBACK")
@@ -906,6 +1088,64 @@ def run(conn, limit: int | None = None, max_age_days: float = DEFAULT_MAX_AGE_DA
     return report
 
 
+def fill_title_uk(conn, fetch: bool = True, ids: list[int] | None = None, log=print) -> dict:
+    """Targeted fill of the Ukrainian-title fallback for every title with an empty title_uk (no full specs run):
+    the GraphQL cache of any age (fetching only tconsts never fetched), else the IMDb dataset akas (region UA).
+    A row whose IMDb link looks wrong (suspect_link) is skipped, as in apply()."""
+    where = "coalesce(title_uk, '') = '' AND duplicate_of IS NULL AND COALESCE(imdb_id, series_imdb_id) IS NOT NULL"
+    params: list = []
+    if ids:
+        where += f" AND id IN ({','.join('?' * len(ids))})"
+        params = list(ids)
+    rows = conn.execute(f"SELECT id, kind, season_number, imdb_id, series_imdb_id, title_original, year FROM titles "
+                        f"WHERE {where} ORDER BY id", params).fetchall()
+    by: dict[str, list] = {}
+    for r in rows:
+        t = r["imdb_id"] if r["kind"] == "movie" or r["season_number"] is None else r["series_imdb_id"]
+        by.setdefault(t or r["imdb_id"] or r["series_imdb_id"], []).append(r)
+    recs = {t: load_cached(t) for t in by}
+    missing = [t for t, rec in recs.items() if rec is None]
+    failures: list = []
+    if missing and fetch:
+        got, failures = ensure(missing, None, fetch=True, log=log)
+        recs.update(got)
+    st = {"rows_without_title_uk": len(rows), "tconsts": len(by), "fetched": len(missing) if fetch else 0,
+          "filled": 0, "filled_from_graphql": 0, "filled_from_dataset": 0, "skipped_suspect_link": 0,
+          "no_ukrainian_aka": 0, "aka_rejected": 0}
+    samples = []
+    for t, trows in by.items():
+        rec = recs.get(t)
+        ds = [dict(a) for a in conn.execute("SELECT title, language, types, attributes FROM imdb_akas "
+                                             "WHERE tconst = ? AND region = 'UA' ORDER BY ordering", (t,))]
+        uk, src = uk_title_for(rec, ds)
+        node = (rec or {}).get("node")
+        if not uk:
+            if ds or akas_for(node, "UA", "uk"):
+                st["aka_rejected"] += len(trows)
+            else:
+                st["no_ukrainian_aka"] += len(trows)
+            continue
+        s_type = ((node or {}).get("titleType") or {}).get("id")
+        s_year = ((node or {}).get("releaseYear") or {}).get("year")
+        with conn:
+            for r in trows:
+                if node and suspect_link(r["kind"], r["year"], s_type, s_year):
+                    st["skipped_suspect_link"] += 1
+                    continue
+                cur = conn.execute("UPDATE titles SET title_uk = ?, title_uk_source = ?, updated_at = datetime('now') "
+                                   "WHERE id = ? AND coalesce(title_uk, '') = ''", (uk, src, r["id"]))
+                if cur.rowcount:
+                    st["filled"] += 1
+                    st["filled_from_dataset" if src == "imdb_dataset_aka" else "filled_from_graphql"] += 1
+                    if len(samples) < 30:
+                        samples.append({"title_id": r["id"], "tconst": t, "original": r["title_original"],
+                                        "title_uk": uk, "source": src})
+    st["fetch_failures"] = failures
+    st["samples"] = samples
+    log(json.dumps({k: v for k, v in st.items() if k != "samples"}, ensure_ascii=False))
+    return st
+
+
 # ----------------------------------------------------------------------------------------------
 
 def main(argv=None):
@@ -920,7 +1160,26 @@ def main(argv=None):
     p = sub.add_parser("show", help="print the parsed verdict for tconsts (no DB writes)")
     p.add_argument("tconsts", nargs="+")
     p.add_argument("--max-age-days", type=float, default=DEFAULT_MAX_AGE_DAYS)
+    p = sub.add_parser("uk", help="fill empty title_uk from IMDb Ukrainian akas (cache / dataset; no full specs run)")
+    p.add_argument("--no-fetch", action="store_true", help="do not fetch tconsts missing from the cache")
+    p.add_argument("--title-ids", nargs="+", type=int)
+    p = sub.add_parser("imax", help="back-fill otherCompanies for cut company lists, then recompute is_imax only")
+    p.add_argument("--ids", nargs="+", help="only these tconsts")
+    p.add_argument("--no-fetch", action="store_true")
     a = ap.parse_args(argv)
+    if a.cmd == "imax":
+        conn = db.connect()
+        tconsts = a.ids or list(_targets(conn))
+        oc = {} if a.no_fetch else ensure_other_companies(tconsts)
+        st = refresh_imax(conn, a.ids)
+        print(json.dumps({"other_companies": oc, **st}, ensure_ascii=False, indent=1))
+        return
+    if a.cmd == "uk":
+        conn = db.connect()
+        db.migrate(conn)
+        st = fill_title_uk(conn, fetch=not a.no_fetch, ids=a.title_ids)
+        print(json.dumps(st, ensure_ascii=False, indent=1))
+        return
     if a.cmd == "show":
         recs, failures = ensure(a.tconsts, a.max_age_days, log=lambda *x: print(*x, file=sys.stderr))
         for t in a.tconsts:

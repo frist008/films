@@ -688,6 +688,12 @@ MIGRATIONS = [
     ALTER TABLE titles ADD COLUMN poster_release_id INTEGER REFERENCES releases(id);  -- poster_source 'tracker': its page
     ALTER TABLE titles ADD COLUMN poster_alive_at TEXT;       -- poster_source 'tracker': when the image last answered
     """,
+    # 20: owner, 2026-10-25 (metadata survey) — «Украинские названия с IMDb: запасной источник, если у TMDB нет UK-названия».
+    # title_uk_source: tmdb:<translation:uk-UA | alternative_titles | original> / imdb_aka[:<attribute>] / imdb_dataset_aka;
+    # NULL = written before 2026-10-25 (TMDB or the tracker). films.sources.imdb_specs.fill_title_uk.
+    """
+    ALTER TABLE titles ADD COLUMN title_uk_source TEXT;
+    """,
 ]
 
 

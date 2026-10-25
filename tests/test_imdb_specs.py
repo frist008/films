@@ -290,6 +290,100 @@ class TestNodeImax(unittest.TestCase):
         self.assertEqual(m.imax_verdict(specs(soundMixes=[("Dolby Digital", [])]), node), (0, [], [], []))
 
 
+class TestImaxRules2026(unittest.TestCase):
+    """2026-10-25: the IMAX credit beyond the first 50 company credits (Zootopia 2) and pre-DMR re-releases."""
+
+    def imax_company(self, *attrs):
+        return {"company": {"id": m.IMAX_COMPANY_ID, "companyText": {"text": "IMAX"}},
+                "category": {"id": "miscellaneous"}, "countries": [], "attributes": [{"text": a} for a in attrs]}
+
+    def test_other_companies_list_counts(self):
+        # companyCredits(first: 50) cut short; the IMAX credit only in the full "Other companies" list
+        node = {"releaseYear": {"year": 2025},
+                "companyCredits": {"total": 108, "edges": []},
+                "otherCompanies": edges(self.imax_company("optimize for"))}
+        self.assertEqual(m.imax_verdict(specs(soundMixes=[("Dolby Atmos", [])]), node)[:2], (1, ["imdb_company"]))
+
+    def test_bare_acknowledgement_or_footage_not_counted(self):
+        for attrs in (("acknowledgement",), ("specialty cameras",), ("thanks",),
+                      ("IMAX Corporation", 'courtesy of: "Space Station" © 2018 Lockheed Corporation and IMAX Corporation')):
+            node = {"releaseYear": {"year": 2014}, "otherCompanies": edges(self.imax_company(*attrs))}
+            is_imax, _, _, notes = m.imax_verdict(specs(soundMixes=[("Dolby Digital", [])]), node)
+            self.assertEqual(is_imax, 0, attrs)
+            self.assertTrue(any("imax_company_not_counted" in n for n in notes))
+        for attrs in (("specially formatted in",), ("filmed for",), ("camera & lenses by",), ("optimize for",)):
+            node = {"releaseYear": {"year": 2014}, "otherCompanies": edges(self.imax_company(*attrs))}
+            self.assertEqual(m.imax_verdict({}, node)[0], 1, attrs)
+
+    def test_same_credit_in_both_lists_once(self):
+        c = self.imax_company("optimized for")
+        node = {"releaseYear": {"year": 2025}, "companyCredits": edges(c), "otherCompanies": edges(c)}
+        self.assertEqual(len(m.imax_verdict({}, node)[2]), 1)
+
+    def test_sound_only_counts(self):
+        node = {"releaseYear": {"year": 2017}}
+        self.assertEqual(m.imax_verdict(specs(soundMixes=[("IMAX 6-Track", [])]), node)[:2], (1, ["imdb_sound"]))
+
+    def test_pre_dmr_rerelease_not_counted(self):
+        node = {"releaseYear": {"year": 1981}}           # Raiders of the Lost Ark: IMAX version = 2023 re-release
+        s = specs(soundMixes=[("IMAX 6-Track", ["IMAX version"]), ("Dolby Digital", [])])
+        is_imax, sources, _, notes = m.imax_verdict(s, node)
+        self.assertEqual((is_imax, sources), (0, []))
+        self.assertTrue(any(n.startswith("imax_rerelease_pre_dmr") for n in notes))
+        node97 = {"releaseYear": {"year": 1997}}         # Titanic: IMAX print of the 2012 3D re-release
+        self.assertEqual(m.imax_verdict(specs(printedFormats=[("D-Cinema", ["IMAX"])]), node97)[0], 0)
+
+    def test_pre_dmr_shot_on_imax_or_dated_release_counts(self):
+        node = {"releaseYear": {"year": 1999}, "releaseDates": edges(
+            {"day": 1, "month": 1, "year": 2000, "country": {"id": "US"}, "attributes": [{"text": "IMAX"}]})}
+        self.assertEqual(m.imax_verdict(specs(printedFormats=[("70 mm", ["IMAX"])]), node)[0], 1)  # Fantasia 2000
+        cam = {"releaseYear": {"year": 1998}}
+        self.assertEqual(m.imax_verdict(specs(cameras=[("IMAX MSM 9802", [])]), cam)[0], 1)
+        self.assertEqual(m.imax_verdict(specs(printedFormats=[("D-Cinema", ["IMAX"])]), {"releaseYear": {"year": 2002}})[0], 1)
+
+
+class TestUkTitle(unittest.TestCase):
+    """Ukrainian-title fallback from IMDb akas (owner, 2026-10-25)."""
+
+    def aka(self, text, *attrs, lang=None):
+        return {"text": text, "language": lang, "attributes": list(attrs)}
+
+    def test_main_title_preferred_over_alternative(self):
+        self.assertEqual(m.pick_uk_title([self.aka("Перша ніч з принцом", "Alternative Title"),
+                                          self.aka("Я вкрала першу ніч головного героя!")]),
+                         ("Я вкрала першу ніч головного героя!", ""))
+
+    def test_new_title_before_alternative(self):
+        self.assertEqual(m.pick_uk_title([self.aka("Б", "Alternative Title"), self.aka("Без лиця", "new title")]),
+                         ("Без лиця", "new title"))
+
+    def test_skips_working_festival_literal_and_season_titles(self):
+        self.assertEqual(m.pick_uk_title([self.aka("Робоча", "working title"), self.aka("Фест", "festival title"),
+                                          self.aka("Дослівна", "literal title"),
+                                          self.aka("Сезон два", "second season title")]), (None, None))
+        self.assertEqual(m.pick_uk_title([self.aka("Фантазійна соната", "literal title"),
+                                          self.aka("Пісня кохання для ілюзії")])[0], "Пісня кохання для ілюзії")
+
+    def test_latin_and_russian_rejected(self):
+        self.assertEqual(m.pick_uk_title([self.aka("One Piece"), self.aka("Ван Піс", "Alternative Title")]),
+                         ("Ван Піс", "Alternative Title"))
+        self.assertEqual(m.pick_uk_title([self.aka("Крылья")]), (None, None))                  # «ы» is Russian
+        self.assertEqual(m.pick_uk_title([self.aka("Тетрадь смерти", lang="ru")]), (None, None))
+        self.assertEqual(m.pick_uk_title([self.aka("Dune", lang="en")]), (None, None))
+        self.assertEqual(m.pick_uk_title([self.aka("1917")]), ("1917", ""))
+
+    def test_latin_i_normalized(self):
+        self.assertEqual(m.pick_uk_title([self.aka("Покемон Фiльм: Бiле")])[0], "Покемон Фільм: Біле")
+
+    def test_uk_title_for_sources(self):
+        rec = {"node": {"akas": edges({"text": "Дюна: Частина друга", "country": {"id": "UA"}, "language": None,
+                                       "attributes": []})}}
+        self.assertEqual(m.uk_title_for(rec), ("Дюна: Частина друга", "imdb_aka"))
+        self.assertEqual(m.uk_title_for(None, [{"title": "Дамбо", "language": None, "types": None, "attributes": None}]),
+                         ("Дамбо", "imdb_dataset_aka"))
+        self.assertEqual(m.uk_title_for({"node": {"akas": {"edges": []}}}, []), (None, None))
+
+
 class TestCache(unittest.TestCase):
     """Real titles from the raw cache (no network)."""
 

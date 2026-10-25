@@ -428,6 +428,21 @@ def classify(types: list[str]) -> dict:
             "series_like": any(r in SERIES_ROOTS for r in roots)}
 
 
+def container_work(claims: dict, screen: set | None = None) -> str | None:
+    """A walked franchise container (series_like P31) that is also a work of its own -> 'screen' / 'ids', else None.
+    'screen': a screen work per P31 with its own IMDb id (an anime series Wikidata also files as a series container —
+    «Code Geass: Rozé of the Recapture», «The Animatrix», «I Am Groot»); 'ids': no screen P31 but its own IMDb id and
+    a TMDB movie / tv id («Psycho-Pass: Sinners of the System», P31 «film trilogy»).  2026-10-25 audit."""
+    imdb = any(re.fullmatch(r"tt\d+", v) for v in claims.get("P345", []))
+    if not imdb:
+        return None
+    if screen is None:
+        screen = classify(claims.get("P31", []))["screen"]
+    if screen:
+        return "screen"
+    return "ids" if (claims.get("P4947") or claims.get("P4983")) else None
+
+
 def qids_by_external(prop: str, values) -> dict[str, list[str]]:
     """{external value: [qids]} for P345 (IMDb) / P4947 (TMDB movie) / P4983 (TMDB tv)."""
     out: dict[str, list[str]] = {}
@@ -1398,6 +1413,13 @@ class Resolver:
                 es = entities(new)
                 for q in new:
                     walked[q] = label(es.get(q)) or q
+                    # a container that is a work in its own right (2026-10-25: «Psycho-Pass: Sinners of the System» —
+                    # a film trilogy with its own IMDb + TMDB entries; P31 says only «film trilogy»): a member too
+                    cl = (es.get(q) or {}).get("claims", {})
+                    if container_work(cl) == "ids":
+                        own_imdb = [v for v in cl.get("P345", []) if re.fullmatch(r"tt\d+", v)]
+                        self.add(qid=q, imdb=own_imdb[0], source="wikidata",
+                                 evidence="container with its own IMDb / TMDB entry", strength=STRONG)
             frontier = new
         self.walked = walked
         self.info["walked"] = walked
@@ -1870,7 +1892,9 @@ class Resolver:
             cls = classify(types) if e else {"screen": set(), "exclude": set(), "flags": set(), "series_like": False}
             srcs = sorted(c.sources)
             name = label(e) or c.title_hint or c.qid or c.imdb
-            if e and not cls["screen"]:
+            # a walked container is a member only when it is a work of its own (container_work, 2026-10-25)
+            own_work = container_work(e["claims"], cls["screen"]) if e and c.qid in self.walked else None
+            if e and not cls["screen"] and own_work != "ids":
                 # not a film / series per Wikidata (person, character, game, book, franchise item …)
                 if families(c.sources) - {"wikipedia", "wikidata"} and not cls["series_like"]:
                     self.excluded.append({"qid": c.qid, "imdb": c.imdb, "title": name, "sources": srcs,
@@ -1882,7 +1906,7 @@ class Resolver:
                 self.excluded.append({"qid": c.qid, "imdb": c.imdb, "title": name, "sources": srcs,
                                       "reason": ", ".join(sorted(cls["exclude"]))})
                 continue
-            if e and c.qid in self.walked:
+            if e and c.qid in self.walked and not own_work:
                 continue
             imdbs = [v for v in (e or {}).get("claims", {}).get("P345", []) if re.fullmatch(r"tt\d+", v)]
             imdb = c.imdb if c.imdb and (not imdbs or c.imdb in imdbs) else (imdbs[0] if imdbs else c.imdb)

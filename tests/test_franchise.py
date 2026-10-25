@@ -137,6 +137,16 @@ class TestFandomAndTitles(unittest.TestCase):
 
 
 class TestRules(unittest.TestCase):
+    def test_container_work(self):
+        # 2026-10-25 audit: walked containers that are works of their own become members
+        roze = {"P31": ["Q29982285"], "P345": ["tt13592980"], "P4983": ["255107"], "P8345": ["Q207981"]}
+        self.assertEqual(F.container_work(roze, {"animated", "series"}), "screen")
+        sinners = {"P31": ["Q13593818"], "P345": ["tt10443844"], "P4947": ["510242"]}
+        self.assertEqual(F.container_work(sinners, set()), "ids")
+        self.assertIsNone(F.container_work({"P31": ["Q24856"], "P4947": ["1"]}, set()))      # no IMDb id
+        self.assertIsNone(F.container_work({"P31": ["Q196600"], "P345": ["tt1"]}, set()))    # IMDb only, no TMDB
+        self.assertIsNone(F.container_work({"P31": ["Q196600"]}, set()))                     # a franchise item
+
     def test_kind_of(self):
         self.assertEqual(F.kind_of({"film"}, set(), "movie", set(), 120), "film")
         self.assertEqual(F.kind_of({"film"}, {"Q202866"}, "movie", set(), 90), "animated film")

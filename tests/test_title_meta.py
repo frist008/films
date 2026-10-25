@@ -41,6 +41,12 @@ class TestTmdbExtras(unittest.TestCase):
         cr = tmdb._movie_credits(load("tmdb", "movie_693134_dune2.json")["credits"])
         self.assertEqual([p["name"] for p in cr["dops"]], ["Greig Fraser"])
         self.assertEqual([p["name"] for p in cr["composers"]], ["Hans Zimmer"])
+        self.assertEqual(cr["editors"], [])                    # the trimmed fixture has no Editing department
+        # editor: «только хранить» (owner, 2026-10-25) — job «Editor» only
+        ed = tmdb._movie_credits({"crew": [
+            {"id": 7, "name": "Joe Walker", "original_name": "Joe Walker", "department": "Editing", "job": "Editor"},
+            {"id": 8, "name": "X", "original_name": "X", "department": "Editing", "job": "First Assistant Editor"}]})
+        self.assertEqual([p["name"] for p in ed["editors"]], ["Joe Walker"])
         producers = {p["name"] for p in cr["producers"]}
         self.assertIn("Denis Villeneuve", producers)
         self.assertNotIn("Thomas Tull", producers)             # executive producers are not shown for films
@@ -53,10 +59,15 @@ class TestTmdbExtras(unittest.TestCase):
             {"id": 2, "name": "B", "original_name": "B", "department": "Production",
              "jobs": [{"job": "Producer", "episode_count": 8}]},
             {"id": 3, "name": "C", "original_name": "C", "department": "Camera",
-             "jobs": [{"job": "Director of Photography", "episode_count": 3}]}]}
+             "jobs": [{"job": "Director of Photography", "episode_count": 3}]},
+            {"id": 4, "name": "D", "original_name": "D", "department": "Editing",
+             "jobs": [{"job": "Editor", "episode_count": 2}]},
+            {"id": 5, "name": "E", "original_name": "E", "department": "Editing",
+             "jobs": [{"job": "Editor", "episode_count": 6}, {"job": "Assistant Editor", "episode_count": 1}]}]}
         cr = tmdb._aggregate_credits(agg)
         self.assertEqual([p["tmdb_id"] for p in cr["producers"]], [1])
         self.assertEqual([p["tmdb_id"] for p in cr["dops"]], [3])
+        self.assertEqual([p["tmdb_id"] for p in cr["editors"]], [5, 4])     # by episodes, «Editor» job only
 
     def test_person_names(self):
         b = load("tmdb", "person_137427_villeneuve.json")

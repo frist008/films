@@ -12,7 +12,7 @@ Usage (progress goes to data/logs/agent_title_meta.log every few hundred items; 
 
 What the owner chose («в таблицу» = a sheet column, else DB only):
   * distributor (IMDb, imdb_specs.pick_distributor) — sheet; keywords (TMDB, English: TMDB has no keyword translations) —
-    sheet; DOP, producers — sheet; composer, series creator — DB (credits.role); miniseries, cameras / film format,
+    sheet; DOP, producers — sheet; composer, series creator, film editor — DB (credits.role); miniseries, cameras / film format,
     colour (`titles.color`, used by rank for «ч/б»), filming locations, original / spoken languages — DB
     (no_dub_needed is never set from the language);
   * Russian names of people in the sheet, Ukrainian stored (TMDB /person/{id} + translations, cached in tmdb_raw);
@@ -39,7 +39,8 @@ from . import db
 from .sources import tmdb
 
 LOG = db.ROOT / "data" / "logs" / "agent_title_meta.log"
-CREDIT_ROLES = (("creators", "creator"), ("dops", "dop"), ("producers", "producer"), ("composers", "composer"))
+CREDIT_ROLES = (("creators", "creator"), ("dops", "dop"), ("producers", "producer"), ("composers", "composer"),
+                ("editors", "editor"))   # editor: owner 2026-10-25 «только хранить»
 
 
 def log(msg: str) -> None:
@@ -121,6 +122,48 @@ def tmdb_pass(conn, force: bool = False, max_age_days: float = 365) -> dict:
             log(f"  tmdb {i}/{len(rows)} (credits added {st['credits_added']}, requests {tmdb.STATS['requests']}, "
                 f"cache hits {tmdb.STATS['cache_hits']})")
     log(f"tmdb pass done: {st}")
+    return st
+
+
+def editors_pass(conn, force: bool = False, max_age_days: float = 36500) -> dict:
+    """Film editor (owner, 2026-10-25: «только хранить») for every title with a TMDB id, from the TMDB cache of any age
+    (movies: credits.crew job «Editor»; seasons: the season's aggregate_credits); only what was never cached is fetched.
+    Titles that already have an editor credit are skipped unless force."""
+    where = "" if force else "AND id NOT IN (SELECT title_id FROM credits WHERE role = 'editor')"
+    rows = conn.execute(
+        f"""SELECT id, kind, tmdb_id, tmdb_type, series_tmdb_id, season_number FROM titles
+            WHERE (tmdb_id IS NOT NULL OR series_tmdb_id IS NOT NULL) AND duplicate_of IS NULL {where} ORDER BY id""").fetchall()
+    st = {"titles": len(rows), "with_editor": 0, "no_editor_on_tmdb": 0, "credits_added": 0, "no_tmdb_body": 0,
+          "errors": 0}
+    log(f"editors pass: {len(rows)} titles")
+    for i, r in enumerate(rows, 1):
+        try:
+            if r["kind"] == "series" or r["tmdb_type"] == "tv":
+                tv_id = r["series_tmdb_id"] or r["tmdb_id"]
+                if r["season_number"] is None:
+                    st["no_tmdb_body"] += 1
+                    continue
+                sb = tmdb.season_raw(conn, tv_id, r["season_number"], max_age_days)
+                eds = tmdb._aggregate_credits((sb or {}).get("aggregate_credits"))["editors"] if sb else None
+            else:
+                b = tmdb.movie_raw(conn, r["tmdb_id"], max_age_days)
+                eds = tmdb._movie_credits(b.get("credits"))["editors"] if b else None
+        except tmdb.TmdbError as e:
+            st["errors"] += 1
+            log(f"  !! title {r['id']}: {e}")
+            continue
+        if eds is None:
+            st["no_tmdb_body"] += 1
+            continue
+        if not eds:
+            st["no_editor_on_tmdb"] += 1
+            continue
+        with conn:
+            st["credits_added"] += _add_credits(conn, r["id"], {"editors": eds})
+        st["with_editor"] += 1
+        if i % 1000 == 0:
+            log(f"  editors {i}/{len(rows)} (added {st['credits_added']}, requests {tmdb.STATS['requests']})")
+    log(f"editors pass done: {st}")
     return st
 
 
@@ -409,7 +452,7 @@ def coverage(conn) -> dict:
         out[c] = [q(f"SELECT count(*) FROM titles WHERE {cond}"), q(f"SELECT count(*) FROM titles WHERE {cond} AND {rel}")]
     out["distributor_by_country"] = dict(conn.execute(
         "SELECT distributor_country, count(*) FROM titles WHERE distributor IS NOT NULL GROUP BY 1 ORDER BY 2 DESC LIMIT 8").fetchall())
-    for role in ("dop", "producer", "composer", "creator"):
+    for role in ("dop", "producer", "composer", "creator", "editor"):
         out[f"titles_with_{role}"] = [q(f"SELECT count(DISTINCT title_id) FROM credits WHERE role = '{role}'"),
                                       q(f"SELECT count(DISTINCT title_id) FROM credits WHERE role = '{role}' AND title_id IN "
                                         "(SELECT title_id FROM release_titles)")]
@@ -429,7 +472,7 @@ def coverage(conn) -> dict:
 
 def main(argv=None):
     ap = argparse.ArgumentParser(prog="films.title_meta")
-    ap.add_argument("what", choices=["all", "tmdb", "imdb", "people", "wiki", "store", "plex", "coverage"])
+    ap.add_argument("what", choices=["all", "tmdb", "editors", "imdb", "people", "wiki", "store", "plex", "coverage"])
     ap.add_argument("--force", action="store_true", help="redo titles / people already filled")
     a = ap.parse_args(argv)
     conn = db.connect()
@@ -440,7 +483,7 @@ def main(argv=None):
     for p in passes:
         if p == "coverage":
             continue
-        fn = {"tmdb": tmdb_pass, "people": people_pass, "wiki": wiki_pass}.get(p)
+        fn = {"tmdb": tmdb_pass, "editors": editors_pass, "people": people_pass, "wiki": wiki_pass}.get(p)
         res[p] = fn(conn, force=a.force) if fn else {"store": store_pass, "plex": plex_pass, "imdb": imdb_pass}[p](conn)
     res["coverage"] = coverage(conn)
     log("coverage: " + json.dumps(res["coverage"], ensure_ascii=False))

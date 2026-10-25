@@ -366,6 +366,8 @@ DOP_JOBS = {"Director of Photography"}
 MOVIE_PRODUCER_JOBS = {"Producer"}
 TV_PRODUCER_JOBS = {"Executive Producer"}
 COMPOSER_JOBS = {"Original Music Composer", "Music", "Composer"}
+# metadata survey (owner, 2026-10-25): the film editor — «только хранить» (credits.role = 'editor', not in the sheet)
+EDITOR_JOBS = {"Editor"}
 _CYR = re.compile(r"[А-Яа-яЁё]")
 
 
@@ -401,6 +403,7 @@ def _movie_credits(credits: dict) -> dict:
         "dops": _people_by_job(crew, lambda c: c.get("job") in DOP_JOBS),
         "producers": _people_by_job(crew, lambda c: c.get("job") in MOVIE_PRODUCER_JOBS),
         "composers": _people_by_job(crew, lambda c: c.get("job") in COMPOSER_JOBS),
+        "editors": _people_by_job(crew, lambda c: c.get("job") in EDITOR_JOBS),
         "cast": [{"tmdb_id": c["id"], **_pname(c), "character": c.get("character") or None,
                   "order": c.get("order")} for c in cast],
     }
@@ -429,6 +432,7 @@ def _aggregate_credits(agg: dict) -> dict:
         "dops": grouped(lambda r: r["job"] in DOP_JOBS),
         "producers": grouped(lambda r: r["job"] in TV_PRODUCER_JOBS),
         "composers": grouped(lambda r: r["job"] in COMPOSER_JOBS),
+        "editors": grouped(lambda r: r["job"] in EDITOR_JOBS),
         "cast": [{"tmdb_id": c["id"], **_pname(c),
                   "character": " / ".join(r["character"] for r in c.get("roles") or [] if r.get("character")) or None,
                   "episodes": c.get("total_episode_count"), "order": c.get("order")} for c in cast],
