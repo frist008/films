@@ -133,8 +133,9 @@ description: Полное обновление базы фильмов/сери�
    3) **Сначала — запуск владельцем, без окон** (R200, 2026-10-26: «хватит! … надо это исправить»): для rutracker расширение
       Claude in Chrome запрещает постоянное разрешение («Site-level permissions are disabled for this site»), поэтому каждый
       `javascript_tool` / `get_page_text` там — новое окно «Allow», и пока владелец его не видит, вызов просто истекает. Поэтому:
-      `Get-Content -Raw -Encoding UTF8 data\cache\rutracker\run.js | Set-Clipboard` → владелец во вкладке rutracker (залогинен):
-      F12 → Console → (первый раз Chrome просит ввести `allow pasting`) → Ctrl+V → Enter. Дальше всё как ниже (мост, ingest);
+      владелец сам открывает `D:\work\films\data\cache\rutracker\run.js` в Блокноте → Ctrl+A, Ctrl+C → во вкладке rutracker
+      (залогинен): F12 → Console → (первый раз Chrome просит ввести `allow pasting`) → Ctrl+V → Enter. **В буфер обмена
+      самому не писать** (владелец, 2026-10-26: «не пиши в буфер обмена! запомни»; хук `clipboard-guard.sh`). Дальше всё как ниже (мост, ingest);
       статус — он же в консоли: `__rtStatus()`. Вызов через `javascript_tool` — только если владелец сам попросил.
       Запасной путь — **один** вызов в Chrome (владелец у компьютера, жмёт «Allow» один раз): вкладка `https://rutracker.org/forum/index.php`
       (залогинен, без Cloudflare) → `javascript_tool` с содержимым `data/cache/rutracker/run.js` целиком. Вызов сразу
