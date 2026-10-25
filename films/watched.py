@@ -231,6 +231,31 @@ def mark_series(conn, tv_id: int, seasons: list[int] | None = None, log=print) -
     return n
 
 
+def mark_episodes(conn, tv_id: int, season: int, first: int, last: int) -> int:
+    """«Видел» part of a TMDB season (episodes first..last) — the owner's words, in Plex library + Discover. For series the
+    tracker numbers differently from TMDB («Универ. Новая общага»: 15 rutor seasons = TV blocks, 3 TMDB seasons)."""
+    from .sources import tmdb
+    imdb = (tmdb.get(conn, "tv_external_ids", str(tv_id), "", f"/tv/{tv_id}/external_ids")[1] or {}).get("imdb_id")
+    n = 0
+    for ep in (tmdb.season_raw(conn, tv_id, season) or {}).get("episodes", []):
+        if imdb and first <= ep["episode_number"] <= last:
+            mark_episode(conn, imdb, season, ep["episode_number"])
+            n += 1
+    return n
+
+
+def mark_db(conn, title_id: int, reason: str) -> bool:
+    """The DB side of the owner's «видел» for a tracker-numbered season whose Plex episodes were marked by TMDB numbering
+    (mark_series / mark_episodes): the title row only, never Plex. reason — the owner's words."""
+    with conn:
+        if conn.execute("SELECT 1 FROM watched WHERE title_id = ? AND substr(source, -8) != '_partial'", (title_id,)).fetchone():
+            return False
+        conn.execute("INSERT INTO watched (title_id, source, watched_at) VALUES (?, 'manual', datetime('now'))", (title_id,))
+    log_line = f"mark_db {title_id}: {reason}"
+    print(log_line)
+    return True
+
+
 def unmark_season(conn, series_imdb: str, season: int, reason: str, px=None) -> dict:
     """Undo a WRONG «watched» of one season made by the project: every episode in Plex (library + Discover
     unscrobble) and the watched row of the season title. For our own mistakes only; log the reason."""

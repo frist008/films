@@ -9,7 +9,7 @@
 ["imdb_datasets","2026-10-24 20:21:04","2026-10-24 20:21:04","{\"by\": \"films update --finish\", \"from\": \"SELECT max(loaded_at) FROM imdb_ratings\"}"]
 ["rt","2026-10-24 20:29:06","2026-10-24 20:27:22","{\"by\": \"films update --finish\", \"from\": \"SELECT max(x) FROM (SELECT max(fetched_at) x FROM rt_pages UNION ALL SELECT max(rt_checked_at) FROM titles)\"}"]
 ["jellyfin","2026-10-24 20:26:52","2026-10-24 18:32:45","{\"items\": {\"movie\": 310, \"series\": 15, \"season\": 17, \"episode\": 165}, \"items_with_imdb\": 391, \"played_movies\": 11, \"played_episodes\": 4, \"last_played\": \"2026-10-24 18:32:45\"}"]
-["plex_mark","2026-10-25 04:44:18",null,"{\"title_id\": 5477, \"title\": \"Мастера меча онлайн: Порядковый ранг\", \"season\": null, \"plex\": [{\"where\": \"discover\", \"plexId\": \"5d9f3d1edfd12800208aa57d\", \"viewCount\": 1, \"viewState\": \"complete\", \"already\": false}], \"dry_run\": false, \"confirmed\": true}"]
+["plex_mark","2026-10-25 04:56:38",null,"{\"title_id\": 7220, \"title\": \"Универ. Новая Общага\", \"season\": 1, \"plex\": [{\"where\": \"discover\", \"plexId\": \"5d9c09823c3f87001f35f808\", \"viewCount\": null, \"viewState\": null, \"note\": \"season: episodes via mark_episode\"}], \"dry_run\": false, \"confirmed\": false}"]
 ["jellyfin_to_plex","2026-10-24 03:35:11",null,"{\"movies\": 0, \"episodes\": 3, \"not_confirmed\": 0}"]
 ["trailer_lang","2026-10-24 20:00:41",null,"{\"titles\": 8, \"confirmed_ru\": 8, \"replaced\": 0, \"removed\": 0, \"unknown\": 0}"]
 ["qbittorrent","2026-10-24 21:53:22","2026-10-24 07:56:47","{\"linked_btih\": 47, \"linked_topic\": 1, \"linked_name\": 0, \"linked_tmdb\": 18, \"queued\": 65, \"complete\": 9, \"torrents\": 74, \"unlinked\": 8}"]
