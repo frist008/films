@@ -381,7 +381,7 @@ def unconfirmed_titles(conn) -> list[int]:
     q = ",".join("?" * len(CONFIRMED))
     return [tid for (tid,) in conn.execute(
         f"""SELECT id FROM titles WHERE trailer_ru_url IS NOT NULL
-            AND coalesce(trailer_ru_check, 'unconfirmed') NOT IN ({q})""", CONFIRMED)]
+            AND coalesce(trailer_ru_check, 'unconfirmed') NOT IN ({q})""" + yt_mod.NOT_WATCHED, CONFIRMED)]
 
 
 def _alternatives(yt: yt_mod.YouTube, conn, tid: int, current: str) -> list[str]:

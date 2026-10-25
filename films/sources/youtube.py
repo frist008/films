@@ -1235,8 +1235,13 @@ def uk_confirmed(c: dict) -> bool:
 # run over the DB
 # ------------------------------------------------------------------------------------------------
 
+# owner 2026-10-25: «Не нужны трейлеры для фильмов, которые я видел» — watched titles are not searched or re-checked
+NOT_WATCHED = (" AND NOT EXISTS (SELECT 1 FROM watched w WHERE w.title_id = titles.id"
+               " AND substr(w.source, -8) != '_partial')")
+
+
 def _todo(conn, recheck_days: float | None, ids: list[int] | None = None) -> list:
-    sql = "SELECT * FROM titles WHERE trailer_ru_url IS NULL"
+    sql = "SELECT * FROM titles WHERE trailer_ru_url IS NULL" + NOT_WATCHED
     args: list = []
     if ids:
         sql += f" AND id IN ({','.join('?' * len(ids))})"
@@ -1387,7 +1392,7 @@ def audit(dry: bool = False, ids: list[int] | None = None) -> dict:
     for tid, r in latest_decisions().items():
         if r["status"] == "accepted" and r.get("chosen"):
             chosen[tid] = r["chosen"]["id"]
-    sql = "SELECT * FROM titles WHERE trailer_ru_source = 'youtube_search' AND trailer_ru_url IS NOT NULL"
+    sql = "SELECT * FROM titles WHERE trailer_ru_source = 'youtube_search' AND trailer_ru_url IS NOT NULL" + NOT_WATCHED
     rows = [r for r in conn.execute(sql) if not ids or r["id"] in ids]
     yt = YouTube()
     stats = {"checked": 0, "kept": 0, "replaced": 0, "removed": 0, "changed_elsewhere": 0, "changes": []}
