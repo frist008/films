@@ -2357,5 +2357,1066 @@
   "original_title": "Sherlock",
   "first_year": 2010,
   "candidates": []
+ },
+ "Adventures of Sonic the Hedgehog": {
+  "query": "Adventures of Sonic the Hedgehog",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 44,
+  "title": "Приключения Ёжика Соника",
+  "original_title": "Adventures of Sonic the Hedgehog",
+  "first_year": 1993,
+  "candidates": []
+ },
+ "Alien: Isolation": {
+  "query": "Alien: Isolation",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 87212,
+  "title": "Чужой: Изоляция",
+  "original_title": "Alien: Isolation - The Digital Series",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Angel": {
+  "query": "Angel",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 2426,
+  "title": "Ангел",
+  "original_title": "Angel",
+  "first_year": 1999,
+  "candidates": [
+   {
+    "tmdb_id": 2426,
+    "title": "Ангел",
+    "original_title": "Angel",
+    "year": 1999
+   },
+   {
+    "tmdb_id": 7073,
+    "title": "Angel",
+    "original_title": "Angel",
+    "year": 1960
+   },
+   {
+    "tmdb_id": 217716,
+    "title": "Angel",
+    "original_title": "Angel",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 2407,
+    "title": "Тёмный ангел",
+    "original_title": "Dark Angel",
+    "year": 2000
+   }
+  ]
+ },
+ "Are You Afraid of the Dark?": {
+  "query": "Are You Afraid of the Dark?",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 2913,
+    "title": "Боишься ли ты темноты?",
+    "original_title": "Are You Afraid of the Dark?",
+    "year": 1992
+   },
+   {
+    "tmdb_id": 93693,
+    "title": "Боишься ли ты темноты?",
+    "original_title": "Are You Afraid of the Dark?",
+    "year": 2019
+   }
+  ]
+ },
+ "Boruto: Naruto Next Generations": {
+  "query": "Boruto: Naruto Next Generations",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 70881,
+  "title": "Боруто: Новое поколение Наруто",
+  "original_title": "BORUTO-ボルト- NARUTO NEXT GENERATIONS",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Buffy the Vampire Slayer": {
+  "query": "Buffy the Vampire Slayer",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 95,
+  "title": "Баффи - истребительница вампиров",
+  "original_title": "Buffy the Vampire Slayer",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Buzz Lightyear of Star Command": {
+  "query": "Buzz Lightyear of Star Command",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 3744,
+  "title": "Приключения Базза Лайтера из Звёздной Команды",
+  "original_title": "Buzz Lightyear of Star Command",
+  "first_year": 2000,
+  "candidates": []
+ },
+ "Code Geass: Lelouch of the Rebellion": {
+  "query": "Code Geass: Lelouch of the Rebellion",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31724,
+  "title": "Код Гиас: Восставший Лелуш",
+  "original_title": "コードギアス 反逆のルルーシュ",
+  "first_year": 2006,
+  "candidates": []
+ },
+ "Death Note: New Generation": {
+  "query": "Death Note: New Generation",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78004,
+  "title": "Тетрадь смерти: Новое поколение",
+  "original_title": "デスノート NEW GENERATION",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "GANTZ": {
+  "query": "GANTZ",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 11279,
+  "title": "Ганц",
+  "original_title": "ガンツ",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Gantz": {
+  "query": "Gantz",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 11279,
+  "title": "Ганц",
+  "original_title": "ガンツ",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Halo 4: Forward Unto Dawn": {
+  "query": "Halo 4: Forward Unto Dawn",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 56295,
+  "title": "Halo 4: Идущий к рассвету",
+  "original_title": "Halo 4: Forward Unto Dawn",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Hawkeye (2021)": {
+  "query": "Hawkeye",
+  "year_hint": 2021,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88329,
+  "title": "Соколиный Глаз",
+  "original_title": "Hawkeye",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Hell Girl": {
+  "query": "Hell Girl",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 8974,
+    "title": "Адская девочка",
+    "original_title": "地獄少女",
+    "year": 2005
+   },
+   {
+    "tmdb_id": 91539,
+    "title": "地獄少女",
+    "original_title": "地獄少女",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 246495,
+    "title": "Hell Girl: Two Mirrors",
+    "original_title": "Hell Girl: Two Mirrors",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 105240,
+    "title": "地獄のガールフレンド",
+    "original_title": "地獄のガールフレンド",
+    "year": 2019
+   }
+  ]
+ },
+ "Hercules: The Legendary Journeys": {
+  "query": "Hercules: The Legendary Journeys",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4615,
+  "title": "Удивительные странствия Геракла",
+  "original_title": "Hercules: The Legendary Journeys",
+  "first_year": 1995,
+  "candidates": []
+ },
+ "Highlander: The Series": {
+  "query": "Highlander: The Series",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4414,
+  "title": "Горец",
+  "original_title": "Highlander: The Series",
+  "first_year": 1992,
+  "candidates": []
+ },
+ "Higurashi: When They Cry": {
+  "query": "Higurashi: When They Cry",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 25760,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に",
+  "first_year": 2006,
+  "candidates": []
+ },
+ "Higurashi: When They Cry - NEW": {
+  "query": "Higurashi: When They Cry - NEW",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": []
+ },
+ "Honey, I Shrunk the Kids: The TV Show": {
+  "query": "Honey, I Shrunk the Kids: The TV Show",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1797,
+  "title": "Honey, I Shrunk the Kids: The TV Show",
+  "original_title": "Honey, I Shrunk the Kids: The TV Show",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Life on Mars": {
+  "query": "Life on Mars",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 2973,
+    "title": "Жизнь на Марсе",
+    "original_title": "Life on Mars",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 3725,
+    "title": "Жизнь на Марсе",
+    "original_title": "Life on Mars",
+    "year": 2008
+   },
+   {
+    "tmdb_id": 79407,
+    "title": "Жизнь на Марсе",
+    "original_title": "라이프 온 마스",
+    "year": 2018
+   }
+  ]
+ },
+ "Lilo & Stitch: The Series": {
+  "query": "Lilo & Stitch: The Series",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2355,
+  "title": "Лило и Стич",
+  "original_title": "Lilo & Stitch: The Series",
+  "first_year": 2003,
+  "candidates": []
+ },
+ "Loki": {
+  "query": "Loki",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 84958,
+  "title": "Loki",
+  "original_title": "Loki",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Lost": {
+  "query": "Lost",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 4607,
+  "title": "Остаться в живых",
+  "original_title": "Lost",
+  "first_year": 2004,
+  "candidates": [
+   {
+    "tmdb_id": 4607,
+    "title": "Остаться в живых",
+    "original_title": "Lost",
+    "year": 2004
+   },
+   {
+    "tmdb_id": 129318,
+    "title": "Lost",
+    "original_title": "인간실격",
+    "year": 2021
+   },
+   {
+    "tmdb_id": 313937,
+    "title": "LOST: Circle",
+    "original_title": "LOST: Circle",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 75758,
+    "title": "Затерянные в космосе",
+    "original_title": "Lost in Space",
+    "year": 2018
+   }
+  ]
+ },
+ "Marvel's Agent Carter": {
+  "query": "Marvel's Agent Carter",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61550,
+  "title": "Агент Картер",
+  "original_title": "Marvel's Agent Carter",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Marvel's Agents of S.H.I.E.L.D.": {
+  "query": "Marvel's Agents of S.H.I.E.L.D.",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Marvel's Iron Fist": {
+  "query": "Marvel's Iron Fist",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62127,
+  "title": "Железный кулак",
+  "original_title": "Marvel's Iron Fist",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Marvel's Jessica Jones": {
+  "query": "Marvel's Jessica Jones",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Marvel's Luke Cage": {
+  "query": "Marvel's Luke Cage",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62126,
+  "title": "Люк Кейдж",
+  "original_title": "Marvel's Luke Cage",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Marvel's The Defenders": {
+  "query": "Marvel's The Defenders",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62285,
+  "title": "Защитники",
+  "original_title": "Marvel's The Defenders",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Mortal Kombat: Conquest": {
+  "query": "Mortal Kombat: Conquest",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 237,
+  "title": "Смертельная битва: Завоевание",
+  "original_title": "Mortal Kombat: Conquest",
+  "first_year": 1998,
+  "candidates": []
+ },
+ "Mortal Kombat: Legacy": {
+  "query": "Mortal Kombat: Legacy",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61579,
+  "title": "Смертельная битва: Наследие",
+  "original_title": "Mortal Kombat: Legacy",
+  "first_year": 2011,
+  "candidates": []
+ },
+ "Ms. Marvel": {
+  "query": "Ms. Marvel",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92782,
+  "title": "Мисс Марвел",
+  "original_title": "Ms. Marvel",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Naruto": {
+  "query": "Naruto",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 46260,
+  "title": "Наруто",
+  "original_title": "ナルト",
+  "first_year": 2002,
+  "candidates": []
+ },
+ "Naruto Shippuden": {
+  "query": "Naruto Shippuden",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31910,
+  "title": "Наруто: Ураганные хроники",
+  "original_title": "ナルト 疾風伝",
+  "first_year": 2007,
+  "candidates": []
+ },
+ "Naruto Shippūden": {
+  "query": "Naruto Shippūden",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31910,
+  "title": "Наруто: Ураганные хроники",
+  "original_title": "ナルト 疾風伝",
+  "first_year": 2007,
+  "candidates": []
+ },
+ "Peacemaker": {
+  "query": "Peacemaker",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 110492,
+  "title": "Миротворец",
+  "original_title": "Peacemaker",
+  "first_year": 2022,
+  "candidates": [
+   {
+    "tmdb_id": 110492,
+    "title": "Миротворец",
+    "original_title": "Peacemaker",
+    "year": 2022
+   },
+   {
+    "tmdb_id": 21788,
+    "title": "Железный миротворец",
+    "original_title": "PEACE MAKER鐵",
+    "year": 2003
+   },
+   {
+    "tmdb_id": 108886,
+    "title": "Миротворец",
+    "original_title": "Rauhantekijä",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 36106,
+    "title": "The Peacemaker",
+    "original_title": "The Peacemaker",
+    "year": 2010
+   }
+  ]
+ },
+ "Pokémon": {
+  "query": "Pokémon",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60572,
+  "title": "Покемон",
+  "original_title": "ポケットモンスター",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Pokémon Chronicles": {
+  "query": "Pokémon Chronicles",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 13230,
+  "title": "ポケットモンスター サイドストーリー",
+  "original_title": "ポケットモンスター サイドストーリー",
+  "first_year": 2002,
+  "candidates": []
+ },
+ "Pokémon Generations": {
+  "query": "Pokémon Generations",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 67882,
+  "title": "Покемон: Поколения",
+  "original_title": "ポケモンジェネレーションズ",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Pokémon: Origins": {
+  "query": "Pokémon: Origins",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61295,
+  "title": "Покемон: Истоки",
+  "original_title": "ポケットモンスター THE ORIGIN",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Pokémon: Twilight Wings": {
+  "query": "Pokémon: Twilight Wings",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 96420,
+  "title": "Сумеречные крылья",
+  "original_title": "薄明の翼",
+  "first_year": 2020,
+  "candidates": []
+ },
+ "Quantum Leap": {
+  "query": "Quantum Leap",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 4018,
+    "title": "Квантовый скачок",
+    "original_title": "Quantum Leap",
+    "year": 1989
+   },
+   {
+    "tmdb_id": 202102,
+    "title": "Квантовый скачок",
+    "original_title": "Quantum Leap",
+    "year": 2022
+   }
+  ]
+ },
+ "Secret Invasion": {
+  "query": "Secret Invasion",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 114472,
+  "title": "Секретное вторжение",
+  "original_title": "Secret Invasion",
+  "first_year": 2023,
+  "candidates": []
+ },
+ "She-Hulk: Attorney at Law": {
+  "query": "She-Hulk: Attorney at Law",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92783,
+  "title": "She-Hulk: Attorney at Law",
+  "original_title": "She-Hulk: Attorney at Law",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Sherlock": {
+  "query": "Sherlock",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 19885,
+  "title": "Шерлок",
+  "original_title": "Sherlock",
+  "first_year": 2010,
+  "candidates": [
+   {
+    "tmdb_id": 19885,
+    "title": "Шерлок",
+    "original_title": "Sherlock",
+    "year": 2010
+   },
+   {
+    "tmdb_id": 224755,
+    "title": "SHErlock",
+    "original_title": "女子推理社",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 96245,
+    "title": "Sherlock: Untold Stories",
+    "original_title": "シャーロック アントールドストーリーズ",
+    "year": 2019
+   },
+   {
+    "tmdb_id": 220100,
+    "title": "Sherlock Jr.",
+    "original_title": "Sherlock Jr.",
+    "year": 2018
+   }
+  ]
+ },
+ "Smallville": {
+  "query": "Smallville",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4604,
+  "title": "Тайны Смолвиля",
+  "original_title": "Smallville",
+  "first_year": 2001,
+  "candidates": []
+ },
+ "Sonic X": {
+  "query": "Sonic X",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 10926,
+  "title": "Соник Икс",
+  "original_title": "ソニックX",
+  "first_year": 2003,
+  "candidates": []
+ },
+ "Sonic the Hedgehog": {
+  "query": "Sonic the Hedgehog",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "tmdb_tv": 2404,
+  "title": "Соник: Энергетический Камень",
+  "original_title": "Sonic the Hedgehog",
+  "first_year": 1993,
+  "candidates": [
+   {
+    "tmdb_id": 2404,
+    "title": "Соник: Энергетический Камень",
+    "original_title": "Sonic the Hedgehog",
+    "year": 1993
+   },
+   {
+    "tmdb_id": 78422,
+    "title": "Ёж Соник",
+    "original_title": "ソニック・ザ・ヘッジホッグ",
+    "year": 1996
+   },
+   {
+    "tmdb_id": 330647,
+    "title": "DC x Sonic the Hedgehog",
+    "original_title": "DC x Sonic the Hedgehog",
+    "year": 2026
+   },
+   {
+    "tmdb_id": 44,
+    "title": "Приключения Ёжика Соника",
+    "original_title": "Adventures of Sonic the Hedgehog",
+    "year": 1993
+   }
+  ]
+ },
+ "Stargate Atlantis": {
+  "query": "Stargate Atlantis",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2290,
+  "title": "Звёздные врата: Атлантида",
+  "original_title": "Stargate Atlantis",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Stargate Infinity": {
+  "query": "Stargate Infinity",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2580,
+  "title": "Звёздные врата: Бесконечность",
+  "original_title": "Stargate Infinity",
+  "first_year": 2002,
+  "candidates": []
+ },
+ "Stargate SG-1": {
+  "query": "Stargate SG-1",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4629,
+  "title": "Звёздные врата: ЗВ-1",
+  "original_title": "Stargate SG-1",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Stitch!": {
+  "query": "Stitch!",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 20757,
+  "title": "Стич!",
+  "original_title": "スティッチ!",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "Supernatural": {
+  "query": "Supernatural",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 1622,
+  "title": "Сверхъестественное",
+  "original_title": "Supernatural",
+  "first_year": 2005,
+  "candidates": [
+   {
+    "tmdb_id": 1622,
+    "title": "Сверхъестественное",
+    "original_title": "Supernatural",
+    "year": 2005
+   },
+   {
+    "tmdb_id": 13836,
+    "title": "Supernatural",
+    "original_title": "Supernatural",
+    "year": 1977
+   },
+   {
+    "tmdb_id": 261164,
+    "title": "소능력자",
+    "original_title": "소능력자",
+    "year": 2017
+   },
+   {
+    "tmdb_id": 32871,
+    "title": "Сверхъестественное: Анимация",
+    "original_title": "SUPERNATURAL：THE ANIMATION",
+    "year": 2011
+   }
+  ]
+ },
+ "Sword Art Online": {
+  "query": "Sword Art Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 45782,
+  "title": "Мастера меча онлайн",
+  "original_title": "ソードアート・オンライン",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Sword Art Online Alternative: Gun Gale Online": {
+  "query": "Sword Art Online Alternative: Gun Gale Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78204,
+  "title": "Мастера меча онлайн: Альтернативная призрачная пуля",
+  "original_title": "ソードアート・オンライン オルタナティブ ガンゲイル・オンライン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Terminator: The Sarah Connor Chronicles": {
+  "query": "Terminator: The Sarah Connor Chronicles",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 433,
+  "title": "Терминатор: Хроники Сары Коннор",
+  "original_title": "Terminator: The Sarah Connor Chronicles",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "The Falcon and The Winter Soldier": {
+  "query": "The Falcon and The Winter Soldier",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88396,
+  "title": "Сокол и Зимний Солдат",
+  "original_title": "The Falcon and the Winter Soldier",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "The Gentlemen": {
+  "query": "The Gentlemen",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 236235,
+  "title": "Джентльмены",
+  "original_title": "The Gentlemen",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "The Hexer": {
+  "query": "The Hexer",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "only results with unrelated names",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 64915,
+    "title": "Tími nornarinnar",
+    "original_title": "Tími nornarinnar",
+    "year": 2011
+   }
+  ]
+ },
+ "The Interns": {
+  "query": "The Interns",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 32651,
+  "title": "Интерны",
+  "original_title": "Интерны",
+  "first_year": 2010,
+  "candidates": [
+   {
+    "tmdb_id": 32651,
+    "title": "Интерны",
+    "original_title": "Интерны",
+    "year": 2010
+   },
+   {
+    "tmdb_id": 7403,
+    "title": "The Interns",
+    "original_title": "The Interns",
+    "year": 1970
+   },
+   {
+    "tmdb_id": 112513,
+    "title": "The Interns",
+    "original_title": "The Interns",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 219335,
+    "title": "หมอ มือ ใหม่",
+    "original_title": "หมอ มือ ใหม่",
+    "year": 2023
+   }
+  ]
+ },
+ "The Little Mermaid": {
+  "query": "The Little Mermaid",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2675,
+  "title": "Русалочка",
+  "original_title": "The Little Mermaid",
+  "first_year": 1992,
+  "candidates": []
+ },
+ "The Lord of the Rings: The Rings of Power": {
+  "query": "The Lord of the Rings: The Rings of Power",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 84773,
+  "title": "Властелин колец: Кольца Власти",
+  "original_title": "The Lord of the Rings: The Rings of Power",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Timon & Pumbaa": {
+  "query": "Timon & Pumbaa",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4429,
+  "title": "Тимон и Пумба",
+  "original_title": "Timon and Pumbaa",
+  "first_year": 1995,
+  "candidates": []
+ },
+ "Uni": {
+  "query": "Uni",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 46087,
+  "title": "Uni",
+  "original_title": "Универ",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "Uni. A New Dorm": {
+  "query": "Uni. A New Dorm",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 45966,
+  "title": "Универ. Новая Общага",
+  "original_title": "Универ. Новая Общага",
+  "first_year": 2011,
+  "candidates": []
+ },
+ "Violet Evergarden": {
+  "query": "Violet Evergarden",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 75214,
+  "title": "Вайолет Эвергарден",
+  "original_title": "ヴァイオレット・エヴァーガーデン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "What If…?": {
+  "query": "What If…?",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 91363,
+  "title": "Что, Если...?",
+  "original_title": "What If...?",
+  "first_year": 2021,
+  "candidates": [
+   {
+    "tmdb_id": 91363,
+    "title": "Что, Если...?",
+    "original_title": "What If...?",
+    "year": 2021
+   },
+   {
+    "tmdb_id": 81940,
+    "title": "Что/если",
+    "original_title": "WHAT / IF",
+    "year": 2019
+   },
+   {
+    "tmdb_id": 50116,
+    "title": "Wat als?",
+    "original_title": "Wat als?",
+    "year": 2011
+   },
+   {
+    "tmdb_id": 286433,
+    "title": "三命",
+    "original_title": "三命",
+    "year": 2025
+   }
+  ]
+ },
+ "When They Cry - Higurashi": {
+  "query": "When They Cry - Higurashi",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "low score",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 25760,
+    "title": "Когда плачут цикады",
+    "original_title": "ひぐらしのなく頃に",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 100988,
+    "title": "Когда плачут цикады",
+    "original_title": "ひぐらしのなく頃に 業",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 75475,
+    "title": "ひぐらしのなく頃に",
+    "original_title": "ひぐらしのなく頃に",
+    "year": 2016
+   },
+   {
+    "tmdb_id": 327185,
+    "title": "Higurashi no Naku Koro ni (Shinsaku TV Animation)",
+    "original_title": "Higurashi no Naku Koro ni (Shinsaku TV Animation)",
+    "year": null
+   }
+  ]
+ },
+ "Xena: Warrior Princess": {
+  "query": "Xena: Warrior Princess",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4616,
+  "title": "Зена - королева воинов",
+  "original_title": "Xena: Warrior Princess",
+  "first_year": 1995,
+  "candidates": []
  }
 }

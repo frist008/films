@@ -50,7 +50,9 @@ python -X utf8 -m unittest tests.test_imdb_specs
 `di_resolution`, `aspect_ratios`, `sound_mix`, `is_imax`, `imax_source` (перезаписываются при каждом прогоне);
 `upscale_verdict` / `upscale_source = 'imdb_di'` из `di_resolution` (R32; не трогается, если вердикт дал другой источник —
 см. `docs/research-codecs-upscale.md` §2.5);
-`poster_url`/`poster_source='imdb'`/`poster_checked_at` — только где `poster_url IS NULL`;
+`poster_url`/`poster_source='imdb'`/`poster_checked_at` — только где `poster_url IS NULL` (если у IMDb постера нет —
+ставится только `poster_checked_at`; строка-«фильм», чей IMDb id — сериал/эпизод **той же** работы с тем же названием
+и годом ±1, получает постер, хотя тех. характеристики ей не пишутся — `poster_same_work`);
 `budget_usd`/`box_office_usd` — только где NULL, только USD, только фильмы. `updated_at` не трогается.
 Каждая группа строк одного tconst — отдельная короткая транзакция (`BEGIN IMMEDIATE`, busy_timeout из `db.connect()`).
 
@@ -95,6 +97,13 @@ NULL также если: нет записи DI (`no_di`), DI без разре
 | `imdb_aspect` | отдельный кадр для IMAX | `1.43 : 1 (IMAX 70mm & Dual Laser…)`, `1.90 : 1 (IMAX version)`, `1.85 : 1 (3-D version … including IMAX)` |
 | `imdb_sound` | IMAX-сведение звука (бывает только у IMAX-проката) | `IMAX 6-Track`, `IMAX 5.0`, `12-Track Digital Sound (IMAX)`, `Sonics-DDP (IMAX version)` |
 | `imdb_lab` | лаборатория печатала IMAX-копии | `… (IMAX prints)` |
+| `imdb_company` | (2026-10-25) не тех. характеристики, а «Other companies»: компания IMAX (`co0057495`) с пометкой «optimized for IMAX theatres» — IMAX DMR-ремастер к прокату | Inside Out 2, Frozen II, The Wild Robot, Toy Story 5, Wolfs |
+| `imdb_release` | (2026-10-25) дата проката с пометкой `IMAX` / `IMAX version` / `IMAX 3D` не позже года фильма + 1 | Moana 2, Despicable Me 4, Wolf Man, Mad Max: Fury Road |
+
+У мультфильмов (Головоломка 2, Моана 2, Дикий робот…) в тех. характеристиках IMAX нет никогда — его видно только
+по `imdb_company` / `imdb_release` из того же ответа GraphQL (`node_imax`). Перевыпуски («IMAX re-release», Матрица
+2021, Marvel 2018), фестивальные/фанатские показы, премьеры и IMAX как дистрибьютор перевыпуска — **не считаются**,
+только в `imax_notes`. «Зверополис 2», «Элио» — у IMDb нет ни одного признака, `is_imax = 0`.
 
 `is_imax = 0` — у IMDb есть тех. характеристики (кадр/звук/процесс/камеры/негатив/копии), но IMAX нигде нет.
 `is_imax = NULL` — тех. характеристик нет вовсе (цвет «Color» не считается) — **неизвестно**, а не «не IMAX».

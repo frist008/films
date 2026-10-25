@@ -140,6 +140,13 @@ class Plex:
 
 # ------------------------------------------------------------------------------------------ parsing
 
+def _int(v) -> int | None:
+    try:
+        return int(v) if v is not None and str(v).strip() != "" else None
+    except (TypeError, ValueError):
+        return None
+
+
 def ts_to_sql(ts) -> str | None:
     if ts in (None, "", 0):
         return None
@@ -641,6 +648,8 @@ def _resolve_plex_guids(px: Plex, guids: set[str]) -> dict[str, dict]:
                 "title": m.get("title"), "year": m.get("year"), "type": m.get("type"),
                 "grandparent_title": m.get("grandparentTitle"),
                 "original_title": m.get("originalTitle"),
+                "season": _int(m.get("parentIndex")) if m.get("type") == "episode" else None,
+                "episode": _int(m.get("index")) if m.get("type") == "episode" else None,
             }
     return out
 
@@ -714,13 +723,13 @@ def _show_watched_episodes(px: Plex, show_id: str) -> list[dict]:
 
 
 INSERT_HIST = """
-INSERT INTO plex_history (source, plex_guid, guids, kind, title, year, grandparent_title, viewed_at, title_id)
-VALUES (:source, :plex_guid, :guids, :kind, :title, :year, :grandparent_title, :viewed_at, :title_id)
+INSERT INTO plex_history (source, plex_guid, guids, kind, title, year, grandparent_title, viewed_at, title_id, season, episode)
+VALUES (:source, :plex_guid, :guids, :kind, :title, :year, :grandparent_title, :viewed_at, :title_id, :season, :episode)
 """
 UPDATE_HIST = """
 UPDATE plex_history SET source = :source, plex_guid = :plex_guid, guids = :guids, kind = :kind, title = :title,
     year = :year, grandparent_title = :grandparent_title, viewed_at = :viewed_at,
-    title_id = COALESCE(title_id, :title_id)
+    title_id = COALESCE(title_id, :title_id), season = COALESCE(:season, season), episode = COALESCE(:episode, episode)
 WHERE id = :id
 """
 
@@ -741,6 +750,8 @@ def _store_history(conn, rows: list[dict]) -> dict:
     with conn:
         for row in rows:
             row = dict(row)
+            row.setdefault("season", None)    # Plex's own season / episode numbers of an episode view (else NULL)
+            row.setdefault("episode", None)
             row["title_id"] = _link_title(conn, row["guids"])
             marker = row.pop("marker")
             key = (row["source"], row["plex_guid"], row["viewed_at"])
@@ -819,7 +830,9 @@ def fetch_history(conn: sqlite3.Connection, px: Plex | None = None, log=print) -
         lib_rows.append({"hid": hid, "title": r.get("title"), "viewed_at": r.get("viewedAt"),
                          "guid": v[1] if v else None, "mtype": v[2] if v else None,
                          "gp_title": v[4] if v else None, "view_type": v[11] if v else None,
-                         "oaa": r.get("originallyAvailableAt"), "section": r.get("librarySectionID")})
+                         "oaa": r.get("originallyAvailableAt"), "section": r.get("librarySectionID"),
+                         "season": v[5] if v and v[2] == 4 else r.get("parentIndex") if r.get("type") == "episode" else None,
+                         "episode": v[6] if v and v[2] == 4 else r.get("index") if r.get("type") == "episode" else None})
     for hid, v in views.items():
         if hid in seen_ids:
             continue
@@ -827,7 +840,8 @@ def fetch_history(conn: sqlite3.Connection, px: Plex | None = None, log=print) -
             skipped_trailers[v[1].split(":", 1)[0]] += 1
             continue
         lib_rows.append({"hid": hid, "title": v[7], "viewed_at": v[8], "guid": v[1], "mtype": v[2],
-                         "gp_title": v[4], "view_type": v[11], "oaa": None, "section": v[3]})
+                         "gp_title": v[4], "view_type": v[11], "oaa": None, "section": v[3],
+                         "season": v[5] if v[2] == 4 else None, "episode": v[6] if v[2] == 4 else None})
     st["db_only_rows"] = sum(1 for x in lib_rows if x["hid"] not in seen_ids)
     st["skipped_trailer_views"] = sum(skipped_trailers.values())
 
@@ -882,6 +896,8 @@ def fetch_history(conn: sqlite3.Connection, px: Plex | None = None, log=print) -
             "kind": kind, "title": x["title"], "year": year,
             "grandparent_title": x["gp_title"] or res.get("grandparent_title") or (ep or {}).get("show"),
             "viewed_at": ts_to_sql(x["viewed_at"]), "marker": f"pms-history://{x['hid']}",
+            "season": (_int(x.get("season")) if x.get("season") is not None else res.get("season")) if kind == "episode" else None,
+            "episode": (_int(x.get("episode")) if x.get("episode") is not None else res.get("episode")) if kind == "episode" else None,
         })
     for guid, _cnt, last in settings_only:
         res = resolved.get(guid) or {}
@@ -894,6 +910,7 @@ def fetch_history(conn: sqlite3.Connection, px: Plex | None = None, log=print) -
             "title": res.get("title"), "year": res.get("year"),
             "grandparent_title": res.get("grandparent_title"),
             "viewed_at": ts_to_sql(last), "marker": f"pms-settings://{guid}",
+            "season": res.get("season"), "episode": res.get("episode"),
         })
     st["settings_only_rows"] = len(settings_only)
 
@@ -908,6 +925,8 @@ def fetch_history(conn: sqlite3.Connection, px: Plex | None = None, log=print) -
             "kind": typ, "title": mi.get("title"), "year": mi.get("year") or res.get("year"),
             "grandparent_title": (mi.get("grandparent") or {}).get("title"),
             "viewed_at": iso_to_sql(n.get("date")), "marker": f"plextv-activity://{n['id']}",
+            "season": _int((mi.get("parent") or {}).get("index")) if typ == "episode" else _int(mi.get("index")) if typ == "season" else None,
+            "episode": _int(mi.get("index")) if typ == "episode" else None,
         })
     st["plextv_episode_rows"] = 0
     for show_id, eps in show_eps.items():
@@ -919,6 +938,7 @@ def fetch_history(conn: sqlite3.Connection, px: Plex | None = None, log=print) -
                 "kind": "episode", "title": e.get("title"), "year": e.get("year") or res.get("year"),
                 "grandparent_title": e.get("grandparentTitle"),
                 "viewed_at": ts_to_sql(e.get("lastViewedAt")), "marker": f"plextv-episode://{e['ratingKey']}",
+                "season": _int(e.get("parentIndex")), "episode": _int(e.get("index")),
             })
             st["plextv_episode_rows"] += 1
 

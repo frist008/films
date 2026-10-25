@@ -299,6 +299,20 @@ def history_season(conn, tv_id: int, title: str | None, viewed_at: str | None) -
     return seasons[0][0] if not later_aired else None
 
 
+def _numbered_episode(conn, tv_id: int, season: int, episode: int) -> tuple[tuple | None, int]:
+    """(key, episode identity) of a Plex-numbered episode view.  Plex numbers some anime absolutely inside its own
+    seasons (One Piece S14 E523…): an episode number beyond that TMDB season's count is an absolute number and is placed
+    over the TMDB seasons (films.disks.season_for), keeping the absolute number as the identity — the same as the
+    «One_Piece_[575]» file names."""
+    raw = tmdb.tv_raw(conn, tv_id) or {}
+    counts = {s["season_number"]: s.get("episode_count") or 0 for s in raw.get("seasons") or [] if s.get("season_number")}
+    if counts.get(season) and episode > counts[season]:
+        from .disks import season_for
+        s2, why = season_for(conn, tv_id, None, episode)
+        return ((tv_id, s2), episode) if s2 is not None and why.startswith("absolute numbering") else (None, episode)
+    return (tv_id, season), episode
+
+
 def _season_title(conn, tv_id: int, season: int | None) -> int | None:
     if season is None:
         series = tmdb.tv(conn, tv_id)
@@ -423,6 +437,32 @@ def link_plex(conn) -> dict:
         m = show_map.get(name, {})
         if not m.get("tmdb_tv"):
             continue
+        if h["kind"] == "show":
+            continue    # a whole-show entry is not an episode view (plex.tv lists the show's episodes separately)
+        if h["kind"] == "episode" and h["season"] is not None and h["episode"] is not None:
+            # Plex's own season / episode numbers (server history, watch state, plex.tv): one identity per episode, so
+            # the same episode seen in the server history and in plex.tv counts once (titles vs numbers did not)
+            if int(h["season"]) == 0:      # specials: not a season row of the DB
+                continue
+            # the episode's own IMDb id names the show exactly: a show name is ambiguous («The Witcher» = the 2002
+            # Polish series in the watch state and the 2019 Netflix one in the files)
+            found = tmdb.find_by_imdb(conn, _imdb_ids(h["guids"])[0]).get("tv_episode") if _imdb_ids(h["guids"]) else None
+            if found and found.get("show_id") and found.get("season") == 0:
+                continue                        # a TMDB special
+            if found and found.get("show_id") and found.get("season") and found.get("episode"):
+                key = (found["show_id"], found["season"])
+                seen[key].add(found["episode"])
+                last[key] = max(last.get(key, ""), h["viewed_at"] or "")
+                continue
+            if h["year"] and m.get("first_year") and int(h["year"]) < int(m["first_year"]) - 1:
+                stats["history_episode_older_than_show"] += 1   # aired before the mapped show began: another show
+                continue
+            key, ep_no = _numbered_episode(conn, m["tmdb_tv"], int(h["season"]), int(h["episode"]))
+            if key is None:
+                continue
+            seen[key].add(ep_no)
+            last[key] = max(last.get(key, ""), h["viewed_at"] or "")
+            continue
         season = h["season"] or season_of(h["title"], name)
         if h["source"] == "plextv" and h["kind"] == "episode":
             found = tmdb.find_by_imdb(conn, _imdb_ids(h["guids"])[0]).get("tv_episode") if _imdb_ids(h["guids"]) else None
@@ -435,7 +475,10 @@ def link_plex(conn) -> dict:
             season = m.get("season") or name_season(name, m.get("original_title")) or history_season(
                 conn, m["tmdb_tv"], h["title"], h["viewed_at"])
         key = (m["tmdb_tv"], season)
-        seen[key].add(h["title"])
+        # the episode number when the name carries one («Peacemaker.2022.S02E01…», «Миротворец 8», «One_Piece_[575]»):
+        # the same identity as the numbered entries above, so a file view and a plex.tv view of one episode count once
+        ep = (plex.parse_episode((h["title"] or "") + ".x", False) or {}).get("episode")
+        seen[key].add(ep if isinstance(ep, int) and ep > 0 else h["title"])
         last[key] = max(last.get(key, ""), h["viewed_at"] or "")
     with conn:
         for (tv_id, season), eps in seen.items():

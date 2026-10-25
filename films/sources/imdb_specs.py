@@ -404,13 +404,70 @@ def _imax_hit(value: str, attrs: list[str]) -> str | None:
     return None
 
 
-def imax_verdict(specs: dict | None) -> tuple[int | None, list[str], list[str], list[str]]:
+# Evidence outside the technical specs (2026-10-25): IMDb's tech specs of most animated features (Inside Out 2,
+# Moana 2, The Wild Robot, Frozen II …) never mention IMAX, but the same GraphQL node does --
+#   * company credit "IMAX" (co0057495), category "Other companies", attributes "optimized for IMAX theatres"
+#     (the IMAX DMR remaster of the original release) -> 'imdb_company';
+#   * a release date with attribute "IMAX" / "IMAX version" / "IMAX 3D" within a year of the film's year
+#     -> 'imdb_release'.
+# Re-releases (Matrix 2021, Marvel 2018 IMAX re-releases, Ghibli), festival / fan / one-off screenings and IMAX as a
+# re-release distributor are NOT the film going to IMAX on release: they are only noted.
+IMAX_COMPANY_ID = "co0057495"
+_IMAX_NOT_FIRST_RUN = re.compile(r"re-?release|re-?issue|anniversary|fan (event|screening)|screening|festival|"
+                                 r"BFI\b|premiere", re.I)
+
+
+def _edge_nodes(node: dict | None, key: str) -> list[dict]:
+    return [(e or {}).get("node") or {} for e in (((node or {}).get(key) or {}).get("edges") or [])]
+
+
+def node_imax(node: dict | None) -> tuple[list[str], list[str], list[str]]:
+    """IMAX evidence from the rest of the IMDb node -> (sources, evidence, notes); see the comment above."""
+    sources, evidence, notes = [], [], []
+    year = ((node or {}).get("releaseYear") or {}).get("year")
+    for n in _edge_nodes(node, "companyCredits"):
+        comp = n.get("company") or {}
+        name = (comp.get("companyText") or {}).get("text") or ""
+        if comp.get("id") != IMAX_COMPANY_ID and name.strip().upper() != "IMAX":
+            continue
+        cat = (n.get("category") or {}).get("id")
+        attrs = _attrs(n)
+        if cat == "miscellaneous" and not any(_IMAX_NOT_FIRST_RUN.search(a) for a in attrs):
+            if "imdb_company" not in sources:
+                sources.append("imdb_company")
+            evidence.append(f"companyCredits: {display(name, attrs)} [{cat}]")
+        else:
+            notes.append(f"imax_company_not_counted: {display(name, attrs)} [{cat}]")
+    for n in _edge_nodes(node, "distributors"):
+        attrs = _attrs(n)
+        name = ((n.get("company") or {}).get("companyText") or {}).get("text") or ""
+        if (n.get("company") or {}).get("id") == IMAX_COMPANY_ID or any(_IMAX.search(a) for a in attrs):
+            notes.append(f"imax_distribution_not_counted: {display(name, attrs)}")
+    for n in _edge_nodes(node, "releaseDates"):
+        attrs = _attrs(n)
+        if not any(_imax_hit("", [a]) for a in attrs):
+            continue
+        where = f"{n.get('year')}-{n.get('month') or 0:02d} {((n.get('country') or {}).get('id')) or ''}".strip()
+        first_run = (year and n.get("year") and int(n["year"]) <= int(year) + 1
+                     and not any(_IMAX_NOT_FIRST_RUN.search(a) for a in attrs))
+        if first_run:
+            if "imdb_release" not in sources:
+                sources.append("imdb_release")
+            evidence.append(f"releaseDates: {where} ({', '.join(attrs)})")
+        else:
+            notes.append(f"imax_release_not_counted: {where} ({', '.join(attrs)})")
+    return sources, evidence, notes
+
+
+def imax_verdict(specs: dict | None, node: dict | None = None) -> tuple[int | None, list[str], list[str], list[str]]:
     """-> (is_imax, sources, evidence, notes).
 
     is_imax = 1 when any tech-spec list mentions IMAX for the shoot or the theatrical release (owner's rule:
-    "снят на IMAX-камеры или шёл в IMAX"); 0 when IMDb has technical specs but none mention IMAX;
-    None when IMDb has no technical specs at all (unknown -- not the same as "not IMAX").
-    notes: things that are NOT counted but are worth seeing ('IMAX Enhanced' only, bare 1.43 : 1 / 1.90 : 1).
+    "снят на IMAX-камеры или шёл в IMAX"), or the rest of the IMDb node shows the original release in IMAX
+    (node_imax: IMAX company credit / IMAX release date); 0 when IMDb has technical specs but nothing mentions IMAX;
+    None when IMDb has no technical specs and no other evidence (unknown -- not the same as "not IMAX").
+    notes: things that are NOT counted but are worth seeing ('IMAX Enhanced' only, bare 1.43 : 1 / 1.90 : 1,
+    IMAX re-releases / screenings).
     """
     sources, evidence, notes = [], [], []
     for src, key, field in IMAX_SOURCES:
@@ -428,6 +485,11 @@ def imax_verdict(specs: dict | None) -> tuple[int | None, list[str], list[str], 
                 notes.append(f"bare_1.43: {display(v, attrs)}")
             elif re.match(r"^\s*1\.90\s*:\s*1", v):
                 notes.append(f"bare_1.90: {display(v, attrs)}")
+    if node:
+        n_src, n_ev, n_notes = node_imax(node)
+        sources += [s for s in n_src if s not in sources]
+        evidence += n_ev
+        notes += n_notes
     if sources:
         return 1, sources, evidence, notes
     if has_specs(specs):
@@ -549,7 +611,7 @@ def summarize(rec: dict | None) -> dict:
     """Everything `run` derives from one cache record (also what `show` prints)."""
     node = (rec or {}).get("node") or {}
     specs = node.get("technicalSpecifications") or {}
-    is_imax, sources, evidence, notes = imax_verdict(specs)
+    is_imax, sources, evidence, notes = imax_verdict(specs, node)
     di, di_note = di_resolution(specs)
     aspects = [display(v, a) for v, a in spec_items(specs, "aspectRatios", "aspectRatio")]
     sounds = [display(v, a) for v, a in spec_items(specs, "soundMixes", "text")]
@@ -558,6 +620,7 @@ def summarize(rec: dict | None) -> dict:
         "tconst": (rec or {}).get("tconst"), "status": (rec or {}).get("status"),
         "canonical": (rec or {}).get("canonical"),
         "title": (node.get("titleText") or {}).get("text"),
+        "original_title": (node.get("originalTitleText") or {}).get("text"),
         "year": (node.get("releaseYear") or {}).get("year"),
         "type": (node.get("titleType") or {}).get("id"),
         "has_specs": has_specs(specs),
@@ -598,6 +661,30 @@ def suspect_link(kind: str, db_year, imdb_type: str | None, imdb_year) -> str | 
     return None
 
 
+# A movie row whose IMDb id is a series / miniseries / episode of the SAME work (Batman: The Animated Series, a Family
+# Guy special IMDb files as an episode): the IMDb poster is right for it even though the specs are not written.
+_POSTER_SAME_WORK = ("movie_row_but_imdb_tvSeries", "movie_row_but_imdb_tvMiniSeries", "imdb_is_episode")
+
+
+def _norm_title(text: str | None) -> str:
+    t = (text or "").lower().replace("&", " and ").replace("'", "").replace("’", "")
+    return " ".join(re.sub(r"[^\w]+", " ", t).split())
+
+
+def poster_same_work(row, s: dict, why: str | None) -> bool:
+    """True when a suspect link (why) still points at the same work: kind mismatch only (a movie row), years within
+    one, and the IMDb title (or original title) equals the row's title or ends it after a word boundary
+    ('Family Guy Presents: Something, Something, Something, Dark Side' ~ 'Something, Something, Something, Dark Side')."""
+    if why not in _POSTER_SAME_WORK or row["kind"] != "movie":
+        return False
+    if not (row["year"] and s.get("year") and abs(int(row["year"]) - int(s["year"])) <= 1):
+        return False
+    keys = row.keys() if hasattr(row, "keys") else row
+    mine = {_norm_title(row["title_original"]), _norm_title(row["title_latin"] if "title_latin" in keys else None)} - {""}
+    theirs = {_norm_title(s.get("title")), _norm_title(s.get("original_title"))} - {""}
+    return any(a == b or (len(b.split()) >= 2 and a.endswith(" " + b)) for a in mine for b in theirs)
+
+
 # ----------------------------------------------------------------------------------------------
 # DB
 # ----------------------------------------------------------------------------------------------
@@ -605,7 +692,7 @@ def suspect_link(kind: str, db_year, imdb_type: str | None, imdb_year) -> str | 
 def _targets(conn, limit: int | None = None, ids: list[str] | None = None) -> dict[str, list]:
     """{tconst: [title rows]} -- movies by imdb_id, seasons by series_imdb_id."""
     rows = conn.execute(
-        "SELECT id, kind, season_number, imdb_id, series_imdb_id, title_original, title_uk, year, "
+        "SELECT id, kind, season_number, imdb_id, series_imdb_id, title_original, title_latin, title_uk, year, "
         "poster_url, poster_source, budget_usd, box_office_usd, upscale_source FROM titles "
         "WHERE COALESCE(imdb_id, series_imdb_id) IS NOT NULL ORDER BY id").fetchall()
     by: dict[str, list] = {}
@@ -630,6 +717,7 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                          "imax_null", "aspect_set", "sound_set", "budget_filled", "gross_filled",
                          "budget_non_usd", "gross_non_usd", "budget_skipped_series", "gross_skipped_series",
                          "budget_disagree_kept", "gross_disagree_kept", "poster_set", "poster_missing_on_imdb", "poster_kept",
+                         "poster_set_same_work",
                          "upscale_upscaled", "upscale_native", "upscale_unknown",
                          *(k + "_set" for k in META_KEYS))}
     lists = {"not_found": [], "redirects": [], "non_usd": [], "di_conflicts": [], "imax_notes": [],
@@ -654,21 +742,28 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                                         "notes": s["imax_notes"]})
         if s["spec_truncated"]:
             lists["spec_truncated"].append({"tconst": t, "lists": s["spec_truncated"]})
-        good_rows = []
+        good_rows, poster_only = [], []
         for r in rows:
             # probable wrong IMDb link in titles: nothing is written for that row (it would copy another
-            # title's specs / poster), it is only reported
+            # title's specs / poster), it is only reported -- except the poster of the same work filed under
+            # another IMDb type (poster_same_work)
             why = suspect_link(r["kind"], r["year"], s["type"], s["year"])
             if why:
                 lists["year_mismatch"].append({"title_id": r["id"], "tconst": t, "why": why, "db_year": r["year"],
                                                "db_title": r["title_original"], "imdb_year": s["year"],
                                                "imdb_type": s["type"], "imdb_title": s["title"]})
                 st["rows_suspect_link"] += 1
+                if r["poster_url"] is None and s["poster_url"] and poster_same_work(r, s, why):
+                    poster_only.append(r)
             else:
                 good_rows.append(r)
         rows = good_rows
         conn.execute("BEGIN IMMEDIATE")
         try:
+            for r in poster_only:
+                cur = conn.execute("UPDATE titles SET poster_url = ?, poster_source = 'imdb', poster_checked_at = ? "
+                                   "WHERE id = ? AND poster_url IS NULL", (s["poster_url"], now, r["id"]))
+                st["poster_set_same_work"] += cur.rowcount
             for r in rows:
                 st["rows"] += 1
                 sets = {
@@ -738,6 +833,9 @@ def apply(conn, targets: dict[str, list], recs: dict[str, dict], log=print) -> d
                         where_poster = " AND poster_url IS NULL"  # never overwrite a concurrent writer
                         st["poster_set"] += 1
                     else:
+                        # checked, IMDb has no poster: remember the check (poster_url stays NULL)
+                        sets["poster_checked_at"] = now
+                        where_poster = " AND poster_url IS NULL"
                         st["poster_missing_on_imdb"] += 1
                 else:
                     st["poster_kept"] += 1

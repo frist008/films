@@ -222,6 +222,73 @@ class TestSuspectLink(unittest.TestCase):
         self.assertEqual(m.suspect_link("movie", 2025, "movie", 1994), "year_differs_by_more_than_1")
         self.assertEqual(m.suspect_link("series", 2025, "movie", 2025), "series_row_but_imdb_movie")
 
+    def test_poster_same_work(self):
+        def row(title, year, kind="movie", latin=None):
+            return {"kind": kind, "year": year, "title_original": title, "title_latin": latin}
+        s = {"title": "Batman: The Animated Series", "year": 1992, "original_title": None}
+        self.assertTrue(m.poster_same_work(row("Batman: The Animated Series", 1992), s, "movie_row_but_imdb_tvSeries"))
+        s = {"title": "Something, Something, Something, Dark Side", "year": 2009, "original_title": None}
+        self.assertTrue(m.poster_same_work(row("Family Guy Presents: Something, Something, Something, Dark Side", 2009),
+                                           s, "imdb_is_episode"))
+        s = {"title": "Attack on Titan", "year": 2013, "original_title": "Shingeki no kyojin"}
+        self.assertTrue(m.poster_same_work(row("Shingeki no Kyojin", 2013), s, "movie_row_but_imdb_tvSeries"))
+        # a different work with a longer title (the movie vs the "Chronicles" series) -> no
+        s = {"title": "Justice League: Gods and Monsters Chronicles", "year": 2015, "original_title": None}
+        self.assertFalse(m.poster_same_work(row("Justice League: Gods and Monsters", 2015), s, "movie_row_but_imdb_tvSeries"))
+        # a one-word tail is not enough; a year gap is not the same work; a year mismatch reason never is
+        s = {"title": "Naruto", "year": 2002, "original_title": None}
+        self.assertFalse(m.poster_same_work(row("Naruto + Naruto Shippuuden", 2002), s, "movie_row_but_imdb_tvSeries"))
+        s = {"title": "Ocean's Eleven", "year": 1960, "original_title": None}
+        self.assertFalse(m.poster_same_work(row("Ocean's Eleven", 2001), s, "year_differs_by_more_than_1"))
+        s = {"title": "Jimmy Neutron: Boy Genius", "year": 2001, "original_title": None}
+        self.assertFalse(m.poster_same_work(row("The Adventures of Jimmy Neutron: Boy Genius", None, "series"),
+                                            s, "series_row_but_imdb_movie"))
+
+
+def edges(*nodes):
+    return {"total": len(nodes), "edges": [{"node": n} for n in nodes]}
+
+
+class TestNodeImax(unittest.TestCase):
+    """IMAX evidence outside the technical specs (animated features: Inside Out 2, Moana 2 …)."""
+
+    def company(self, name, cat, *attrs, cid=m.IMAX_COMPANY_ID):
+        return {"company": {"id": cid, "companyText": {"text": name}}, "category": {"id": cat},
+                "countries": [], "attributes": [{"text": a} for a in attrs]}
+
+    def release(self, year, country, *attrs):
+        return {"day": 1, "month": 6, "year": year, "country": {"id": country}, "attributes": [{"text": a} for a in attrs]}
+
+    def test_company_optimized_for_imax(self):
+        node = {"releaseYear": {"year": 2024},
+                "companyCredits": edges(self.company("IMAX", "miscellaneous", "IMAX Theatres", "optimized for"))}
+        s = specs(soundMixes=[("Dolby Atmos", [])])
+        self.assertEqual(m.imax_verdict(s, node)[:2], (1, ["imdb_company"]))
+        self.assertEqual(m.imax_verdict(s)[:2], (0, []))         # without the node: specs only
+
+    def test_release_in_imax(self):
+        node = {"releaseYear": {"year": 2024}, "releaseDates": edges(self.release(2024, "US", "IMAX"))}
+        self.assertEqual(m.imax_verdict(specs(soundMixes=[("Dolby Atmos", [])]), node)[:2], (1, ["imdb_release"]))
+        self.assertEqual(m.imax_verdict({}, node)[0], 1)          # evidence without tech specs
+
+    def test_rereleases_and_screenings_not_counted(self):
+        node = {"releaseYear": {"year": 1999}, "releaseDates": edges(
+            self.release(2021, "SG", "re-release", "IMAX"),            # The Matrix 2021
+            self.release(1999, "US", "IMAX version", "re-release"),
+            self.release(2000, "CN", "IMAX version", "Beijing International Film Festival"),
+            self.release(2000, "GB", "Bristol IMAX Screening", "premiere")),
+            "distributors": edges({"company": {"id": m.IMAX_COMPANY_ID, "companyText": {"text": "IMAX"}},
+                                   "countries": [{"id": "US"}], "attributes": [{"text": "theatrical"}]})}
+        is_imax, sources, _, notes = m.imax_verdict(specs(soundMixes=[("Dolby Digital", [])]), node)
+        self.assertEqual((is_imax, sources), (0, []))
+        self.assertEqual(len(notes), 5)
+
+    def test_other_company_and_home_video_ignored(self):
+        node = {"releaseYear": {"year": 2024},
+                "companyCredits": edges(self.company("Animax", "distribution", "TV", cid="co0127153")),
+                "releaseDates": edges(self.release(2024, "US", "IMAX Enhanced"))}
+        self.assertEqual(m.imax_verdict(specs(soundMixes=[("Dolby Digital", [])]), node), (0, [], [], []))
+
 
 class TestCache(unittest.TestCase):
     """Real titles from the raw cache (no network)."""
