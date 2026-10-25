@@ -120,20 +120,25 @@ def first_parts(conn, rows: list[dict]) -> tuple[list[dict], list[dict]]:
     return kept, dropped
 
 
-def earlier_unseen_part(conn, t: dict, watched_tmdb: set[int]) -> dict | None:
-    """R66 check for a kept film: an earlier released part of its TMDB collection that the owner has not watched
-    (it would be the right «first part» for the playlist). None when unknown (collection not cached)."""
+def earlier_unseen_parts(conn, t: dict, watched_tmdb: set[int]) -> list[dict]:
+    """Earlier released parts of a film's TMDB collection the owner has not watched, oldest first ([] when unknown)."""
     if t["kind"] != "movie" or not t["tmdb_id"]:
-        return None
+        return []
     coll = (_raw(conn, "movie", t["tmdb_id"]) or {}).get("belongs_to_collection")
     try:
         parts = (tmdb.collection(conn, coll["id"]) or {}).get("parts") or [] if coll else []
     except tmdb.TmdbError:
-        return None
+        return []
     today = datetime.now().strftime("%Y-%m-%d")
     mine = next((p["release_date"] for p in parts if p["tmdb_id"] == t["tmdb_id"]), None) or t["release_date"]
-    return next((p for p in parts if p["release_date"] and mine and p["release_date"] < mine
-                 and p["release_date"] <= today and p["tmdb_id"] not in watched_tmdb), None)
+    return [p for p in parts if p["release_date"] and mine and p["release_date"] < mine
+            and p["release_date"] <= today and p["tmdb_id"] not in watched_tmdb]
+
+
+def earlier_unseen_part(conn, t: dict, watched_tmdb: set[int]) -> dict | None:
+    """R66 check for a kept film: the first earlier released part of its TMDB collection that the owner has not watched
+    (it would be the right «first part» for the playlist). None when unknown (collection not cached)."""
+    return next(iter(earlier_unseen_parts(conn, t, watched_tmdb)), None)
 
 
 def watched_movie_tmdb(conn) -> set[int]:
@@ -168,7 +173,10 @@ def visible_order() -> dict[int, int]:
         rows = rank.compute(conn)
         # the sheet's own order: franchises / collections / a series' seasons kept together (owner 2026-10-25: «сортировка
         # плейлистов тоже очень важна»)
-        rows = sheet._grouped(rows, sheet._group_keys(conn, rows))
+        groups = sheet._group_keys(conn, rows)
+        rows = sheet._grouped(rows, groups)
+        # the playlists' franchise blocks use the sheet's own groups (R180: same order, a collection never split)
+        _GROUPS.update({tid: g for tid, g in groups.items() if not g.startswith("t:")})
         _VISIBLE, i = {}, 0
         for r in rows:
             if r["variant_index"] == 0 and not r["hidden_reasons"] and r["title"]["id"] not in _VISIBLE:
@@ -180,6 +188,7 @@ def visible_order() -> dict[int, int]:
 
 
 _FOLLOWED: set[int] = set()
+_GROUPS: dict[int, str] = {}
 
 
 def followed() -> set[int]:
@@ -207,19 +216,25 @@ def members(conn, key: str) -> tuple[list[dict], dict]:
     # R66 (owner, 2026-10-24 — every «предыдущий фильм серии» asked was «не видел»): a sequel gives its place to the
     # first unseen earlier film of its TMDB collection when that film is in the DB; for Дима only if it is a comedy
     # too (comedy as the 1st or 2nd genre), for Яна only if it is a cartoon
+    # R180 (owner, 2026-10-25): the earlier parts are real sheet rows now (not hidden by year) — the playlist takes the
+    # first of them the sheet SHOWS (same filter as the sheet: an earlier part hidden for no voice-over / IMDb < 5 /
+    # «не интересен» does not replace the sequel), and keeps the sheet's order
+    vis_now = visible_order()
     wt, swapped, out = watched_movie_tmdb(conn), [], []
     for t in kept:
-        e = earlier_unseen_part(conn, t, wt)
-        row = conn.execute("SELECT id FROM titles WHERE tmdb_id = ? AND kind = 'movie'", (e["tmdb_id"],)).fetchone() if e else None
-        if row and row[0] not in w and (conn.execute("SELECT imdb_id FROM titles WHERE id = ?", (row[0],)).fetchone()[0]
-                                        not in skip):   # the earlier film obeys the same rules (not downloaded / watched / skipped)
-            prev = title_rows(conn, [row[0]])[0]
-            gr = conn.execute("SELECT genres, is_animation FROM titles WHERE id = ?", (row[0],)).fetchone()
-            g = json.loads(gr[0] or "[]")
+        for e in earlier_unseen_parts(conn, t, wt):
+            row = conn.execute("SELECT id, imdb_id, genres, is_animation FROM titles WHERE tmdb_id = ? AND kind = 'movie'",
+                               (e["tmdb_id"],)).fetchone()
+            # the earlier film obeys the same rules (not downloaded / watched / skipped, shown on the sheet)
+            if not row or row[0] in w or row[1] in skip or row[0] not in vis_now:
+                continue
+            g = json.loads(row[2] or "[]")
             # Яна — cartoons only (Babylon 5: The Gathering is live action, its sequel The Road Home is animated)
-            if (key != "dima" or "комедия" in g[:2]) and (key != "yana" or gr[1]):
+            if (key != "dima" or "комедия" in g[:2]) and (key != "yana" or row[3]):
+                prev = title_rows(conn, [row[0]])[0]
                 swapped.append((t["id"], t["title_ru"], prev["title_ru"]))
                 t = prev
+            break   # only the first unseen part shown on the sheet may take the sequel's place
         if t["id"] not in {x["id"] for x in out}:
             out.append(t)
     # the franchise is already chosen when another film of its TMDB collection is downloaded / queued / watched — no
@@ -441,9 +456,10 @@ def all_members(conn) -> dict[str, list[dict]]:
         lists[k] = [t for t in lists[k] if t["id"] not in taken]
         taken |= {t["id"] for t in lists[k]}
     gk = {}
+    visible_order()
     for k, rows in lists.items():
         for t in rows:
-            gk[t["id"]] = _group_key(conn, t)
+            gk[t["id"]] = _GROUPS.get(t["id"]) or _group_key(conn, t)
     # 2) home playlist of each franchise = the one holding its earliest film
     home = {}
     for k, rows in lists.items():

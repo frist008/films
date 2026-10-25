@@ -54,7 +54,8 @@ def report() -> str:
         if age > 12 * 60:
             continue
         text = f.read_text(encoding="utf-8", errors="replace").splitlines()
-        if any(re.search(r"AGENT_\w+_OK", l) for l in text[-5:]):
+        own = "AGENT_" + f.stem.removeprefix("agent_").upper() + "_OK"   # only its own marker, not another agent's quoted
+        if any(own in l for l in text[-5:]):
             if age < 60:
                 lines.append(f"  агент {f.stem}: закончил ({age:.0f} мин назад)")
             continue

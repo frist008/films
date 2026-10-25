@@ -6,13 +6,14 @@ watchlist have their own any-year collectors. This one covers the rest of what t
 dub and upgrades are known for it too:
   qbt       — torrents in the qBittorrent client (queued or done): qbt_torrents.title_id;
   plex      — files in Plex (present), jellyfin — files in Jellyfin, disk — video files on the local drives;
-  lists     — the owner's lists: kostya_list_map.json, watchlist_map.json, [quality_watch] and [top] in settings.toml.
+  lists     — the owner's lists: kostya_list_map.json, watchlist_map.json, [quality_watch] and [top] in settings.toml;
+  prequels  — unwatched earlier parts of the sequels shown on the sheet (R180, films.prequels).
 Watched-only titles are not included (no upgrade needed): a list title the owner has watched counts only if it is also
 downloaded or queued. Titles whose every year is ≥ year_from + 1 are skipped — the main sweep already has all their
 releases. Franchise members still waiting for films.franchise_releases (its `todo`) are left to that collector.
 
 Per title (a film, or a series = all its encountered seasons): rutor search by the original title, the Latin title,
-then the Russian one — SEPARATE queries, no year in the query (a query with > 300 hits is narrowed to «name year» for
+then the Russian and the Ukrainian ones — SEPARATE queries, no year in the query (a query with > 300 hits is narrowed to «name year» for
 year−1 … year+1 for films); categories: films 1 (+7 for animation), series 4 (+7 for animation), anime 10 only for
 franchises with anime = true. A row is kept only if a name segment before «(year)» equals one of the title's names
 (or contains a long one) and the year span overlaps year ±1. Titles searched in the last N days are skipped (cursor:
@@ -38,7 +39,7 @@ from . import db, rank
 CURSOR = db.ROOT / "data" / "cache" / "encountered_cursor.json"
 DAYS = 14
 NARROW_AT = 300     # a name query with more hits is re-asked as «name year»
-SOURCES = ("qbt", "plex", "jellyfin", "disk", "lists")
+SOURCES = ("qbt", "plex", "jellyfin", "disk", "lists", "prequels")
 
 
 def _norm(s: str | None) -> str:
@@ -83,6 +84,8 @@ def _sources(conn) -> dict[int, set[str]]:
     for tt in imdbs:
         lists |= {r[0] for r in conn.execute("SELECT id FROM titles WHERE imdb_id = ? OR series_imdb_id = ?", (tt, tt))}
     add(lists, "lists")
+    from . import prequels   # R180: unwatched earlier parts of the sequels shown on the sheet (films.prequels ensure)
+    add(prequels.title_ids(), "prequels")
     return out
 
 
@@ -94,7 +97,7 @@ def _anime_imdb(conn) -> set[str]:
                                        "AND confidence IN ('confirmed', 'single_source')") if r[0] in keys}
 
 
-def units(conn, only: set[str] | None = None) -> tuple[list[dict], dict]:
+def units(conn, only: set[str] | None = None, ids: set[int] | None = None) -> tuple[list[dict], dict]:
     """Search units: a film, or a series with its encountered seasons."""
     from . import franchise_releases
     src = _sources(conn)
@@ -105,7 +108,7 @@ def units(conn, only: set[str] | None = None) -> tuple[list[dict], dict]:
     skipped = {"watched_list_only": 0, "covered_by_sweep": 0, "franchise_collector": 0, "no_name": 0}
     groups: dict[str, dict] = {}
     for tid, s in src.items():
-        if only and not (s & only):
+        if (only and not (s & only)) or (ids is not None and tid not in ids):
             continue
         if s == {"lists"} and tid in watched:
             skipped["watched_list_only"] += 1
@@ -122,7 +125,9 @@ def units(conn, only: set[str] | None = None) -> tuple[list[dict], dict]:
         g["sources"] |= s
         if t["year"]:
             g["years"].add(t["year"])
-        for n in (t["title_original"], t["title_latin"], t["title_ru"]):
+        # names: original, Latin, Russian, then Ukrainian (CLAUDE.md: «всегда минимум по оригинальному и латинскому
+        # названию, затем по русскому и украинскому»)
+        for n in (t["title_original"], t["title_latin"], t["title_ru"], t["title_uk"]):
             if n and n not in g["names"]:
                 g["names"].append(n)
         g["imdb"] |= {x for x in (t["imdb_id"], t["series_imdb_id"]) if x}
@@ -171,9 +176,19 @@ def _match(name: str, keys: set[str], years: set[int]) -> bool:
         if not p:
             continue
         for k in keys:
-            if p == k or (len(k) >= 8 and f" {k} " in f" {p} "):
+            if p == k or (len(k) >= 8 and f" {k} " in f" {p} ") or _close(k, p):
                 return True
     return False
+
+
+def _close(key: str, part: str) -> bool:
+    """«Fear Street: 1994» ↔ «Fear Street Part 1: 1994»: every word of a name of ≥ 2 words, in order, and at most two
+    extra words in the release's name segment (the year span is checked by the caller; the link is made by `match`)."""
+    kw, pw = key.split(), part.split()
+    if len(kw) < 2 or not 0 < len(pw) - len(kw) <= 2:
+        return False
+    it = iter(pw)
+    return all(w in it for w in kw)
 
 
 def _search(cat: int, query: str) -> tuple[int, list[dict]]:
@@ -313,8 +328,8 @@ def upgrades(conn, groups: list[dict], new_ids: set[int]) -> list[str]:
 # --------------------------------------------------------------------------------------------------------- collect
 
 def collect(conn, days: int = DAYS, force: bool = False, limit: int | None = None, only: set[str] | None = None,
-            dry: bool = False, do_match: bool = True, log=print) -> dict:
-    groups, skipped = units(conn, only)
+            dry: bool = False, do_match: bool = True, log=print, ids: set[int] | None = None) -> dict:
+    groups, skipped = units(conn, only, ids)
     cursor = json.loads(CURSOR.read_text(encoding="utf-8")) if CURSOR.exists() else {}
     since = (date.today() - timedelta(days=days)).isoformat()
     todo = [g for g in groups if force or cursor.get(g["key"], "") < since]
@@ -358,6 +373,14 @@ def collect(conn, days: int = DAYS, force: bool = False, limit: int | None = Non
             f"SELECT id FROM releases WHERE source = 'rutor' AND source_id IN ({','.join('?' * len(chunk))})", chunk)]
     new_ids = {r for r in rel_ids if not conn.execute("SELECT 1 FROM release_titles WHERE release_id = ?", (r,)).fetchone()}
     log(f"pages: {len(rel_ids)} releases found, {len(new_ids)} not linked yet")
+    # a row an earlier broad search marked «not relevant» (page_skip, films.kostya_list.mark_relevant) passed this
+    # unit's name + year match now: its page is needed (R180: «Индиана Джонс» 1981 had 23 rows, none fetched → «нет озвучки»)
+    def unskip():
+        with conn:
+            for i in range(0, len(rel_ids), 500):
+                chunk = rel_ids[i:i + 500]
+                conn.execute(f"UPDATE releases SET page_skip = 0 WHERE page_skip = 1 AND id IN ({','.join('?' * len(chunk))})", chunk)
+    _retry(unskip)
     st["pages_fetched"] = fetch_pages(conn, rel_ids, log)
     from .sources import rutor
     st["parse"] = _retry(rutor.parse_pages, conn, delete_dv5=False, ids=rel_ids)

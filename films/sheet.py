@@ -314,10 +314,19 @@ def _group_keys(conn, rows: list[dict]) -> dict[int, str]:
                                   "WHERE confidence != 'review' AND imdb_id IS NOT NULL"):
         if key in followed and (imdb not in fr or size.get(key, 0) < size.get(fr[imdb], 0)):
             fr[imdb] = key
-    out = {}
+    # one TMDB collection never splits between groups (R180: the earlier parts of a sequel, added for any year, are often
+    # not franchise members while the sequel is): the whole collection joins the most specific franchise of any member
+    col_fr: dict[int, str] = {}
     for r in rows:
         t = r["title"]
         key = fr.get(t.get("series_imdb_id") or t.get("imdb_id") or "")
+        cid = t.get("collection_id")
+        if key and cid and (cid not in col_fr or size.get(key, 0) < size.get(col_fr[cid], 0)):
+            col_fr[cid] = key
+    out = {}
+    for r in rows:
+        t = r["title"]
+        key = col_fr.get(t.get("collection_id")) or fr.get(t.get("series_imdb_id") or t.get("imdb_id") or "")
         out[t["id"]] = (f"fr:{key}" if key else f"col:{t['collection_id']}" if t.get("collection_id")
                         else f"tv:{t['series_tmdb_id'] or t.get('series_key')}" if t["kind"] == "series"
                         else f"t:{t['id']}")
@@ -326,14 +335,15 @@ def _group_keys(conn, rows: list[dict]) -> dict[int, str]:
 
 def _grouped(rs: list[dict], groups: dict[int, str]) -> list[dict]:
     """Rows in rank order, but each group (franchise / collection / series) together at the place of its top row;
-    inside a group — by year, then season, keeping each title's variant rows right after it."""
+    inside a group — by year (then release date), then season, keeping each title's variant rows right after it."""
     first: dict[str, int] = {}
-    start: dict[str, int] = {}   # a series inside a franchise: all its seasons at the year of its first season
+    start: dict[str, tuple] = {}   # a series inside a franchise: all its seasons at the year of its first season
     sub = lambda t: f"tv:{t['series_tmdb_id'] or t.get('series_key')}" if t["kind"] == "series" else f"t:{t['id']}"  # noqa: E731
     for i, r in enumerate(rs):
         t = r["title"]
         first.setdefault(groups.get(t["id"], f"t:{t['id']}"), i)
-        start[sub(t)] = min(start.get(sub(t), 9999), t.get("year") or 9999)
+        # by year, then release date (parts 1 and 2 of one year: «Кризис на бесконечных землях», R180)
+        start[sub(t)] = min(start.get(sub(t), (9999, "9999")), (t.get("year") or 9999, (t.get("release_date") or "9999")[:10]))
     def key(r):
         t = r["title"]
         g = groups.get(t["id"], f"t:{t['id']}")

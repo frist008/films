@@ -693,6 +693,16 @@ def compute(conn) -> list[dict]:
                          "in_wishlist": t["id"] in wishlist, "owned": t["id"] in owned,
                          "mark": mark, "responsible": resp.get(t["id"]), "watched": w,
                          "sort_key": key})
+    # R180 (owner, 2026-10-25: «первые части мы не видели — надо добавить их прошлые части в документ, даже если они вышли
+    # раньше 2024 года»): an unwatched earlier part of a shown sequel (same TMDB collection, released before it) is not
+    # hidden by its year; every other reason (видел, нет озвучки, IMDb < 5 and old, не интересен, скачано) still applies
+    from . import prequels
+    exempt = prequels.year_exempt(rows, *prequels.franchise_rules())
+    for r in rows:
+        if r["title"]["id"] in exempt:
+            r["prequel"] = True
+            if r["variant_index"] == 0:   # one hidden list per title, shared by its variant rows
+                r["hidden_reasons"][:] = [h for h in r["hidden_reasons"] if not h.startswith("год ")]
     rows.sort(key=lambda x: (x["sort_key"], x["title"]["id"], x["variant_index"]))
     return rows
 
