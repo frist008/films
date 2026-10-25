@@ -49,8 +49,21 @@ def hdr_class(hdr: list[str], dv_static: int | None = None) -> str:
     return "SDR"
 
 
+def tv_cfg() -> dict:
+    """[tv]: the owner's TV — HDR10+ it can't show counts as its HDR10 base layer (owner, 2026-10-25)."""
+    global _TV
+    if _TV is None:
+        _TV = settings().get("tv", {})
+    return _TV
+
+
+_TV = None
+
+
 def hdr_rank(cls: str) -> int:
     order = ["DV", "HDR10+", "DV*", "HDR10", "HLG", "SDR"]
+    if cls == "HDR10+" and "HDR10+" not in tv_cfg().get("hdr_supported", ["HDR10+"]):
+        cls = "HDR10"
     return order.index(cls) if cls in order else len(order)
 
 
@@ -73,7 +86,8 @@ def release_key(r: dict, cfg: dict, studios: list[str] | None = None) -> tuple:
         pref = 0 if any(s in names for s in studios) else 1
     source_rank = cfg["sort"]["source_rank"]
     v = r.get("best_voice") or "none"
-    return (pref, voice_rank.index(v) if v in voice_rank else len(voice_rank),
+    slow = 1 if r.get("video_codec") in tv_cfg().get("codecs_slow", []) else 0   # AV1: no hardware decoder on the TV
+    return (pref, voice_rank.index(v) if v in voice_rank else len(voice_rank), slow,
             hdr_rank(hdr_class(_j(r.get("hdr"), []), r.get("dv_static_md"))),
             0 if (r.get("resolution") or 0) >= 2160 else 1,
             source_rank.index(r["source_type"]) if r.get("source_type") in source_rank else len(source_rank),

@@ -21,11 +21,21 @@ hide_watched = true
 hide_without_voice = true  # кроме titles.no_dub_needed = 1
 hide_downloaded = true     # кроме тайтлов с доступным апгрейдом
 
+[tv]
+# Телевизор и плеер владельца (2026-10-25): «тв не поддерживает HDR10+, потому от него нет толку»
+# Sony Bravia KD-65AG9 (OLED, 2019): HDR10, HLG, Dolby Vision; HDR10+ нет (раздача HDR10+ = её базовый слой HDR10).
+# Плеер — Plezy (клиент Plex; ExoPlayer/mpv, есть преобразование DV profile 7 → 8.1). DV profile 5 — не поддерживается (правило 2).
+# AV1 — у чипов ТВ 2019 года аппаратного декодера нет (появился в 2020) → программно, 4K может тормозить.
+model = "Sony Bravia KD-65AG9"
+player = "Plezy"
+hdr_supported = ["DV", "HDR10", "HLG"]
+codecs_slow = ["AV1"]
+
 [sort]
 # Порядок ключей сортировки Главной (сверху — важнее)
 order = ["upgrade", "franchise", "imax", "people", "hdr", "uhd", "voice", "wishlist", "imdb"]
 # franchise = владелец видел прошлые части / связанные фильмы / ту же вселенную (R34)
-hdr_rank = ["DV", "HDR10+", "HDR10", "HLG", "SDR"]
+hdr_rank = ["DV", "HDR10+", "HDR10", "HLG", "SDR"]  # HDR10+ на ТВ владельца = HDR10 ([tv])
 voice_rank = ["dub", "mvo", "dvo", "svo", "avo", "amateur", "original", "none"]
 # дубляж > проф. многоголосый > двухголосый > одноголосый (svo, ждёт подтверждения) > авторский > любительский;
 # original = RU/UK оригинальная дорожка (не считается «без озвучки»)
