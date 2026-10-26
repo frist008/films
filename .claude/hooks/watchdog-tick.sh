@@ -9,7 +9,7 @@ root="${CLAUDE_PROJECT_DIR:-.}"
 stamp="$root/data/cache/locks/watchdog.last"
 now=$(date +%s)
 last=$(cat "$stamp" 2>/dev/null || echo 0)
-[ $((now - last)) -lt 600 ] && exit 0   # every 10 minutes (owner, 2026-10-25)
+[ $((now - last)) -lt 1800 ] && exit 0   # every 30 minutes (owner, 2026-10-26: «можешь таймер начинать делать раз в пол часа опять раз всё ок»; was 10, 2026-10-25)
 echo "$now" > "$stamp"
 rep=$(cd "$root" && python -X utf8 -m films.watchdog 2>&1 | head -40)
 own=$(cd "$root" && python -X utf8 -m films.watchdog --table 2>&1 | head -15)  # table: who, what, done, left, finishes, state (2026-10-26)
