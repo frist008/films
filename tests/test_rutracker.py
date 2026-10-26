@@ -179,7 +179,9 @@ console.log(JSON.stringify({
   topic: Object.assign({}, t, {post_html: t.post_html.length, post_end: t.post_html.slice(-30)}),
   enc: a.enc1251('Южный парк: Ї і'), split1: a.splitQueries({q: 'Alien', lo: 2024, hi: 2024}, 2026),
   split2: a.splitQueries({q: 'South Park', lo: 1997, hi: null, need: ['4k', 'dub']}, 2026),
-  problem: [a.pageProblem('<input name="login_username">'), a.pageProblem('<a id="logged-in-username">x</a>')],
+  problem: [a.pageProblem('<input name="login_username">'), a.pageProblem('<a id="logged-in-username">x</a>'),
+            a.pageProblem('<h1>По техническим причинам форум временно недоступен</h1>'),
+            a.pageProblem('<a id="logged-in-username">x</a> Zen and the Art of Motorcycle Maintenance')],
 }));
 """
 
@@ -224,28 +226,33 @@ class TestCollectorJs(unittest.TestCase):
         self.assertEqual(self.r["enc"], "%DE%E6%ED%FB%E9+%EF%E0%F0%EA%3A+%AF+%B3")
         self.assertEqual(self.r["split1"], ["Alien 2023", "Alien 2024", "Alien 2025"])
         self.assertEqual(self.r["split2"], ["South Park 2160p", "South Park Dub"])
-        self.assertEqual(self.r["problem"], ["not_logged_in", None])
+        # a maintenance page is a problem (owner, 2026-10-26: «у ру трекера вроде есть время технических работ»), the
+        # same word in a logged-in page (a torrent title) is not
+        self.assertEqual(self.r["problem"], ["not_logged_in", None, "maintenance", None])
 
 
 JS_LOOP = r"""
 // the browser loop with fetch / localStorage mocked: rutracker pages from cp1251 files, bridge POSTs captured
 const fs = require('fs'); const [js, search, topic, mode] = process.argv.slice(1);
-const posted = []; const store = {};
+const posted = []; const store = {}; let outage = mode === 'relogin' ? 3 : 0;
 globalThis.document = {};
 globalThis.localStorage = {getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; }};
 const resp = (path, status) => ({ok: !!path, status: path ? 200 : status,
   arrayBuffer: async () => { const b = fs.readFileSync(path); return b.buffer.slice(b.byteOffset, b.byteOffset + b.length); }});
+const page = html => ({ok: true, status: 200, arrayBuffer: async () => new TextEncoder().encode(html).buffer});
 globalThis.fetch = async (url, opts) => {
   if (url === 'http://127.0.0.1:8765/queries/rutracker') return {ok: true, status: 200, json: async () => (
     {run: 'u', delayMs: 1, known: [], queries: [{q: 'South Park', lo: 2023, hi: null, need: ['4k', 'hdr', 'dub']}]})};
   if (url.startsWith('http://127.0.0.1:8765/ingest/')) { posted.push(JSON.parse(opts.body)); return {ok: true, status: 200}; }
+  // relogin mode: maintenance page, then a login page, then logged in again — the loop waits and goes on
+  if (outage-- > 0) return page(outage === 2 ? '<h1>Technical maintenance / технические работы</h1>' : '<input name="login_username">');
   if (url.includes('/tracker.php?nm=South+Park')) return resp(search);
   if (url.includes('/viewtopic.php?t=6731886')) return resp(topic);
   return resp(null, 404);
 };
 require(js);
 const msg = mode === 'url' ? __rtCollect({queriesUrl: 'http://127.0.0.1:8765/queries/rutracker'})
-  : __rtCollect({run: 't', delayMs: 1, known: [], maxTopics: 5,
+  : __rtCollect({run: 't', delayMs: 1, known: [], maxTopics: 5, waitPollMs: 5,
                  queries: [{q: 'South Park', lo: 2023, hi: null, need: ['4k', 'hdr', 'dub']}]});
 (async () => {
   for (let i = 0; i < 200 && !/^(done|stopped|crashed|no queries)/.test(__rtStatus().state || ''); i++) await new Promise(r => setTimeout(r, 50));
@@ -281,6 +288,32 @@ class TestCollectorLoop(unittest.TestCase):
         # the same through the bridge's job list (GET /queries/rutracker) — the mode run.js uses
         u = node(JS_LOOP, d / "search_south_park.html", d / "topic_6731886.html", "url")
         self.assertEqual((u["status"]["state"], u["status"]["run"], len(u["posted"])), ("done", "u", 2))
+        # maintenance → login page → back (owner, 2026-10-26: «там ещё и релогин нужен будет после тех работ»): the loop
+        # waits on the same request, reports «waiting» to the bridge, then finishes the query — nothing is lost
+        w = node(JS_LOOP, d / "search_south_park.html", d / "topic_6731886.html", "relogin")
+        self.assertEqual(w["status"]["state"], "done", w["status"])
+        states = [p["state"] for p in w["posted"] if p.get("kind") == "rutracker_status"]
+        self.assertEqual(states, ["waiting: maintenance", "waiting: not_logged_in", "waiting: not_logged_in"])
+        res = [p for p in w["posted"] if p.get("kind") == "rutracker" and not p.get("final")]
+        self.assertEqual((len(res), res[0]["errors"], [t["topic_id"] for t in res[0]["topics"]]), (1, [], ["6731886"]))
+
+    def test_resume_tail(self):
+        # owner, 2026-10-26: «если сбился … мы смогли и хвосты доказать»: never posted, failed and empty queries come back
+        cfg = {"run": "R", "queries": [{"q": "A", "lo": 2024, "hi": 2024}, {"q": "B", "lo": None, "hi": None},
+                                       {"q": "C", "lo": 2025, "hi": 2025}, {"q": "D", "lo": 2026, "hi": 2026}]}
+        pays = [{"run": "R", "query": {"q": "A", "lo": 2024, "hi": 2024}, "searches": [{"total": 3}], "errors": []},
+                {"run": "R", "query": {"q": "B", "lo": None, "hi": None}, "searches": [{"total": 0}], "errors": []},
+                {"run": "R", "query": {"q": "C", "lo": 2025, "hi": 2025}, "searches": [],
+                 "errors": [{"q": "C", "err": "not_logged_in"}]},
+                {"run": "OTHER", "query": {"q": "D", "lo": 2026, "hi": 2026}, "searches": [{"total": 9}], "errors": []}]
+        left, info = rt.resume_queries(cfg, pays)
+        self.assertEqual([q["q"] for q in left], ["B", "C", "D"])
+        self.assertEqual((info["done_ok"], info["left"]), (1, 3))
+        self.assertEqual([q["q"] for q in rt.resume_queries(cfg, pays, retry_empty=False)[0]], ["C", "D"])
+        # a resumed run «R-r1» that finished B and D: only C is left (cfg of the resume carries base = R)
+        more = [{"run": "R-r1", "query": {"q": "B", "lo": None, "hi": None}, "searches": [{"total": 2}], "errors": []},
+                {"run": "R-r1", "query": {"q": "D", "lo": 2026, "hi": 2026}, "searches": [{"total": 1}], "errors": []}]
+        self.assertEqual([q["q"] for q in rt.resume_queries(cfg, pays + more)[0]], ["C"])
 
 
 def payload_from_fixtures(sel_ids=("6731886", "6466056", "9000001"), seeds_delta: int = 0) -> dict:

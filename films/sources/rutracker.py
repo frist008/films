@@ -276,14 +276,18 @@ def known_topics(conn) -> list[int]:
 
 
 def write_run(queries: list[dict], known: list[int], max_topics: int = 40, delay_ms: int = 1500,
-              part_size: int = 800, out: Path = CACHE) -> dict:
-    """queries.json (full), queries_run.json (for the bridge), run.js (bridge mode), run_inline_N.js (fallback)."""
+              part_size: int = 800, out: Path = CACHE, run_id: str | None = None, base: str | None = None) -> dict:
+    """queries.json (full), queries_run.json (for the bridge), run.js (bridge mode), run_inline_N.js (fallback).
+    A resume (`run_id` «<base>-rN») keeps queries.json of the base run (it has the reasons) and records `base`."""
     out.mkdir(parents=True, exist_ok=True)
-    run = datetime.now().strftime("%Y%m%d-%H%M")
-    (out / "queries.json").write_text(json.dumps({"run": run, "queries": queries}, ensure_ascii=False, indent=1),
-                                      encoding="utf-8")
-    compact = [{k: q[k] for k in ("q", "lo", "hi", "need")} for q in queries]
+    run = run_id or datetime.now().strftime("%Y%m%d-%H%M")
+    if not base:
+        (out / "queries.json").write_text(json.dumps({"run": run, "queries": queries}, ensure_ascii=False, indent=1),
+                                          encoding="utf-8")
+    compact = [{k: q.get(k) for k in ("q", "lo", "hi", "need")} for q in queries]
     cfg = {"run": run, "queries": compact, "known": known, "maxTopics": max_topics, "delayMs": delay_ms}
+    if base:
+        cfg["base"] = base
     (out / "queries_run.json").write_text(json.dumps(cfg, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
     src = JS.read_text(encoding="utf-8")
     (out / "run.js").write_text(src + f"\n__rtCollect({{queriesUrl: {json.dumps(BRIDGE_QUERIES)}}});\n", encoding="utf-8")
@@ -299,6 +303,27 @@ def write_run(queries: list[dict], known: list[int], max_topics: int = 40, delay
             old.write_text("// superseded by a newer `queries` run\n", encoding="utf-8")
     return {"run": run, "queries": len(compact), "known": len(known), "run_js": str(out / "run.js"),
             "inline_parts": parts}
+
+
+def resume_queries(run_cfg: dict, payloads: list[dict], retry_empty: bool = True) -> tuple[list[dict], dict]:
+    """The tail of a run (owner, 2026-10-26: «надеюсь ру трекер скрипт работает чтобы если сбился … мы смогли и хвосты
+    доказать»): queries of `run_cfg` (queries_run.json) not finished cleanly by the payloads of that run and of its earlier
+    resumes (run ids `<base>`, `<base>-r1`, …) — never posted (stopped / closed tab), posted with a query-level error
+    (site down, fatal), or (retry_empty) with zero results in every search, since a maintenance page parsed as an empty
+    search before the collector knew it (2026-10-26)."""
+    base = str(run_cfg.get("base") or run_cfg.get("run") or "")
+    mine = [p for p in payloads if str(p.get("run") or "") == base or str(p.get("run") or "").startswith(base + "-r")]
+    ok = set()
+    for p in mine:
+        q = p.get("query") or {}
+        if p.get("final") or not q:
+            continue
+        failed = any(e.get("q") for e in p.get("errors") or [])
+        empty = bool(p.get("searches")) and all(not s.get("total") for s in p["searches"])
+        if not failed and not (retry_empty and empty):
+            ok.add((q.get("q"), q.get("lo"), q.get("hi")))
+    left = [q for q in run_cfg.get("queries") or [] if (q.get("q"), q.get("lo"), q.get("hi")) not in ok]
+    return left, {"base": base, "queries": len(run_cfg.get("queries") or []), "done_ok": len(ok), "left": len(left)}
 
 
 # --------------------------------------------------------------------------------------------
@@ -523,6 +548,22 @@ def main(argv: list[str]) -> None:
         res = write_run(qs, known_topics(conn), max_topics=opt("--max-topics", 40), delay_ms=opt("--delay-ms", 1500),
                         part_size=opt("--part-size", 800))
         print(json.dumps(res, ensure_ascii=False, indent=1))
+    elif cmd == "resume":
+        # tail of the last run: what it did not finish cleanly → a new run «<base>-rN» with fresh known topics; the
+        # owner pastes the new run.js (after relogin / maintenance). `--keep-empty`: do not re-ask zero-result queries.
+        cfg = json.loads((CACHE / "queries_run.json").read_text(encoding="utf-8"))
+        left, info = resume_queries(cfg, load_payloads(sorted(glob.glob(str(INGEST_DIR / "rutracker-*.txt")))),
+                                    retry_empty="--keep-empty" not in argv)
+        base = info["base"]
+        n = 1 + sum(1 for p in CACHE.glob(f"queries_run_{base}-r*.json"))
+        saved = CACHE / f"queries_run_{cfg.get('run')}.json"   # the run being replaced is kept, not overwritten
+        if not saved.exists():
+            saved.write_text(json.dumps(cfg, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+        res = write_run(left, known_topics(conn), max_topics=cfg.get("maxTopics", 40), delay_ms=cfg.get("delayMs", 1500),
+                        run_id=f"{base}-r{n}", base=base)
+        (CACHE / f"queries_run_{base}-r{n}.json").write_text((CACHE / "queries_run.json").read_text(encoding="utf-8"),
+                                                              encoding="utf-8")
+        print(json.dumps(dict(info, **res), ensure_ascii=False, indent=1))
     elif cmd == "ingest":
         args = [a for a in argv[1:] if not a.startswith("--")]
         paths = _ingest_paths(args, "--all" in argv)

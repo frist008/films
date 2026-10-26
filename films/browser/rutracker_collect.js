@@ -196,8 +196,11 @@
     return out;
   }
   function pageProblem(html) {
-    if (/cf-chl|challenge-platform|Just a moment|Один момент/i.test(html) && !/id="logged-in-username"/.test(html)) return 'cloudflare';
-    if (/name="login_username"/.test(html) && !/id="logged-in-username"/.test(html)) return 'not_logged_in';
+    const logged = /id="logged-in-username"/.test(html);
+    if (/cf-chl|challenge-platform|Just a moment|Один момент/i.test(html) && !logged) return 'cloudflare';
+    // maintenance / outage page (owner, 2026-10-26: «у ру трекера вроде есть время технических работ»): never a result
+    if (!logged && /техническ\S*\s+(работ|перерыв|причин)|временно\s+недоступ|temporarily\s+unavailable|maintenance/i.test(html)) return 'maintenance';
+    if (/name="login_username"/.test(html) && !logged) return 'not_logged_in';
     return null;
   }
 
@@ -216,9 +219,29 @@
     let last = 0;
     const delay = cfg.delayMs || 1500;
 
+    // Outages do not lose queries (owner, 2026-10-26: «у ру трекера вроде есть время технических работ», «там ещё и
+    // релогин нужен будет после тех работ»): a maintenance page, Cloudflare, a login page or the site being down (5xx /
+    // network) pauses the loop on the SAME request — state «waiting: …» (also posted to the bridge as rutracker_status,
+    // the watchdog shows it), a retry every waitPollMs (2 min) — and it goes on by itself once the site is back / the
+    // owner logged in again; only after waitHours (12 h) of waiting it stops as fatal.
+    async function pause(reason) {
+      const since = S.waitingSince || (S.waitingSince = Date.now());
+      if (Date.now() - since > (cfg.waitHours || 12) * 3600e3) {
+        const e = new Error(reason + ' (ждали ' + Math.round((Date.now() - since) / 60000) + ' мин)'); e.fatal = true; throw e;
+      }
+      S.state = 'waiting: ' + reason;
+      try {
+        await fetch((cfg.bridge || BRIDGE).replace(/\/ingest\/rutracker$/, '/ingest/rutracker_status'), { method: 'POST',
+          headers: { 'Content-Type': 'text/plain' },
+          body: JSON.stringify({ v: 1, kind: 'rutracker_status', run: S.run, state: S.state, since: new Date(since).toISOString(),
+                                 at: new Date().toISOString(), qDone: S.qDone, qTotal: S.qTotal }) });
+      } catch (e) { /* bridge down: the state is still in __rtStatus() */ }
+      await sleep(cfg.waitPollMs || 120000);
+    }
+
     async function get(url) {
       let err = null;
-      for (let a = 0; a < 4; a++) {
+      for (let a = 0; ; a++) {
         const wait = last + delay + Math.random() * 700 - Date.now();
         if (wait > 0) await sleep(wait);
         last = Date.now();
@@ -228,14 +251,26 @@
           if (r.ok) {
             const html = new TextDecoder('windows-1251').decode(await r.arrayBuffer());
             const p = pageProblem(html);
-            if (p) { const e = new Error(p); e.fatal = true; throw e; }
-            return html;
+            if (!p) {
+              if (S.waitingSince) { S.waitingSince = null; S.state = 'running'; }
+              return html;
+            }
+            if (cfg.waitOnProblem === false) { const e = new Error(p); e.fatal = true; throw e; }
+            await pause(p);
+            a = -1;
+            continue;
           }
           err = new Error('HTTP ' + r.status);
           if (r.status === 404) break;
         } catch (e) {
           if (e.fatal) throw e;
           err = e;
+        }
+        if (a >= 3) {                       // 4 tries failed: the site is down → wait for it instead of skipping the query
+          if (cfg.waitOnProblem === false) break;
+          await pause('down: ' + (err && err.message || 'fetch failed'));
+          a = -1;
+          continue;
         }
         await sleep(5000 * (a + 1));
       }
