@@ -166,7 +166,7 @@ def owner_table(now: float | None = None, logs: Path | None = None) -> str:
         rows.append(f"| {who} | {step[:70].replace('|', '/')} | {pct}% | {left} | {eta} | {state} |")
     if not rows:
         return f"Сторож {time.strftime('%H:%M')}: фоновых агентов нет."
-    return "\n".join([f"Сторож {time.strftime('%H:%M')} (проверка каждые 30 мин):", "",
+    return "\n".join([f"Сторож {time.strftime('%H:%M')} (проверка каждые 10 мин):", "",
                       "| Кто | Что делает | Готово | Осталось | Закончит | Состояние |", "|---|---|---|---|---|---|", *rows])
 
 

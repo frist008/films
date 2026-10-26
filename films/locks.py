@@ -7,7 +7,17 @@ be hit by two of them at once:
   youtube_http — YouTube search / watch pages: two trailer runs double the request rate (→ 429 / «sorry»);
   google_tv    — the Google TV watchlist (a second loop + a double press = the film removed);
   sheet        — rebuilding the Google Sheet (two writers mix tabs);
-  chrome       — Claude in Chrome: one agent at a time (the tab group is shared).
+  chrome       — Claude in Chrome: one agent at a time (the tab group is shared);
+  git          — the repository: index, commits, push (owner, 2026-10-26: «правило которое будет блокировать обращение к
+                 гиту вот так параллельно и чтобы не было гонок» — two background pushes raced: «cannot lock ref
+                 'refs/heads/main'»). Every git write goes through `python -m films.locks run git -- git …` (hook
+                 .claude/hooks/git-guard.sh blocks a bare one);
+  match        — `films match` rewrites release → title links (two at once fight over the same rows);
+  rutracker_run — `rutracker queries / resume` rewrite queries_run.json / run.js that the bridge serves;
+  backup       — `films.backup export` rewrites backup/ (read by the commit that follows: take it inside git).
+
+CLI: `python -X utf8 -m films.locks run NAME [--timeout S] -- CMD …` runs CMD holding NAME (waits for it, exit code
+passed through); `python -X utf8 -m films.locks status` — which locks are held, by whom.
 
 `lock(name)` — exclusive section (a file created with O_EXCL; a lock left by a dead process is taken over);
 `pace(name, seconds)` — a shared minimum interval between calls of all processes (a timestamp file under a lock).
@@ -60,6 +70,9 @@ def lock(name: str, timeout: float = 3600, poll: float = 0.5):
                 holder = json.loads(path.read_text() or "{}")
             except (OSError, ValueError):
                 holder = {}
+            if int(holder.get("pid") or 0) == os.getpid():   # re-entered by the same process: already ours
+                yield
+                return
             if not _alive(int(holder.get("pid") or 0)):
                 with contextlib.suppress(OSError):
                     path.unlink()          # a dead process left it
@@ -72,6 +85,31 @@ def lock(name: str, timeout: float = 3600, poll: float = 0.5):
     finally:
         with contextlib.suppress(OSError):
             path.unlink()
+
+
+def held() -> list[dict]:
+    """Locks held right now by a live process."""
+    out = []
+    for p in sorted(DIR.glob("*.lock")) if DIR.exists() else []:
+        try:
+            h = json.loads(p.read_text() or "{}")
+        except (OSError, ValueError):
+            h = {}
+        if _alive(int(h.get("pid") or 0)):
+            out.append({"name": p.stem, "pid": h.get("pid"), "since": time.strftime("%H:%M:%S", time.localtime(h.get("at", 0))),
+                        "cmd": h.get("cmd")})
+    return out
+
+
+def run(name: str, cmd: list[str], timeout: float = 3600) -> int:
+    """Run `cmd` holding `name` (the holder file records the command, for `status`)."""
+    import subprocess
+    with lock(name, timeout=timeout):
+        path = DIR / f"{name}.lock"
+        with contextlib.suppress(OSError, ValueError):
+            h = json.loads(path.read_text() or "{}")
+            path.write_text(json.dumps(dict(h, cmd=" ".join(cmd)[:200])))
+        return subprocess.run(cmd).returncode
 
 
 def pace(name: str, seconds: float) -> None:
@@ -87,3 +125,18 @@ def pace(name: str, seconds: float) -> None:
         if wait > 0:
             time.sleep(wait)
         last.write_text(str(time.time()))
+
+
+if __name__ == "__main__":
+    import sys
+    a = sys.argv[1:]
+    if a[:1] == ["run"] and "--" in a:
+        sep = a.index("--")
+        name = a[1]
+        t = float(a[a.index("--timeout") + 1]) if "--timeout" in a[:sep] else 3600
+        sys.exit(run(name, a[sep + 1:], timeout=t))
+    if a[:1] == ["status"]:
+        print(json.dumps(held(), ensure_ascii=False, indent=1))
+        sys.exit(0)
+    print(__doc__)
+    sys.exit(2)

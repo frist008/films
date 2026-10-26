@@ -846,7 +846,15 @@ def merge_redirected_titles(conn, log=print) -> dict:
 
 
 def match_releases(conn, retry_issues: bool = False) -> dict:
-    """Link every parsed, not-yet-linked release to its title(s)."""
+    """Link every parsed, not-yet-linked release to its title(s). A critical section: one at a time across processes
+    (semaphore `match`, films/locks.py — owner, 2026-10-26: «понять критические области и не пытаться с ними работать
+    параллельно»; sources and agents call it from their own runs)."""
+    from . import locks
+    with locks.lock("match", timeout=6 * 3600):
+        return _match_releases(conn, retry_issues)
+
+
+def _match_releases(conn, retry_issues: bool = False) -> dict:
     merged = merge_redirected_titles(conn, log=lambda *_: None)
     if retry_issues:
         # superseded, not deleted (nothing is deleted from the DB): the retry writes a fresh issue if it is still unmatched

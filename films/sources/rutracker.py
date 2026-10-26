@@ -538,6 +538,16 @@ def _ingest_paths(args: list[str], all_: bool) -> list[str]:
 
 def main(argv: list[str]) -> None:
     cmd = argv[0] if argv else "status"
+    if cmd in ("queries", "resume"):
+        # they rewrite queries_run.json / run.js that the bridge serves (2026-10-26: an agent's `resume` at 02:39 rewrote
+        # them while mine was planned) — one at a time
+        from .. import locks
+        with locks.lock("rutracker_run", timeout=1800):
+            return _main(argv, cmd)
+    return _main(argv, cmd)
+
+
+def _main(argv: list[str], cmd: str) -> None:
     conn = db.connect()
     db.migrate(conn)
     log = lambda m: print(m, file=sys.stderr, flush=True)  # noqa: E731
