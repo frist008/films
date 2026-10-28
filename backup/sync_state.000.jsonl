@@ -11,7 +11,7 @@
 ["jellyfin","2026-10-27 04:29:35","2026-10-24 18:32:45","{\"items\": {\"movie\": 310, \"series\": 15, \"season\": 17, \"episode\": 165}, \"items_with_imdb\": 397, \"played_movies\": 11, \"played_episodes\": 4, \"last_played\": \"2026-10-24 18:32:45\"}"]
 ["plex_mark","2026-10-27 09:54:43",null,"{\"title_id\": 5127, \"title\": \"Железное небо\", \"season\": null, \"plex\": [{\"where\": \"discover\", \"plexId\": \"5d7768356f4521001ea9c12e\", \"viewCount\": 1, \"viewState\": \"complete\", \"already\": false}], \"dry_run\": false, \"confirmed\": true, \"jellyfin\": []}"]
 ["jellyfin_to_plex","2026-10-27 04:31:16",null,"{\"movies\": 0, \"episodes\": 4, \"not_confirmed\": 0}"]
-["trailer_lang","2026-10-25 21:31:57",null,"{\"titles\": 378, \"confirmed_ru\": 353, \"no_speech\": 0, \"replaced\": 13, \"removed\": 2, \"unknown\": 10}"]
+["trailer_lang","2026-10-28 05:13:40",null,"{\"titles\": 254, \"confirmed_ru\": 163, \"no_speech\": 0, \"replaced\": 28, \"removed\": 49, \"unknown\": 14}"]
 ["qbittorrent","2026-10-25 18:24:46","2026-10-24 07:56:47","{\"linked_btih\": 56, \"linked_topic\": 1, \"linked_name\": 0, \"linked_tmdb\": 9, \"queued\": 65, \"complete\": 9, \"torrents\": 74, \"unlinked\": 8}"]
 ["watchlist","2026-10-28 02:33:31",null,"{\"items\": 56, \"matched\": 56, \"ambiguous\": 0, \"not_found\": 0, \"titles\": 136}"]
 ["watchlist_releases","2026-10-25 18:32:30",null,"{\"queries\": 350, \"rows\": 4387, \"new\": 0}"]
