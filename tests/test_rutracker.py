@@ -297,6 +297,25 @@ class TestCollectorLoop(unittest.TestCase):
         res = [p for p in w["posted"] if p.get("kind") == "rutracker" and not p.get("final")]
         self.assertEqual((len(res), res[0]["errors"], [t["topic_id"] for t in res[0]["topics"]]), (1, [], ["6731886"]))
 
+    def test_sync_points_and_since(self):
+        # R207 / R212 (owner, 2026-10-26: «фильтр на сканер только на новые от даты последнего сканирования»): a clean
+        # payload moves its query's point to the newest registration it saw; a failed one does not; `since` = point − 2 days
+        import tempfile
+        st = Path(tempfile.mkdtemp()) / "state.json"
+        q1, q2 = {"q": "Dune", "lo": 2024, "hi": 2024}, {"q": "Alien", "lo": 2024, "hi": 2024}
+        pays = [{"run": "R", "query": q1, "errors": [], "searches": [{"rows": [{"t": "1", "added": 1700000000},
+                                                                              {"t": "2", "added": 1760000000}]}]},
+                {"run": "R", "query": q2, "errors": [{"q": "Alien", "err": "down: HTTP 502"}], "searches": []},
+                {"run": "R", "final": True}]
+        self.assertEqual(rt.record_sync(pays, st), 1)
+        qs = rt.with_since([dict(q1, need=["any"]), dict(q2, need=["any"])], st)
+        self.assertEqual(qs[0]["since"], 1760000000 - 2 * 86400)
+        self.assertNotIn("since", qs[1])                     # never synced cleanly → full search
+        self.assertNotIn("since", rt.with_since([q1], st, full=True)[0])
+        # an older run never moves the point back
+        rt.record_sync([{"query": q1, "errors": [], "searches": [{"rows": [{"t": "3", "added": 1600000000}]}]}], st)
+        self.assertEqual(rt.with_since([q1], st)[0]["since"], 1760000000 - 2 * 86400)
+
     def test_resume_tail(self):
         # owner, 2026-10-26: «если сбился … мы смогли и хвосты доказать»: never posted, failed and empty queries come back
         cfg = {"run": "R", "queries": [{"q": "A", "lo": 2024, "hi": 2024}, {"q": "B", "lo": None, "hi": None},

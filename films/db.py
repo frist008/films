@@ -3,6 +3,7 @@
 Schema changes go through MIGRATIONS (append-only); PRAGMA user_version tracks the applied count.
 JSON columns are TEXT holding JSON arrays/objects.
 """
+import re
 import sqlite3
 from pathlib import Path
 
@@ -699,7 +700,43 @@ MIGRATIONS = [
     """
     ALTER TABLE titles ADD COLUMN episode_dates TEXT;
     """,
+    # 22: R206 (owner, 2026-10-26: «https://toloka.to/ https://mazepa.to/index.php ещё 2 источника укр мовных … добавь их по
+    # приоритету 3 и 4 источником») — releases.source also 'toloka' / 'mazepa'. A callable: the CHECK of `releases` is
+    # widened in place (see _widen_release_sources), no table rebuild.
+    lambda conn: _widen_release_sources(conn, ("rutor", "rutracker", "toloka", "mazepa")),
+    # 23: R208, R221 (owner, 2026-10-26: «rustorka … ещё один источник», «ещё источники после ру трекера … nnmclub.to и
+    # kinozal.guru») — the live DB was widened by the source modules (ensure_source); this keeps a fresh DB the same.
+    lambda conn: _widen_release_sources(conn, ("nnmclub", "kinozal", "rustorka")),
 ]
+
+
+def _widen_release_sources(conn: sqlite3.Connection, sources: tuple[str, ...]) -> None:
+    """Allow more values in `releases.source` (CHECK (source IN (…))) without rebuilding the 1+ GB table: SQLite's
+    documented way for a constraint every existing row already satisfies («Making Other Kinds Of Table Schema Changes»,
+    sqlite.org/lang_altertable.html): edit the CREATE TABLE text in sqlite_schema and bump schema_version in one
+    transaction. Other open connections re-read the schema on their next statement."""
+    sql = conn.execute("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'releases'").fetchone()[0]
+    m = re.search(r"CHECK \(source IN \(([^)]*)\)\)", sql)
+    if not m:
+        return
+    have = [x.strip().strip("'") for x in m.group(1).split(",")]
+    want = have + [s for s in sources if s not in have]
+    if want == have:
+        return
+    new = sql[: m.start()] + "CHECK (source IN (" + ", ".join(f"'{s}'" for s in want) + "))" + sql[m.end():]
+    conn.commit()
+    conn.execute("PRAGMA writable_schema = ON")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        v = conn.execute("PRAGMA schema_version").fetchone()[0]
+        conn.execute("UPDATE sqlite_master SET sql = ? WHERE type = 'table' AND name = 'releases'", (new,))
+        conn.execute(f"PRAGMA schema_version = {v + 1}")
+        conn.execute("COMMIT")
+    except Exception:
+        conn.execute("ROLLBACK")
+        raise
+    finally:
+        conn.execute("PRAGMA writable_schema = OFF")
 
 
 def years() -> list[int]:
@@ -752,7 +789,10 @@ def connect(path: Path = DB_PATH) -> sqlite3.Connection:
 def migrate(conn: sqlite3.Connection) -> int:
     version = conn.execute("PRAGMA user_version").fetchone()[0]
     for i, sql in enumerate(MIGRATIONS[version:], start=version + 1):
-        conn.executescript(sql)
+        if callable(sql):
+            sql(conn)
+        else:
+            conn.executescript(sql)
         conn.execute(f"PRAGMA user_version = {i}")
         conn.commit()
     return len(MIGRATIONS)

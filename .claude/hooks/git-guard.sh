@@ -22,6 +22,18 @@ for m in re.finditer(r"(?<![\w./-])git(?:\.exe)?((?:\s+-[cC]\s+(?:\"[^\"]*\"|\x2
     if re.search(r"films\.locks\s+run\s+git\b[^\n]*--\s*$", seg.strip() + " ") or re.search(r"films\.locks\s+run\s+git\b.*--", seg):
         continue
     bare.append(m.group(0).strip()[:60])
+import os
+stage = None
+try:
+    stage = json.load(open(os.path.join(os.environ.get("CLAUDE_PROJECT_DIR", "."), "data", "cache", "locks", "stage.json"), encoding="utf-8"))
+except (OSError, ValueError):
+    pass
+if stage and re.search(r"(?<![\w./-])git(?:\.exe)?(?:\s+-[cC]\s+\S+)*\s+(commit|push)\b", cmd):
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
+        "permissionDecisionReason": "Открыт этап плана «" + str(stage.get("stage")) + "» (с " + str(stage.get("started")) + "): коммит и пуш — только по "
+        "окончании этапа (владелец 2026-10-26: «комит и пуш только на этап плана можно, не чаще»). Закончил этап — "
+        "`python -X utf8 -m films.stage done`, потом коммит и пуш под семафором git."}}, ensure_ascii=False))
+    sys.exit(0)
 if bare:
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
         "permissionDecisionReason": "git — критическая область: только через семафор `python -X utf8 -m films.locks run git -- git …` "

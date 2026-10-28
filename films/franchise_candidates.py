@@ -24,11 +24,13 @@ def listed_titles(conn) -> dict[int, str]:
     """title_id → which list(s) it comes from."""
     src: dict[int, set] = defaultdict(set)
     for t, m in kostya_list.markers_by_title().items():
+        if m == "possible":   # 🔵 «возможно» makes no franchise (owner, 2026-10-27: «Для возможно не должен»)
+            continue
         src[t].add(f"список Кости {kostya_list.SYMBOL.get(m, '')}")
     for t in watchlist.title_ids():
         src[t].add("сериалы «хочу»")
-    for (t,) in conn.execute("SELECT title_id FROM responsibility WHERE person = 'Дима' AND source = 'manual'"):
-        src[t].add("комедии Димы")
+    # Dima's list never makes a franchise (owner, 2026-10-27: «Список Димы это список который он не видел. Он никак не
+    # влияет на франшизы» — Мэдея, Ветеран, МакМаллены, «Семейный план» had come in from it)
     return {t: ", ".join(sorted(v)) for t, v in src.items()}
 
 

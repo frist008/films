@@ -230,7 +230,7 @@ CREATE TABLE release_titles (
 CREATE TABLE releases (
         id            INTEGER PRIMARY KEY,
         title_id      INTEGER REFERENCES titles(id),   -- NULL until matched
-        source        TEXT NOT NULL CHECK (source IN ('rutor', 'rutracker')),
+        source        TEXT NOT NULL CHECK (source IN ('rutor', 'rutracker', 'toloka', 'mazepa', 'rustorka', 'nnmclub', 'kinozal')),
         source_id     TEXT NOT NULL,
         url           TEXT NOT NULL,
         btih          TEXT,
@@ -382,7 +382,7 @@ CREATE TABLE titles (
         no_dub_needed    INTEGER NOT NULL DEFAULT 0,  -- manual: no dialogue / voiceover not needed
         created_at       TEXT NOT NULL DEFAULT (datetime('now')),
         updated_at       TEXT NOT NULL DEFAULT (datetime('now'))
-    , country_codes TEXT, release_date_kind TEXT, trailer_ru_source TEXT, trailer_ru_subtitled INTEGER, collection_id INTEGER, tmdb_checked_at TEXT, trailer_ru_check TEXT, trailer_ru_checked_at TEXT, trailer_alt_url TEXT, trailer_alt_kind TEXT, trailer_alt_source TEXT, distributor TEXT, distributor_country TEXT, distributors TEXT, keywords TEXT, is_miniseries INTEGER, cameras TEXT, film_format TEXT, color TEXT, filming_locations TEXT, original_language TEXT, spoken_languages TEXT, homepage TEXT, wikidata_id TEXT, wiki_links TEXT, meta_checked_at TEXT, duplicate_of INTEGER REFERENCES titles(id), imdb_id_wrong TEXT, tracker_only INTEGER NOT NULL DEFAULT 0, tracker_meta TEXT, identify_checked_at TEXT, poster_release_id INTEGER REFERENCES releases(id), poster_alive_at TEXT);
+    , country_codes TEXT, release_date_kind TEXT, trailer_ru_source TEXT, trailer_ru_subtitled INTEGER, collection_id INTEGER, tmdb_checked_at TEXT, trailer_ru_check TEXT, trailer_ru_checked_at TEXT, trailer_alt_url TEXT, trailer_alt_kind TEXT, trailer_alt_source TEXT, distributor TEXT, distributor_country TEXT, distributors TEXT, keywords TEXT, is_miniseries INTEGER, cameras TEXT, film_format TEXT, color TEXT, filming_locations TEXT, original_language TEXT, spoken_languages TEXT, homepage TEXT, wikidata_id TEXT, wiki_links TEXT, meta_checked_at TEXT, duplicate_of INTEGER REFERENCES titles(id), imdb_id_wrong TEXT, tracker_only INTEGER NOT NULL DEFAULT 0, tracker_meta TEXT, identify_checked_at TEXT, poster_release_id INTEGER REFERENCES releases(id), poster_alive_at TEXT, title_uk_source TEXT, episode_dates TEXT);
 CREATE TABLE tmdb_raw (
         kind        TEXT NOT NULL,                   -- movie / tv / season / collection / person / find / search
         key         TEXT NOT NULL,                   -- tmdb id, "tv_id/season", imdb id, or query string

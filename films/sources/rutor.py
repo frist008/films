@@ -425,7 +425,11 @@ def collect(conn, incremental: bool = False) -> dict:
         walk = walk_category(conn, cat, category, years, stop_at_known=3 if incremental else 0)
         # releases bumped to the top (re-dated on update) while we were walking deeper
         rewalk = walk_category(conn, cat, category, years, stop_at_known=2)
-        result[category] = {"walk": walk, "rewalk": rewalk, "sweep": search_sweep(conn, cat, category, years)}
+        # the full search sweep re-reads every year × quality slice: only on a full run (owner, 2026-10-26: «для всех
+        # источников достаточно смотреть обновления только с последней даты … успешной синхронизации»); the incremental
+        # walk (newest first, stop after pages with nothing new) already covers what appeared since
+        sweep = {"skipped": "incremental"} if incremental else search_sweep(conn, cat, category, years)
+        result[category] = {"walk": walk, "rewalk": rewalk, "sweep": sweep}
     return result
 
 

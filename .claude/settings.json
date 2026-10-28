@@ -109,6 +109,26 @@
         ]
       },
       {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/owner-action-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude-in-chrome__tabs_close_mcp",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/tab-close-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
         "matcher": "mcp__visualize__show_widget",
         "hooks": [
           {

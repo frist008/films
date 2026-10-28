@@ -27,7 +27,7 @@ OAuth-клиент из проекта на <google.cloud> авторизует 
 | Plex-токен | не хранится | читается из реестра Windows на машине с Plex |
 
 Claude не вписывает ключи/токены в веб-формы и не может прочитать их со страниц (Chrome их блокирует) —
-значения в Keep вставляет владелец; Claude только создаёт шаблон заметки и кладёт значения в `.env`/`secrets/`,
+значения в Keep Claude не вписывает (ограничение Claude на ключи в веб-формах); Claude создаёт шаблон заметки и кладёт значения в `.env`/`secrets/`,
 когда владелец даёт их в чате или файле.
 
 ## Новая машина / другой Claude-аккаунт
@@ -41,7 +41,7 @@ Claude не вписывает ключи/токены в веб-формы и �
    кроме кэшей сторонних сайтов). Кэши заполняются заново: `python -X utf8 -m films ratings all` (датасеты IMDb + RT),
    `python -X utf8 -m films enrich` (TMDB), `python -X utf8 -m films rutor …` (страницы раздач → разбор). Пустую базу без копии — `python -X utf8 -m films init-db`.
 4. Plex-токен — из реестра Windows машины с Plex (в файлы не пишется); Jellyfin — копия `jellyfin.db` (`films link jellyfin`).
-5. Chrome залогинен под владельцем (Google, YouTube, rutracker); первые JS-вызовы на сайте владелец подтверждает «Allow».
+5. Chrome залогинен под владельцем (Google, YouTube, rutracker); первые JS-вызовы на сайте показывают окно разрешения расширения.
 6. Читать CLAUDE.md, скил owner-rules и PLAN.md (раздел «При следующем обновлении базы»), дальше — по скилам.
 
 ## История (2026-10-23)
@@ -58,4 +58,9 @@ Claude не вписывает ключи/токены в веб-формы и �
 
 ## Публикация OAuth-приложения (privacy policy)
 
-Страница политики конфиденциальности — GitHub Pages репозитория (Settings → Pages → `main`, `/docs`): `https://<логин GitHub>.github.io/films/privacy` (главная — `…/films/`). Включено 2026-10-25. Дальше — владелец: подтвердить домен `<логин GitHub>.github.io` в Google Search Console (аккаунт <google.cloud>) и в консоли GCP `films-db` → OAuth consent screen указать главную и privacy, затем «Publish app».
+Страница политики конфиденциальности — GitHub Pages репозитория (Settings → Pages → `main`, `/docs`): `https://<логин GitHub>.github.io/films/privacy` (главная — `…/films/`). Включено 2026-10-25. **2026-10-26 (Claude в Chrome, аккаунт <google.cloud>):** Google Auth Platform → Branding — главная
+`https://<логин GitHub>.github.io/films/`, privacy `…/films/privacy`, разрешённый домен `<логин GitHub>.github.io` → Save;
+Audience → «Publish app» → «Push to production» → статус **In production**. Без проверки Google (не нужна для своего
+аккаунта: при входе — экран «unverified app», «Продолжить»). Токен, выданный после публикации, больше не сбрасывается раз
+в 7 дней; токен, полученный ещё в режиме Testing, доживает свой срок — следующий вход OAuth уже выдаст постоянный.
+Search Console нужен только для проверки приложения Google (verification) — не делалось, не требуется.

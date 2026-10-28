@@ -284,7 +284,8 @@ def write_run(queries: list[dict], known: list[int], max_topics: int = 40, delay
     if not base:
         (out / "queries.json").write_text(json.dumps({"run": run, "queries": queries}, ensure_ascii=False, indent=1),
                                           encoding="utf-8")
-    compact = [{k: q.get(k) for k in ("q", "lo", "hi", "need")} for q in queries]
+    compact = [{k: q.get(k) for k in ("q", "lo", "hi", "need", "since") if k != "since" or q.get("since")}
+               for q in queries]
     cfg = {"run": run, "queries": compact, "known": known, "maxTopics": max_topics, "delayMs": delay_ms}
     if base:
         cfg["base"] = base
@@ -378,6 +379,58 @@ def _upsert(conn, t: str, name: str, category: str, row: dict, topic: dict | Non
            VALUES ('rutracker', ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
         (t, topic_url(t), btih, name, category, added, size, seeds, leech))
     return cur.lastrowid, True
+
+
+STATE = CACHE / "state.json"
+SINCE_OVERLAP = 2 * 86400
+
+
+def _qkey(q: dict) -> str:
+    return f"{_norm(q.get('q'))}|{q.get('lo')}|{q.get('hi')}"
+
+
+def record_sync(payloads: list[dict], path: Path = STATE) -> int:
+    """The last successful sync of every query (R207 / R212, owner 2026-10-26: «поставим фильтр на сканер только на новые
+    от даты последнего сканирования», «для всех источников достаточно смотреть обновления только с последней даты … об
+    успешной синхронизации»): a payload without a query-level error moves its point to the newest registration time it saw
+    (rutracker's `added`, unix seconds). A failed query keeps the old point."""
+    try:
+        st = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        st = {}
+    pts = st.setdefault("queries", {})
+    n = 0
+    for p in payloads:
+        q = p.get("query") or {}
+        if p.get("final") or not q or any(e.get("q") for e in p.get("errors") or []):
+            continue
+        newest = max((int(r["added"]) for s in p.get("searches") or [] for r in s.get("rows") or [] if r.get("added")), default=0)
+        k = _qkey(q)
+        old = pts.get(k) or {}
+        pts[k] = {"at": p.get("at"), "newest": max(newest, int(old.get("newest") or 0))}
+        n += 1
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(st, ensure_ascii=False, indent=0), encoding="utf-8")
+    return n
+
+
+def with_since(queries: list[dict], path: Path = STATE, full: bool = False) -> list[dict]:
+    """Queries with a sync point get `since` = its newest registration time minus 2 days: the collector then searches
+    newest first and stops below it (a query never synced, or `--full`, is searched in full)."""
+    try:
+        pts = json.loads(path.read_text(encoding="utf-8")).get("queries", {})
+    except (OSError, ValueError):
+        pts = {}
+    out = []
+    for q in queries:
+        q = dict(q)
+        p = pts.get(_qkey(q))
+        if not full and p and p.get("newest"):
+            q["since"] = int(p["newest"]) - SINCE_OVERLAP
+        else:
+            q.pop("since", None)
+        out.append(q)
+    return out
 
 
 def ingest(conn, payloads: list[dict]) -> dict:
@@ -554,7 +607,8 @@ def _main(argv: list[str], cmd: str) -> None:
     if cmd == "queries":
         extras = [argv[i + 1] for i, a in enumerate(argv) if a == "--extra" and i + 1 < len(argv)]
         opt = lambda k, d: int(argv[argv.index(k) + 1]) if k in argv else d  # noqa: E731
-        qs = build_queries(conn, extras, opt("--limit", None), log=log)
+        qs = with_since(build_queries(conn, extras, opt("--limit", None), log=log), full="--full" in argv)
+        log(f"  incremental: {sum(1 for q in qs if q.get('since'))} of {len(qs)} queries have a sync point")
         res = write_run(qs, known_topics(conn), max_topics=opt("--max-topics", 40), delay_ms=opt("--delay-ms", 1500),
                         part_size=opt("--part-size", 800))
         print(json.dumps(res, ensure_ascii=False, indent=1))
@@ -569,7 +623,9 @@ def _main(argv: list[str], cmd: str) -> None:
         saved = CACHE / f"queries_run_{cfg.get('run')}.json"   # the run being replaced is kept, not overwritten
         if not saved.exists():
             saved.write_text(json.dumps(cfg, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-        res = write_run(left, known_topics(conn), max_topics=cfg.get("maxTopics", 40), delay_ms=cfg.get("delayMs", 1500),
+        # `--delay-ms N`: a slower pace for the tail (R231: Cloudflare checks repeated → slow down)
+        delay = int(argv[argv.index("--delay-ms") + 1]) if "--delay-ms" in argv else cfg.get("delayMs", 1500)
+        res = write_run(left, known_topics(conn), max_topics=cfg.get("maxTopics", 40), delay_ms=delay,
                         run_id=f"{base}-r{n}", base=base)
         (CACHE / f"queries_run_{base}-r{n}.json").write_text((CACHE / "queries_run.json").read_text(encoding="utf-8"),
                                                               encoding="utf-8")
@@ -577,7 +633,9 @@ def _main(argv: list[str], cmd: str) -> None:
     elif cmd == "ingest":
         args = [a for a in argv[1:] if not a.startswith("--")]
         paths = _ingest_paths(args, "--all" in argv)
-        st = ingest(conn, load_payloads(paths))
+        pays = load_payloads(paths)
+        st = ingest(conn, pays)
+        st["sync_points"] = record_sync(pays)
         st["files"] = len(paths)
         CACHE.mkdir(parents=True, exist_ok=True)
         done = set(json.loads(DONE_LIST.read_text(encoding="utf-8"))) if DONE_LIST.exists() else set()

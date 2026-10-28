@@ -63,9 +63,28 @@ def set_gate(key: str, value: str) -> None:
 
 def yana_sync(conn, unseen: list[dict], seen: list[dict]) -> str:
     """Survey items (seen_survey batch entries) → Яна's list: unseen cartoons in, seen cartoons out."""
+    with open(db.ROOT / "config" / "settings.toml", "rb") as f:
+        # DC / Marvel / Star Wars … — never Яна (owner, 2026-10-24: «она ими не увлекается»); the survey added two DC
+        # cartoons to her list on 2026-10-27 because only `animation` was looked at here
+        yana = tomllib.load(f).get("responsible", {}).get("yana", {})
+        excluded = set(yana.get("exclude_franchises") or [])
+        excluded_imdb = set(yana.get("exclude_imdb") or [])   # single cartoons the owner took for himself
     with open(db.ROOT / "config" / "franchises.toml", "rb") as f:
-        # «интересны мне, Яне не интересны» and anime franchises (the owner's own: Покемоны, Тетрадь смерти…)
-        owner_only = {fr["name"] for fr in tomllib.load(f)["franchise"] if fr.get("animation") == "ask_owner" or fr.get("anime")}
+        frs = tomllib.load(f)["franchise"]
+    # Яна gets cartoons only where the owner said so («Без вопроса владельцу ничего Яне не отдавать» — owner-survey): the
+    # gate answer «интересны, и Яне» (animation = "ask") or a franchise that is a cartoon itself (Тачки, Шрек…).
+    # 2026-10-27 the survey gave her ten anime films of game franchises (Street Fighter, Persona…) nobody asked about.
+    try:
+        from .franchise_seen import _ANIMATED_FR, hide_excluded_series
+        if not _ANIMATED_FR and conn is not None:
+            hide_excluded_series(conn)   # fills _ANIMATED_FR
+        from .franchise_seen import _ANIMATED_FR as cartoon_fr
+    except Exception:   # noqa: BLE001 — no DB (tests): only the explicit gate answer counts
+        cartoon_fr = set()
+    for_yana = {fr["name"] for fr in frs if fr["key"] not in excluded and not fr.get("anime")
+                and (fr.get("animation") == "ask" or (fr["key"] in cartoon_fr and not fr.get("animation")
+                                                      and fr.get("source") != "games"))}   # game adaptations: anime, not kids
+    owner_only = {fr["name"] for fr in frs} - for_yana
     p = db.ROOT / "config" / "yana.toml"
     s = p.read_text(encoding="utf-8")
     blocks = re.split(r"(?=\[\[title\]\])", s)
@@ -74,7 +93,9 @@ def yana_sync(conn, unseen: list[dict], seen: list[dict]) -> str:
     add = []
     for w in unseen:
         imdb = w["imdb_id"].split("#")[0]
-        if not w["desc"].startswith(("мультфильм", "мультсериал")) or f'imdb_id = "{imdb}"' in s \
+        # feature cartoons only: Яна gets nothing shorter («Только полнометражное» — CLAUDE.md; 2026-10-27 the survey put
+        # «Кастлвания» (18+), «Среди нас» and a motion comic into her list)
+        if not w["desc"].startswith("мультфильм") or f'imdb_id = "{imdb}"' in s or imdb in excluded_imdb \
                 or any(n in owner_only for n in w["franchise"].split(" / ")) \
                 or any(f'imdb_id = "{imdb}"' in a for a in add):
             continue

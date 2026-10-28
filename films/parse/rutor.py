@@ -1584,6 +1584,10 @@ def _studio_from_text(text: str, known: list[str]) -> str | None:
             break
     if best:
         return canonical_studio(best)
+    # «1+1» — the Ukrainian channel / dubbing studio (toloka logo «1+1.gif», 2026-10-26): the age-mark rule below («16+»,
+    # «18+») would eat it as a number
+    if re.search(r"(?<![\w+])1\s*\+\s*1(?![\w+])", t):
+        return "1+1"
     s = _TECH_STRIP.sub(" ", t)
     for rx, _ in _LANG_WORD_RES:
         s = rx.sub(" ", s)

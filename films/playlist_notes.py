@@ -590,6 +590,8 @@ if __name__ == "__main__":
     if cmd == "build":
         print(json.dumps(build(c), ensure_ascii=False, indent=1))
     elif cmd == "desired":
+        from . import gate
+        gate.require_sheet()       # YouTube only after the sheet built through the gate (owner, 2026-10-26)
         d = desired(db.connect())
         print(DESIRED.with_suffix(".js").read_text(encoding="utf-8") if "--js" in args else
               json.dumps({**{k: len(v) for k, v in d["playlists"].items()}, "bad_videos": len(d["bad_videos"])}))

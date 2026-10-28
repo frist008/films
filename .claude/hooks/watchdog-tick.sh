@@ -9,10 +9,10 @@ root="${CLAUDE_PROJECT_DIR:-.}"
 stamp="$root/data/cache/locks/watchdog.last"
 now=$(date +%s)
 last=$(cat "$stamp" 2>/dev/null || echo 0)
-[ $((now - last)) -lt 600 ] && exit 0   # every 10 minutes (owner, 2026-10-26 05:00: «сделай опять сторожевой таймер 10минут»; 30 min 02:20–05:00)
+[ $((now - last)) -lt 1800 ] && exit 0   # every 30 min (owner, 2026-10-27 00:35: «Давай сторожа раз в пол часа»)
 echo "$now" > "$stamp"
 rep=$(cd "$root" && python -X utf8 -m films.watchdog 2>&1 | head -40)
 own=$(cd "$root" && python -X utf8 -m films.watchdog --table 2>&1 | head -15)  # table: who, what, done, left, finishes, state (2026-10-26)
 printf '%s\n' "$own" >> "$root/data/logs/watchdog_owner.log"
-python -X utf8 -c 'import json,sys; print(json.dumps({"systemMessage": sys.argv[2], "hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": "Проверка сторожа (раз в 10 мин, правило владельца; у агентов — процент и прогноз окончания): " + sys.argv[1] + "\nВладельцу короткий отчёт показан системным сообщением; в следующем своём сообщении повтори его одной-двумя строками. Зависшее — SendMessage/TaskStop/перезапуск, запись в PLAN.md."}}, ensure_ascii=False))' "$rep" "$own"
+python -X utf8 -c 'import json,sys; print(json.dumps({"systemMessage": sys.argv[2], "hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": "Проверка сторожа (раз в 30 минут, правило владельца; у агентов — процент и прогноз окончания): " + sys.argv[1] + "\nВладельцу короткий отчёт показан системным сообщением; в следующем своём сообщении повтори его одной-двумя строками. Зависшее — SendMessage/TaskStop/перезапуск, запись в PLAN.md."}}, ensure_ascii=False))' "$rep" "$own"
 exit 0

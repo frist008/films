@@ -70,6 +70,22 @@ def imdb_ratings(conn) -> dict:
             "seasons_episode_mean": len(acc), "episodes_used": sum(len(v) for v in acc.values())}
 
 
+def season_means(pairs: set[tuple[str, int]]) -> dict[tuple[str, int], tuple[float, int]]:
+    """(series tconst, season) → (mean episode rating, total votes) from the datasets — the same as titles.imdb_season_rating,
+    for seasons that have no title row yet (the «что видел» survey: owner 2026-10-27 «У каждого сезона своя» оценка)."""
+    parents = {p for p, _ in pairs}
+    ep_season: dict[str, tuple[str, int]] = {}
+    for tconst, parent, season, _ep in _tsv("title.episode.tsv.gz"):
+        if parent in parents and season != "\\N" and (parent, int(season)) in pairs:
+            ep_season[tconst] = (parent, int(season))
+    acc: dict[tuple[str, int], list] = {}
+    for tconst, rating, votes in _tsv("title.ratings.tsv.gz"):
+        key = ep_season.get(tconst)
+        if key:
+            acc.setdefault(key, []).append((float(rating), int(votes)))
+    return {k: (round(sum(r for r, _ in v) / len(v), 1), sum(n for _, n in v)) for k, v in acc.items()}
+
+
 def _people(conn, title_id: int) -> list[str]:
     rows = conn.execute("""SELECT p.name FROM credits c JOIN people p ON p.id = c.person_id WHERE c.title_id = ?
                            ORDER BY CASE c.role WHEN 'director' THEN 0 WHEN 'actor' THEN 1 ELSE 2 END, c.ord LIMIT 5""",
@@ -156,6 +172,10 @@ def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30, never_c
         rows = rows[:limit]
     stats = {"titles": len(rows), "matched": 0, "with_scores": 0, "ambiguous": 0, "not_found": 0, "errors": 0}
     for i, (tid, kind, season, series_imdb, t_orig, t_lat, t_ru, t_uk, year) in enumerate(rows, 1):
+        # progress before the title, not after it: `continue` below skipped the line at i % 100 == 0, and the watchdog
+        # saw «НЕТ ДВИЖЕНИЯ» on a working run (2026-10-27)
+        if i > 1 and (i - 1) % 100 == 0:
+            print(f"  rt {i - 1}/{len(rows)} {stats}", file=sys.stderr, flush=True)
         try:
             series_start = None
             if kind == "series" and series_imdb:
@@ -204,6 +224,4 @@ def rt_ratings(conn, limit: int | None = None, recheck_days: float = 30, never_c
         except Exception as e:  # noqa: BLE001 — one bad page must not stop a 4000-title run; counted and logged
             stats["errors"] += 1
             print(f"  RT ERROR title {tid}: {e!r}", file=sys.stderr, flush=True)
-        if i % 100 == 0:
-            print(f"  rt {i}/{len(rows)} {stats}", file=sys.stderr, flush=True)
     return stats

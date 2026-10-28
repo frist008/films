@@ -288,8 +288,11 @@
       return false;
     }
 
-    async function search(q, payload) {
-      const enc = enc1251(q);
+    // Only what is new since the last successful sync of this query (R207 / R212, owner 2026-10-26: «поставим фильтр на
+    // сканер только на новые от даты последнего сканирования»): with `since` (unix seconds, set by Python) the search is
+    // sorted by registration date, newest first (o=1&s=2), and paging stops at the first page whose rows are all older.
+    async function search(q, payload, since) {
+      const enc = enc1251(q) + (since ? '&o=1&s=2' : '');
       const first = await get(`${BASE}/tracker.php?nm=${enc}`);
       const p = parseSearch(first);
       const res = { q, total: p.total, capped: p.total >= CAP, pages: 1, rows: p.rows };
@@ -300,6 +303,7 @@
       const n = Math.min(p.total, CAP);
       for (let start = PER_PAGE; start < n && !S.stop; start += PER_PAGE) {
         const url = p.searchId ? `${BASE}/tracker.php?search_id=${p.searchId}&start=${start}` : `${BASE}/tracker.php?nm=${enc}&start=${start}`;
+        if (since && res.rows.length && res.rows.slice(-PER_PAGE).every(r => r.added && r.added < since)) { res.sinceStop = true; break; }
         const pp = parseSearch(await get(url));
         res.pages++;
         if (!pp.rows.length) break;
@@ -321,15 +325,15 @@
         const payload = { v: 1, kind: 'rutracker', run: S.run, seq: i, query: q, searches: [], topics: [], errors: [],
                           at: new Date().toISOString() };
         try {
-          const s = await search(q.q, payload);
+          const s = await search(q.q, payload, q.since);
           payload.searches.push(s);
           if (s.capped && cfg.split !== false) {
-            for (const sub of splitQueries(q)) { if (S.stop) break; payload.searches.push(await search(sub, payload)); }
+            for (const sub of splitQueries(q)) { if (S.stop) break; payload.searches.push(await search(sub, payload, q.since)); }
           }
           const cand = new Map();
           for (const sr of payload.searches) {
             for (const r of sr.rows) {
-              r.sel = select(r, q) ? 1 : 0;
+              r.sel = select(r, q) && !(q.since && r.added && r.added < q.since) ? 1 : 0;   // older than the sync point: known
               if (r.sel && !known.has(r.t) && !seen.has(r.t)) cand.set(r.t, r);
             }
           }

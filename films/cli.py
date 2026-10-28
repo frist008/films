@@ -110,9 +110,13 @@ def cmd_sheet(args):
         print("signed in as the owner" if email == expected else f"WRONG ACCOUNT: signed in as {email}")
     else:
         import json
+        from . import gate
+        gate.require_db()          # all pages of all sources, no open questions — only then the sheet (owner, 2026-10-26)
         conn = db.connect()
         db.migrate(conn)
-        print(json.dumps(sheet.rebuild(conn), ensure_ascii=False, indent=1))
+        res = sheet.rebuild(conn)
+        gate.record_ok()
+        print(json.dumps(res, ensure_ascii=False, indent=1))
 
 
 def cmd_watched(args):

@@ -43,9 +43,28 @@ CREDIT_ROLES = (("creators", "creator"), ("dops", "dop"), ("producers", "produce
                 ("editors", "editor"))   # editor: owner 2026-10-25 «только хранить»
 
 
+PASS = {"k": 0, "of": 1, "t0": {}}   # current pass of main() — for the PROGRESS lines of the watchdog table
+COUNTER = re.compile(r"^\s*(\w+) (\d+)/(\d+)")
+
+
 def log(msg: str) -> None:
-    line = f"{datetime.now():%Y-%m-%d %H:%M:%S} {msg}"
+    now = datetime.now()
+    line = f"{now:%Y-%m-%d %H:%M:%S} {msg}"
     print(line, file=sys.stderr, flush=True)
+    # a counter line («wikidata 50/2432») also becomes «PROGRESS N% ETA HH:MM — …» (owner 2026-10-27: every row of the
+    # watchdog table with a forecast; the log had counters only, the table showed «?»). ETA = end of the current pass.
+    m = COUNTER.match(msg)
+    if m and int(m.group(3)) > 0:
+        name, i, n = m.group(1), int(m.group(2)), int(m.group(3))
+        t0 = PASS["t0"].setdefault(name, PASS.get("start") or time.time())   # counted from the start of the pass
+        frac = min(1.0, i / n)
+        pct = max(1, min(99, int(100 * (PASS["k"] + frac) / PASS["of"])))
+        eta = "?"
+        if frac > 0:
+            end = datetime.fromtimestamp(time.time() + (time.time() - t0) / frac * (1 - frac))
+            eta = f"{end:%H:%M}" if end.date() == now.date() else f"{end:%d.%m_%H:%M}"
+        line += (f"\n{now:%Y-%m-%d %H:%M:%S} PROGRESS {pct}% ETA {eta} — title_meta проход {PASS['k'] + 1}/{PASS['of']}: "
+                 f"{name} {i}/{n} (ETA — конец этого прохода)")
     LOG.parent.mkdir(parents=True, exist_ok=True)
     with open(LOG, "a", encoding="utf-8") as f:
         f.write(line + "\n")
@@ -480,7 +499,9 @@ def main(argv=None):
     t0 = time.time()
     passes = ["plex", "store", "tmdb", "imdb", "wiki", "people"] if a.what == "all" else [a.what]
     res = {}
-    for p in passes:
+    PASS["of"] = len(passes)
+    for k, p in enumerate(passes):
+        PASS["k"], PASS["start"] = k, time.time()
         if p == "coverage":
             continue
         fn = {"tmdb": tmdb_pass, "editors": editors_pass, "people": people_pass, "wiki": wiki_pass}.get(p)
@@ -488,6 +509,7 @@ def main(argv=None):
     res["coverage"] = coverage(conn)
     log("coverage: " + json.dumps(res["coverage"], ensure_ascii=False))
     log(f"finished {a.what} in {time.time() - t0:.0f} s")
+    log("AGENT_TITLE_META_OK")      # the watchdog table: finished (a marker counts only with no PROGRESS after it)
     print(json.dumps(res, ensure_ascii=False, indent=1))
 
 

@@ -16,9 +16,31 @@ def deny(why):
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
                                              "permissionDecisionReason": why}}, ensure_ascii=False))
     sys.exit(0)
+# a survey goes 4 questions per call while questions remain (owner, 2026-10-27: «Почему вопросы не обеденны в группу из 4
+# вопросов. Ты же можешь задать 4 вопроса за раз. Опять баг правь» — after «одна франшиза один вопрос» the franchises were
+# sent one call each; the rule is one franchise per QUESTION, four questions per call): a call with fewer than 4 questions
+# is allowed only when its last question is the last of the survey (N = M) — a re-asked question may go with the tail.
+mlast = re.match(r"\s*(\d+)\s*(?:/|из)\s*(\d+)", (qs[-1].get("question", "") if qs else ""))
+if mlast and 0 < len(qs) < 4 and int(mlast.group(1)) < int(mlast.group(2)):
+    deny(f"Опрос — по 4 вопроса за вызов (владелец, 2026-10-27: «Ты же можешь задать 4 вопроса за раз. Опять баг правь»): "
+         f"после вопроса {mlast.group(1)}/{mlast.group(2)} вопросы ещё есть — в вызове нужно 4 вопроса, по одной франшизе / "
+         f"одному предмету в каждом.")
 for q in qs:
     text = q.get("question", "")
     opts = q.get("options") or []
+    # every work option of a «что видел» question carries its rating (owner, 2026-10-27: «И у тебя баг нет оценки. А она
+    # при опросе должна быть всегда» — the rating was only in the question text, the season options had none)
+    if re.search(r"видел", text, re.I):
+        for o in opts:
+            lab = o.get("label", "")
+            if re.search(r"\((19|20)\d\d\)", lab) and not re.search(r"IMDb", o.get("description", "")):
+                deny("У каждого произведения в вопросе — оценка IMDb в описании варианта (владелец, 2026-10-27: «И у тебя баг нет "
+                     "оценки. А она при опросе должна быть всегда»): «" + lab + "».")
+    # a franchise name with spin-offs «Пацаны (+ Дьявольские, Поколение V)» read as three franchises in one question
+    # (owner, 2026-10-27: «Я думал что поколение v это не часть пацанов. Я же не разбираюсь в том что не видел»)
+    if re.search(r"\(\s*\+|\S\s\+\s\S", text) and not re.search(r"спин-?офф|ответвлени|т(от|ой) же (мир|вселенн)|часть (франшиз|вселенн)|из того же мира|одна франшиза", text, re.I):
+        deny("Франшиза со спин-оффами «X (+ Y, Z)» выглядит как несколько франшиз (владелец, 2026-10-27: «Я думал что поколение v это "
+             "не часть пацанов. Я же не разбираюсь в том что не видел»): одной фразой объяснить, что Y, Z — спин-оффы X, тот же мир.")
     blob = text + " " + " ".join(o.get("label", "") + " " + o.get("description", "") for o in opts)
     if re.search(r"https?://|www\.|docs\.google|youtu\.be|youtube\.com", blob, re.I):
         deny("Ссылки в вопросе не кликабельны (владелец с телефона, 2026-10-24): дай ссылку гиперссылкой [текст](url) в итоговом сообщении хода (текст перед вопросом с телефона тоже не виден — «Не вижу ссылки»), а вопрос по ней задай позже.")

@@ -25,7 +25,8 @@ HEAD = "## Входящие (каждое сообщение владельца 
 
 
 # scheduled prompts (cron watchdog, /loop) and compaction summaries are not the owner's words
-NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|Проверка цикла Google TV|Google TV, хвост из 50|<<autonomous-loop|This session is being continued)", re.I)
+NOT_OWNER = re.compile(r"^\s*(Проверка фоновых агентов|Проверка цикла Google TV|Google TV, хвост из 50|<<autonomous-loop|This session is being continued"
+                       r"|I hit my usage limit while you were working)", re.I)   # the app's «limit reset» note (2026-10-26)
 
 
 def _text(c) -> str:
@@ -156,6 +157,14 @@ def main(mode: str) -> None:
         if not reach:
             net_note = f"GitHub недоступен (сеть): {ahead} незапушенных коммитов — push, когда сеть вернётся."
             ahead = "0"
+    # commit + push once per plan stage (owner, 2026-10-26: «комит и пуш только на этап плана можно, не чаще»): while
+    # a stage is open (data/cache/locks/stage.json, films/stage.py) the work is not asked to be committed
+    try:
+        open_stage = json.loads((ROOT / "data" / "cache" / "locks" / "stage.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        open_stage = None
+    if open_stage:
+        dirty, ahead = [], "0"
     if dirty or (ahead and ahead != "0"):
         why.append(f"GitHub: {len(dirty)} незакоммиченных файлов, {ahead or '?'} незапушенных коммитов — `python -X utf8 -m "
                    "films.backup export` → `git add -A` → коммит → `git push origin main`.")

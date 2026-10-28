@@ -477,7 +477,11 @@ def compute(conn) -> list[dict]:
                 people_name[k] = p["name"]  # hits are shown and weighted by the configured name
     # collections of franchises the owner wants collected beyond the configured years (R34)
     franchise_years, selected_cols, ignored_cols, selected_keys = {}, set(), set(), set()
+    no_prio_keys, no_prio_cols = set(), set()   # `priority = false`: followed, but no franchise bonus in the sort
     for f in franchise_cfg():
+        if f.get("priority") is False:   # owner 2026-10-27 about Star Trek: «уберем приоритет за франшизу»
+            no_prio_keys.add(f["key"])
+            no_prio_cols.update(f.get("tmdb_collections", []))
         if f.get("scope") == "all":
             selected_keys.add(f["key"])
             for cid in f.get("tmdb_collections", []):
@@ -489,6 +493,13 @@ def compute(conn) -> list[dict]:
     member_imdb = {r[0] for r in conn.execute(
         "SELECT imdb_id FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)" % ",".join("?" * len(selected_keys)),
         sorted(selected_keys))} if selected_keys else set()
+    # members of no-priority franchises that are not also in another (prioritised) franchise lose the bonus
+    prio_keys = selected_keys - no_prio_keys
+    no_prio_imdb = ({r[0] for r in conn.execute(
+        "SELECT imdb_id FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)" % ",".join("?" * len(no_prio_keys)),
+        sorted(no_prio_keys))} - ({r[0] for r in conn.execute(
+        "SELECT imdb_id FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)" % ",".join("?" * len(prio_keys)),
+        sorted(prio_keys))} if prio_keys else set())) if no_prio_keys else set()
 
     # franchise keys per IMDb id — the franchise voice rule of [voice_preference] (R168(б): Marvel / DC → FlarrowFilms)
     vp_keys = {k for p in cfg.get("voice_preference", {}).get("franchises", []) for k in p.get("keys", [])}
@@ -637,7 +648,8 @@ def compute(conn) -> list[dict]:
             hidden.append("мультсериал")
         rd = t.get("release_date")
         old = not rd or date.fromisoformat(rd[:10]) < today - timedelta(days=flt["fresh_days"])
-        if t.get("imdb_rating") is not None and t["imdb_rating"] < flt["min_imdb"] and old:
+        # the owner's own pick keeps a low rating (2026-10-27, «Бордерлендс»: «Интересно и пофиг что там низкий рейтинг»)
+        if t.get("imdb_rating") is not None and t["imdb_rating"] < flt["min_imdb"] and old and not owner_pick:
             hidden.append(f"IMDb {t['imdb_rating']}")
         if flt["hide_without_voice"] and not t.get("no_dub_needed") and t["id"] not in queued and all(
                 (r.get("best_voice") or "none") == "none" for r in rels):
@@ -658,7 +670,8 @@ def compute(conn) -> list[dict]:
                 hidden.append("скачано")
 
         franchise = ((cid in selected_cols or cid in watched_cols or is_member) and cid not in ignored_cols
-                     and "видел" not in hidden)
+                     and "видел" not in hidden
+                     and (t.get("imdb_id") or t.get("series_imdb_id")) not in no_prio_imdb and cid not in no_prio_cols)
         person_hits = credit_people.get(t["id"], set())
         hdr_best = hdr_class(_j(best.get("hdr"), []), best.get("dv_static_md"))
         sort_vals = {

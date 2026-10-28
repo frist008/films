@@ -21,7 +21,7 @@ description: Отметить фильм/сериал/мультфильм ка�
    - записывает `sync_state('plex_mark')`.
    - **и в Jellyfin** (владелец, 2026-10-25: «Да, и в Jellyfin»): `films/sources/jellyfin_guard.py` — фильм и каждая серия,
      если они есть в Jellyfin; уже просмотренное не трогает, снимать отметки нельзя (хук `jellyfin-guard.sh`). Нужен ключ API
-     Jellyfin «films» (владелец создаёт в Панели управления → Ключи API) или `JELLYFIN_API_KEY` в `.env`; без ключа — в ответе
+     Jellyfin «films» (Панель управления → Ключи API) или `JELLYFIN_API_KEY` в `.env`; без ключа — в ответе
      `jellyfin: no API key`, сказать владельцу.
    `--dry-run` — только проверить, что Plex находит тайтл. Если `confirmed: false` — сказать владельцу, не скрывать.
    Для сезона `confirmed` по Discover может не прийти (сезон не отдаёт viewState) — проверить серии поштучно
