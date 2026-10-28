@@ -216,12 +216,18 @@ def search_sweep(conn, cat: int, category: str, years: list[int]) -> dict:
     return report
 
 
+LINKED_OR_WANTED = ("r.page_skip = 0 OR (r.page_skip = 1 AND (r.title_id IS NOT NULL OR EXISTS "
+                    "(SELECT 1 FROM release_titles rt WHERE rt.release_id = r.id)))")
+
+
 def fetch_pages(conn, limit: int | None = None, shard: tuple[int, int] = (0, 1)) -> int:
     """Download release pages not yet in release_raw (zlib-compressed full HTML).
-    shard=(i, n): this worker takes releases with id % n == i, so n workers can run side by side."""
+    shard=(i, n): this worker takes releases with id % n == i, so n workers can run side by side.
+    A row skipped as broad-search noise (page_skip 1) is fetched once it is linked to a title (review 2026-10-28: 1050
+    linked rows had no page — «Самолёты» hidden «нет озвучки» with 46 dubbed releases)."""
     todo = conn.execute(
-        """SELECT r.id, r.url FROM releases r LEFT JOIN release_raw w ON w.release_id = r.id
-           WHERE r.source='rutor' AND w.release_id IS NULL AND r.page_skip = 0 AND r.id % ? = ?
+        f"""SELECT r.id, r.url FROM releases r LEFT JOIN release_raw w ON w.release_id = r.id
+           WHERE r.source='rutor' AND w.release_id IS NULL AND ({LINKED_OR_WANTED}) AND r.id % ? = ?
            ORDER BY r.added_at DESC""", (shard[1], shard[0])).fetchall()
     if limit:
         todo = todo[:limit]

@@ -5,8 +5,10 @@ Tracker data is never overwritten with an empty TMDB value. Disagreements that p
 (year off by more than one, season missing on TMDB, IMDb id unknown to TMDB) go to match_issues.
 """
 import json
+import re
 import sys
 
+from . import db
 from .sources import tmdb
 
 UPDATABLE = ["is_animation", "title_original", "title_latin", "title_ru", "title_uk", "year", "release_date",
@@ -40,7 +42,123 @@ def _issue(conn, title_id: int, problem: str, details: dict):
 def _release_years(conn, title_id: int) -> list[int]:
     return [r[0] for r in conn.execute(
         """SELECT DISTINCT json_extract(r.parsed, '$.year') FROM release_titles rt JOIN releases r ON r.id = rt.release_id
-           WHERE rt.title_id = ? AND json_extract(r.parsed, '$.year') IS NOT NULL""", (title_id,))]
+           WHERE rt.title_id = ? AND json_extract(r.parsed, '$.year') IS NOT NULL
+             AND coalesce(rt.how, '') NOT LIKE 'wrong_link%'""", (title_id,))]
+
+
+def season_year(conn, title_id: int) -> int | None:
+    """The year of a title from its own releases (review 2026-10-28: a season pack «[S01-03] (2018-2025)» gave season 3 the
+    year 2018): a film / a one-season release — its first year; the last season of a pack — the pack's last year, the
+    first — its first year; a middle season of a pack says nothing (None when nothing else does)."""
+    from .match import _seasons, _years
+    from .tracker_only import name_seasons
+    row = conn.execute("SELECT kind, season_number FROM titles WHERE id = ?", (title_id,)).fetchone()
+    if not row:
+        return None
+    if row[0] != "series":
+        ry = _release_years(conn, title_id)
+        return min(ry) if ry else None
+    s, ys = row[1], []
+    for name, parsed in conn.execute(
+            """SELECT r.name, r.parsed FROM release_titles rt JOIN releases r ON r.id = rt.release_id
+               WHERE rt.title_id = ? AND r.parsed IS NOT NULL AND coalesce(rt.how, '') NOT LIKE 'wrong_link%'""", (title_id,)):
+        try:
+            p = json.loads(parsed)
+        except ValueError:
+            continue
+        y1, y2 = _years(p)
+        seasons = _seasons(p.get("name_parsed") or {}) or name_seasons(name)
+        if not y1:
+            continue
+        if len(seasons) <= 1:
+            ys.append(y1)
+        elif s == max(seasons):
+            ys.append(y2 or y1)
+        elif s == min(seasons):
+            ys.append(y1)
+    return min(ys) if ys else None
+
+
+def _fill_unknown_season(conn, title_id: int, series: dict | None) -> None:
+    """A season TMDB does not have yet («Люпен» S4, «Клиника» S10 — review 2026-10-28: 54 seasons hidden «год None»):
+    the year from its releases, the series-level columns from TMDB — only where the row has nothing (never overwritten)."""
+    vals = {}
+    sy = season_year(conn, title_id)
+    if sy:
+        vals["year"] = sy
+    if series:
+        vals.update({"series_tmdb_id": series.get("tmdb_id"), "is_animation": int(bool(series.get("is_animation"))),
+                     "title_original": series.get("title_original"), "title_latin": series.get("title_latin"),
+                     "title_ru": series.get("title_ru"), "title_uk": series.get("title_uk"),
+                     "countries": json.dumps(series["countries"], ensure_ascii=False) if series.get("countries") else None,
+                     "genres": json.dumps(series["genres"], ensure_ascii=False) if series.get("genres") else None,
+                     "main_genre": series.get("main_genre"), "seasons_total": series.get("number_of_seasons"),
+                     "series_status": series.get("series_status"),
+                     "studios": json.dumps(series["studios"], ensure_ascii=False) if series.get("studios") else None})
+    for k, v in vals.items():
+        if v is not None:
+            conn.execute(f"UPDATE titles SET {k} = ? WHERE id = ? AND {k} IS NULL", (v, title_id))
+
+
+def fill_years_from_releases(conn) -> int:
+    """Any title still without a year (a TMDB season with no air date — «Гранчестер» S11; a season TMDB / IMDb lack) takes
+    `season_year`; a season TMDB has not got at all (an issue «tmdb_no_season» / «tmdb_no_tv_for_imdb») is corrected to it
+    too — its year came only from the releases, by the earlier «first year of any release» rule (review 2026-10-28:
+    «Террор» S3 → 2018, «Доктор Кто» S14 → 2005); so is a season TMDB has without an air date (review 2026-10-28:
+    «Александра Эль» S7 of the pack «1-7 сезоны … 2018-2025» kept 2018)."""
+    n = 0
+    no_tmdb = {r[0] for r in conn.execute(
+        """SELECT DISTINCT json_extract(candidates, '$.title_id') FROM match_issues
+           WHERE problem IN ('tmdb_no_season', 'tmdb_no_tv_for_imdb') AND json_valid(candidates)""") if r[0]}
+    with conn:
+        for tid, year, tmdb_id, rdate in conn.execute(
+                """SELECT t.id, t.year, t.tmdb_id, t.release_date FROM titles t WHERE t.duplicate_of IS NULL AND EXISTS (
+                     SELECT 1 FROM release_titles x WHERE x.title_id = t.id AND coalesce(x.how, '') NOT LIKE 'wrong_link%')
+                   AND (t.year IS NULL OR (t.kind = 'series' AND (t.tmdb_id IS NULL OR t.release_date IS NULL)))""").fetchall():
+            if year is not None and tid not in no_tmdb and not (tmdb_id and not rdate):
+                continue
+            sy = season_year(conn, tid)
+            if sy and sy != year:
+                n += conn.execute("UPDATE titles SET year = ? WHERE id = ?", (sy, tid)).rowcount
+    return n
+
+
+def fill_ru_names_from_releases(conn) -> int:
+    """A title TMDB gave no Russian name («双世异闻录», «偷生») takes the Russian name its releases write most often
+    (rutor first) — only an empty title_ru (review 2026-10-28: 49 visible rows showed hieroglyphs only). Not from a pack
+    of several films (review round 9: «Next Avengers», «Inhumans» got «Люди Икс» from «X-Men Complete Collection»)."""
+    n = 0
+    for (tid,) in conn.execute(
+            """SELECT t.id FROM titles t WHERE t.title_ru IS NULL AND t.duplicate_of IS NULL AND EXISTS (
+                 SELECT 1 FROM release_titles x WHERE x.title_id = t.id AND coalesce(x.how, '') NOT LIKE 'wrong_link%')""").fetchall():
+        name = ru_name_from_releases(conn, tid)
+        if name:
+            n += conn.execute("UPDATE titles SET title_ru = ? WHERE id = ? AND title_ru IS NULL", (name, tid)).rowcount
+    conn.commit()
+    return n
+
+
+def ru_name_from_releases(conn, tid: int) -> str | None:
+    """The Russian name the title's own releases write most often (rutor first); packs of several films and Ukrainian
+    trackers left out."""
+    from collections import Counter
+    from .tracker_only import clean_name
+    rank = {"rutor": 0, "rutracker": 1, "nnmclub": 2, "kinozal": 3, "rustorka": 4}
+    votes: Counter = Counter()
+    for src, parsed in conn.execute(
+            """SELECT r.source, r.parsed FROM release_titles x JOIN releases r ON r.id = x.release_id WHERE x.title_id = ?
+                 AND coalesce(x.how, '') NOT LIKE 'wrong_link%' AND coalesce(x.how, '') NOT LIKE 'collection_pack%'
+                 AND r.source NOT IN ('toloka', 'mazepa')
+                 AND (SELECT count(*) FROM release_titles y JOIN titles o ON o.id = y.title_id WHERE y.release_id = r.id
+                      AND o.kind = 'movie' AND coalesce(y.how, '') NOT LIKE 'wrong_link%') < 2""", (tid,)):
+        try:
+            p = json.loads(parsed) if parsed else {}
+        except ValueError:
+            continue
+        ru = clean_name(p.get("title_ru") or (p.get("name_parsed") or {}).get("title_ru"))
+        if ru and re.search(r"[а-яё]", ru, re.I):
+            votes[ru.strip()] += 10 - rank.get(src, 5)
+    return votes.most_common(1)[0][0] if votes else None
 
 
 def _person(conn, p: dict) -> int:
@@ -72,15 +190,32 @@ def _credits(conn, title_id: int, d: dict):
                      (title_id, _person(conn, p), role, character, order, job, episodes))
 
 
+def title_fix() -> dict:
+    """[title_fix] "<imdb id>" = {ru = "…", uk = "…"} — names TMDB gets wrong, applied on every enrich."""
+    import tomllib
+    with open(db.ROOT / "config" / "settings.toml", "rb") as f:
+        return tomllib.load(f).get("title_fix", {})
+
+
 def _apply(conn, title_id: int, row: dict, extra: dict):
     cur = dict(conn.execute("SELECT * FROM titles WHERE id = ?", (title_id,)).fetchone())
     sets = {k: row[k] for k in UPDATABLE if k in row and row[k] not in (None, "", "[]")}
     if cur.get("title_ru") and not row.get("title_ru"):
         sets.pop("title_ru", None)  # keep the tracker's Russian title when TMDB has none
+    # TMDB's own mistakes in a localized name (config/settings.toml [title_fix]; «Братство: Последняя фантазия XV» has
+    # Kingsglaive's Russian name on TMDB, review 2026-10-28)
+    fix = title_fix().get(cur.get("imdb_id") or cur.get("series_imdb_id") or "", {})
+    sets.update({f"title_{k}": v for k, v in fix.items() if k in ("ru", "uk")})
     if "title_uk" in sets and "title_uk_source" in cur:
         # TMDB's Ukrainian title wins over the IMDb-aka fallback (owner 2026-10-25); without one the fallback stays
         sets["title_uk_source"] = "tmdb" + (f":{row['title_uk_source']}" if row.get("title_uk_source") else "")
     sets.update({k: v for k, v in extra.items() if v is not None})
+    # a TMDB film length under 10 min against IMDb's feature length is TMDB's gap (review round 13: «Крепкий Харт 2» 1 min,
+    # IMDb 92) → IMDb's
+    if cur.get("kind") == "movie" and (sets.get("runtime_min") or 99) < 10 and cur.get("imdb_id"):
+        b = conn.execute("SELECT runtime_min FROM imdb_basics WHERE tconst = ?", (cur["imdb_id"],)).fetchone()
+        if b and b[0] and b[0] >= 40:
+            sets["runtime_min"] = b[0]
     sets["tmdb_checked_at"] = None  # placeholder replaced by SQL below
     cols = ", ".join(f"{k} = ?" for k in sets if k != "tmdb_checked_at")
     conn.execute(f"UPDATE titles SET {cols}, tmdb_checked_at = datetime('now'), updated_at = datetime('now') "
@@ -243,6 +378,7 @@ def enrich(conn, only_missing: bool = True, max_age_days: float = tmdb.DEFAULT_M
                 sid = found.get("tv")
                 if not sid:
                     issue(tid, "tmdb_no_tv_for_imdb", {"imdb_id": key, "tmdb_find": found})
+                    _fill_unknown_season(conn, tid, None)   # the year from its releases at least
                     continue
                 if sid not in series_cache:
                     series_cache[sid] = tmdb.tv(conn, sid, max_age_days)
@@ -251,6 +387,7 @@ def enrich(conn, only_missing: bool = True, max_age_days: float = tmdb.DEFAULT_M
                 if not s:
                     issue(tid, "tmdb_no_season", {"series_imdb_id": key, "tmdb_tv": sid, "season": season_no,
                                                   "tmdb_seasons": series.get("number_of_seasons") if series else None})
+                    _fill_unknown_season(conn, tid, series)
                     continue
                 trailer = s.get("trailer_ru") or {}
                 srow = tmdb.season_row(series, s)
@@ -273,6 +410,8 @@ def enrich(conn, only_missing: bool = True, max_age_days: float = tmdb.DEFAULT_M
                 stats["seasons"] += 1
         if i % 500 == 0:
             print(f"  enriched {i}/{len(titles)}", file=sys.stderr, flush=True)
+    stats["years_from_releases"] = fill_years_from_releases(conn)   # a season TMDB has with no air date: «год None»
+    stats["ru_names_from_releases"] = fill_ru_names_from_releases(conn)   # TMDB gave no Russian name
     return stats
 
 

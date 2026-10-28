@@ -56,6 +56,9 @@ class TestTitle(unittest.TestCase):
         n, _ = P.rutor_style_name("Царь Горы / King of the Hill (1997-2002, 2009) WEBRip [H.265/1080p] [10-bit] "
                                   "(Сезон 1-6, 12, Серий 1-148 из 148) Дмитрий Пучков")
         self.assertIn("[S1-6] [S12] [1-148 из 148] (1997-2009) WEBRip 1080p", n)
+        # review round 10: the episode range after «сезоны:» is not seasons 1-76 (X-Men 1992, 71 phantom rows)
+        self.assertEqual(P._season_info("(1-5 сезоны: 1-76 серии из 76)"), ([1, 2, 3, 4, 5], (1, 76, "76", "")))
+        self.assertEqual(P._season_info("(Сезон 1 - 4 Серии 1-87 из 87)")[0], [1, 2, 3, 4])
 
     def test_voice_and_language_tags(self):
         n, _ = P.rutor_style_name("Скотный двор / Animal Farm (2025) BDRip [H.264/720p] [MVO]")
@@ -138,6 +141,7 @@ class FakeHttp:
 class TestWalk(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, self.tmp, True)   # review 2026-10-28: the folders were left in %TEMP%
         self.p = [mock.patch.object(N, "STATE", self.tmp / "state.json"), mock.patch.object(N, "ROWS", self.tmp / "rows.json")]
         for x in self.p:
             x.start()

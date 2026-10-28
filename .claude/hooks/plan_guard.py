@@ -106,6 +106,47 @@ def _human_messages(transcript: str) -> list[tuple[str, str]]:
     return out
 
 
+WATCH_TABLE = "| Кто |"
+
+
+def watchdog_table_missing(transcript: str) -> bool:
+    """A watchdog check (the cron prompt «Проверка фоновых агентов…» or `films.watchdog` run in this turn) ends with its
+    table — who, %, ETA (owner, 2026-10-28: «не вижу от сторожа таблицы с окончанием времени работы»)."""
+    try:
+        with open(transcript, encoding="utf-8") as f:
+            rows = [json.loads(l) for l in f if l.strip()]
+    except (OSError, ValueError):
+        return False
+    start = None
+    for i, d in enumerate(rows):
+        c = (d.get("message") or {}).get("content")
+        if d.get("type") == "user" and not d.get("isMeta") and not (
+                isinstance(c, list) and any(isinstance(b, dict) and b.get("type") == "tool_result" for b in c)):
+            start = i
+    if start is None:
+        return False
+    asked = bool(re.match(r"\s*Проверка фоновых агентов", _text((rows[start].get("message") or {}).get("content"))))
+    ran, last = False, ""
+    for d in rows[start + 1:]:
+        if d.get("type") != "assistant":
+            continue
+        for b in (d.get("message") or {}).get("content") or []:
+            if not isinstance(b, dict):
+                continue
+            if b.get("type") == "tool_use" and "films.watchdog" in json.dumps(b.get("input"), ensure_ascii=False):
+                ran = True
+            elif b.get("type") == "text" and b.get("text", "").strip():
+                last = b["text"]
+    return (asked or ran) and WATCH_TABLE not in last
+
+
+ASK_LATER = re.compile(r"(?i)(задам|спрошу|вопрос\w*)[^.\n]{0,40}(следующ\w* (сообщени|ход)|позже|потом)")
+
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from lang_check import last_text, not_russian  # noqa: E402 — the reply the owner reads, read from the transcript's end
+
+
 DEIXIS = re.compile(r"(?<![\w-])(тут|здесь|там|сюда|туда|на нём|на нем|на этом|этот сайт|этом сайте)(?![\w-])", re.I)
 URL = re.compile(r"https?://[^\s<>\"«»]+")
 
@@ -195,6 +236,18 @@ def main(mode: str) -> None:
         if bad:
             why.append("docs/bugs.md: у бага нет стража (хук / тест / модуль) или путь не существует: " + " | ".join(bad[:5])
                        + " — баг не считается исправленным, пока его повтор не ловит код.")
+    if watchdog_table_missing(d.get("transcript_path") or ""):
+        why.append("Проверка сторожа: в последнем сообщении владельцу нет таблицы `films.watchdog --table` (кто, готово, "
+                   "осталось, закончит, состояние) — вставить её целиком, потом короткий итог.")
+    # questions are asked with AskUserQuestion in this turn, not promised for later (owner, 2026-10-28: «я не вижу вопросов
+    # вообще-то. у тебя для вопросов есть ask question»)
+    final = last_text(d.get("transcript_path") or "")
+    if not_russian(final):   # owner, 2026-10-28: «опять на англ заговорил? исправляй баг»
+        why.append("Последнее сообщение владельцу — не по-русски: «" + final[:80] + "» — написать его по-русски.")
+    m = ASK_LATER.search(final)
+    if m:
+        why.append(f"В ответе «{m.group(0)}» — вопросы владельцу задаются сразу через AskUserQuestion (по 4 за вызов), "
+                   "а не обещанием на следующий ход; ссылки — в итоговом сообщении после вопросов.")
     if not why and net_note:
         print(json.dumps({"systemMessage": net_note}, ensure_ascii=False))
         return

@@ -740,6 +740,7 @@ def parse_topic(source: str, page: str, today: date | None = None) -> dict:
     d["btih"] = t["btih"] or d.get("btih")
     d["added_at"] = parse_ua_date(t["reged"], today) or d.get("added_at")
     d["tracker"] = {"source": source, "topic_id": t["topic_id"], "forum": t["forum"], "forum_id": t["forum_id"]}
+    title_ukr_track(d, t["title"])
     return d
 
 
@@ -751,7 +752,22 @@ def parse_title_only(title: str, category: str | None = None) -> dict:
     d["name"] = title
     d["name_rutor_style"] = rname
     d["category"] = category
+    title_ukr_track(d, title)
     return d
+
+
+_SUB_PART_RE = re.compile(r"(?i)(?:\bsub\w*|\bсуб\w*|\bсубтитр\w*)\b[^|]*")
+_TITLE_UKR_RE = re.compile(r"(?i)(?<!\w)(?:\d+\s*[xх×]\s*)?(?:ukr|укр)\b")
+
+
+def title_ukr_track(d: dict, title: str | None) -> None:
+    """«… WEB-DL 1080p Ukr/Eng | Sub Ukr/Eng» with no Ukrainian track read from the page: a Ukrainian track of unknown kind
+    (review 2026-10-28: «Ігри звірів (Сезон 2)» toloka, audio empty → hidden «нет озвучки»). «Sub Ukr» alone is subtitles."""
+    if any((a or {}).get("lang") == "uk" for a in d.get("audio") or [] if isinstance(a, dict)):
+        return
+    if _TITLE_UKR_RE.search(_SUB_PART_RE.sub("", _html.unescape(title or ""))):
+        d.setdefault("audio", [])
+        d["audio"] = list(d["audio"] or []) + [{"lang": "uk", "kind": None, "studio": None, "raw": "from title", "from_title": True}]
 
 
 def title_years(title: str) -> tuple[int, int] | None:

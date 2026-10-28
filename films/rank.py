@@ -388,6 +388,53 @@ def upgrade_reasons(have: dict, best: dict, cfg: dict) -> list[str]:
 
 # ---------------------------------------------------------------------------------------------- Dima
 
+def has_voice(r: dict) -> bool:
+    """For the «нет озвучки» filter: a voiced kind, an original RU / UK track, or any Russian / Ukrainian track whose kind
+    is not said (review 2026-10-28: «Процветание», «Ферма Кларксона» S5 — a Russian track, kind unknown → best_voice NULL
+    was read as «no voice-over»; the filter hides only releases with neither RU nor UK speech)."""
+    if (r.get("best_voice") or "none") != "none":
+        return True
+    return any((a or {}).get("lang") in ("ru", "uk") for a in _j(r.get("audio"), []) if isinstance(a, dict))
+
+
+def is_cartoon(t: dict) -> bool:
+    """Cartoons are never hidden for «нет озвучки» (owner, 2026-10-28: «Нет фильтра скрытия для отсутствующей озвучки
+    для мультиков ты что-то придумал»): the rutor / tracker cartoon and anime categories or the TMDB genre «мультфильм»."""
+    return t.get("tracker_category") in ("animation", "anime") or "мультфильм" in (t.get("genres") or "") \
+        or "Animation" in (t.get("genres") or "")
+
+
+def original_voice_ok(t: dict, owner_pick: bool) -> bool:
+    """The original speech is Ukrainian — or Russian for a title the owner picked himself (his lists: «Универ. 10 лет
+    спустя» in «хочу», R80): no voice-over is needed, the tracks are often without a language tag. Other Russian-language
+    productions stay hidden (owner's call, asked 2026-10-28). `no_dub_needed` is never set by this (owner, R25)."""
+    lang = t.get("original_language")
+    return lang == "uk" or (lang == "ru" and owner_pick)
+
+
+def russian_original(t: dict, rels: list | tuple = ()) -> bool:
+    """A Russian-language production (owner, 2026-10-28: «Скрыть все» … «кроме выбранных русских франшиз»; Kazakh ones shot
+    in Russian too — «Скрывать»): TMDB's original language ru. A tracker-only row has none: its first country is Russia /
+    the USSR, or it has only Cyrillic names and its releases carry Russian speech of no voice-over kind (the original —
+    «Чёрный двор. Побег», «Эскорт», «Мунай»: review 2026-10-28), no Ukrainian track. Cartoons are never this."""
+    if t.get("is_animation") or is_cartoon(t):
+        return False
+    if t.get("original_language"):
+        return t["original_language"] == "ru"
+    if not t.get("tracker_only"):
+        return False
+    countries = _j(t.get("countries"), [])
+    if countries and countries[0] in ("Россия", "СССР"):
+        return True
+    names = [t.get("title_original"), t.get("title_latin")]
+    if any(n and not re.search(r"[а-яё]", n, re.I) for n in names):
+        return False   # a foreign original name: a voiced-over import
+    tracks = [a for r in rels for a in _j(r.get("audio"), []) if isinstance(a, dict)]
+    if any(a.get("lang") == "uk" for a in tracks) or any((r.get("best_voice") or "none") not in ("none", "original") for r in rels):
+        return False
+    return any(a.get("lang") == "ru" and a.get("kind") in (None, "original") for a in tracks)
+
+
 def excluded_for(conn, d: dict) -> set[int]:
     """Titles a responsible person must not get: members of `exclude_franchises` (franchise_members) plus titles whose
     RU / original name matches `exclude_title_patterns` — franchise_members misses many (code review 2026-10-24: «Лего
@@ -429,6 +476,9 @@ def apply_responsible(conn, cfg: dict) -> dict:
             skip = excluded_for(conn, d)
             short = {r[0] for r in conn.execute("SELECT id FROM titles WHERE runtime_min IS NOT NULL AND runtime_min < ?",
                                                 (d.get("min_runtime", 0),))}
+            if d.get("min_runtime"):   # no runtime: «≥ 60 мин» cannot be checked (review 2026-10-28: anime TV seasons made as
+                short |= {r[0] for r in conn.execute(   # tracker-only «films» got Яна; round 11: 5 TMDB films without one)
+                    "SELECT id FROM titles WHERE runtime_min IS NULL")}
             # excluded / short: no automatic responsibility, an older guess goes away too (feature films only — a game
             # trailer and a 23-minute adult special were «cartoons» on TMDB)
             for tid in skip | short:
@@ -457,6 +507,29 @@ apply_dima = apply_responsible  # old name, kept for callers
 
 
 # ---------------------------------------------------------------------------------------------- main
+
+def _pack_release(r: dict, kind: str) -> bool:
+    """A release of several films: linked as a pack ('collection_pack') or named one («Дилогия», «Collection», a span)."""
+    if (r.get("link_how") or "").startswith("collection_pack"):
+        return True
+    if kind != "movie" or not r.get("parsed"):
+        return False
+    from .match import _is_pack, _seasons, _years
+    try:
+        p = json.loads(r["parsed"])
+    except ValueError:
+        return False
+    np = p.get("name_parsed") or {}
+    y1, y2 = _years(p)
+    name = np.get("name") or r.get("name") or ""
+    if not _is_pack(name, y1, y2, _seasons(np)):
+        return False
+    # «Collection» / «Коллекция» / «Антология» without a span of years is the film's own name (review round 13:
+    # «Коллекционер 2 / The Collection (2012)» — 21 of its 23 releases counted as packs)
+    from .match import PACK_RE, _pack_head
+    words = {w.casefold() for w in PACK_RE.findall(_pack_head(name))}
+    return bool(y1 and y2 and y2 > y1) or not words <= {"collection", "коллекция", "антология", "anthology"}
+
 
 def compute(conn) -> list[dict]:
     cfg = settings()
@@ -493,6 +566,12 @@ def compute(conn) -> list[dict]:
     member_imdb = {r[0] for r in conn.execute(
         "SELECT imdb_id FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)" % ",".join("?" * len(selected_keys)),
         sorted(selected_keys))} if selected_keys else set()
+    # anime only of the franchises the owner named for anime (`anime = true`, R44; review 2026-10-28: «Уличный боец 2»
+    # 1994 and «Персона 5» of game franchises were shown)
+    anime_keys = {f["key"] for f in franchise_cfg() if f.get("anime") and f["key"] in selected_keys}
+    anime_imdb = {r[0] for r in conn.execute(
+        "SELECT imdb_id FROM franchise_members WHERE confidence != 'review' AND franchise_key IN (%s)" % ",".join("?" * len(anime_keys)),
+        sorted(anime_keys))} if anime_keys else set()
     # members of no-priority franchises that are not also in another (prioritised) franchise lose the bonus
     prio_keys = selected_keys - no_prio_keys
     no_prio_imdb = ({r[0] for r in conn.execute(
@@ -512,7 +591,7 @@ def compute(conn) -> list[dict]:
 
     rel_by_title: dict[int, list[dict]] = {}
     for r in conn.execute(
-            """SELECT rt.title_id, r.* FROM release_titles rt JOIN releases r ON r.id = rt.release_id
+            """SELECT rt.title_id, rt.how AS link_how, r.* FROM release_titles rt JOIN releases r ON r.id = rt.release_id
                WHERE coalesce(rt.how, '') NOT LIKE 'wrong_link%'                -- a link found wrong: kept, never used
                  AND NOT EXISTS (SELECT 1 FROM excluded_releases e      -- DV5-only, 3D, TS/TC/CAM, КПК: kept, never shown
                                  WHERE e.source = r.source AND e.source_id = r.source_id
@@ -573,9 +652,14 @@ def compute(conn) -> list[dict]:
     apats = cfg.get("not_interested", {}).get("animation_patterns") or []
     ni_anim_rx = re.compile("|".join(apats), re.I) if apats else None   # same, cartoons only (live action stays)
 
+    from .match import phantom_seasons
+    phantom = phantom_seasons(conn)   # trackers' season numbering: packs already on the TMDB seasons (review 2026-10-28)
+
     rows = []
     for t in conn.execute("SELECT * FROM titles"):
         t = dict(t)
+        if t.get("duplicate_of"):
+            continue   # «this row is that title» (review 2026-10-28: «Рита», «Проєкт «Тиша»» shown twice via their other links)
         rels = rel_by_title.get(t["id"], [])
         if not rels and t["id"] in queued:
             rels = [_qbt_release(queued[t["id"]])]   # queued from another tracker: its torrent is the row
@@ -591,7 +675,15 @@ def compute(conn) -> list[dict]:
         # / extended / original / AI)
         rem = [r for r in rels if is_remaster(r) and ((r.get("best_voice") or "none") in VOICED or not ctx["any_voiced"])]
         ctx["remaster_res"] = max((r.get("resolution") or 0) for r in rem) if rem else None
-        rels.sort(key=lambda r: release_key(r, cfg, studios, ctx))
+        # a pack of several films (link 'collection_pack') speaks for the pack: its voice, edition and quality are not this
+        # film's (review round 11: «Тень» 1994 best = a 38-film 576p pack; «Чужой: Ромул» «Расширенная» = the anthology's
+        # Director's cut) → after the film's own releases, never a variant row
+        # — and a pack linked by its name to one film (round 12: «Клерки (Дилогия)» best of «Клерки» with the sequel's dub,
+        # «Шерлок Холмс … [Дилогия]» as «Оригинал без апскейла»)
+        packs = {id(r) for r in rels if _pack_release(r, t["kind"])}
+        own = any(id(r) not in packs for r in rels)
+        is_pack = lambda r: own and id(r) in packs  # noqa: E731
+        rels.sort(key=lambda r: (is_pack(r), release_key(r, cfg, studios, ctx)))
         all_rels = list(rels)
         if rem:
             rels = [r for r in rels if is_remaster(r) or (r.get("resolution") or 0) > ctx["remaster_res"]]
@@ -604,7 +696,7 @@ def compute(conn) -> list[dict]:
             variants.append(("Все серии", extra))
         for label, pred in (("Open Matte", lambda r: "open_matte" in _j(r.get("edition"), [])),
                             ("Расширенная", lambda r: set(_j(r.get("edition"), [])) & {"extended", "directors_cut", "uncut", "unrated"})):
-            cand = [r for r in rels if pred(r)]
+            cand = [r for r in rels if pred(r) and id(r) not in packs]
             if cand and cand[0] is not best:
                 variants.append((label, cand[0]))
         # R32: a 4K release of a title mastered below 4K (IMDb Digital Intermediate 2K / HD, or another source's
@@ -615,13 +707,19 @@ def compute(conn) -> list[dict]:
         # master unknown (no verdict, no DI value): «4K?» and the original row too (owner, 2026-10-25: «4K?» и строка оригинала)
         master_unknown = verdict not in ("upscaled", "native") and not t.get("di_resolution")
         if (studio_upscale or master_unknown) and (best.get("resolution") or 0) >= 2160:
-            orig = [r for r in rels if (r.get("resolution") or 0) < 2160 and not r.get("is_ai_upscale")]
+            orig = [r for r in rels if (r.get("resolution") or 0) < 2160 and not r.get("is_ai_upscale") and not is_pack(r)]
             orig = [r for r in orig if (r.get("resolution") or 0) >= 1080] or orig   # «лучший 1080p», 720p only if nothing else
             if orig:
                 variants.append(("Оригинал без апскейла", orig[0]))
-        ai = [r for r in rels if r.get("is_ai_upscale")]
+        ai = [r for r in rels if r.get("is_ai_upscale") and id(r) not in packs]
         if ai and ai[0] is not best:
             variants.append(("AI-апскейл", ai[0]))
+        # one release, one row: «Шпион» Open Matte = Оригинал без апскейла, «Ранго» Расширенная = Оригинал (review round 10)
+        # → «Open Matte · Оригинал без апскейла»
+        one: dict[int, tuple[str, dict]] = {}
+        for label, r in variants:
+            one[id(r)] = (f"{one[id(r)][0]} · {label}", r) if id(r) in one else (label, r)
+        variants = list(one.values())
 
         hidden = []
         w = watched.get(t["id"]) or ""
@@ -640,20 +738,37 @@ def compute(conn) -> list[dict]:
             # a tracker-only row (no IMDb / TMDB, films/tracker_only.py) of an owner's anime franchise, matched by name
             is_member = _j(t.get("tracker_meta"), {}).get("franchise") in selected_keys
         in_franchise_scope = (cid in franchise_years and (t.get("year") or 0) >= franchise_years[cid]) or is_member
-        owner_pick = (t.get("imdb_id") or "") in top_imdb or t["id"] in wanted or t["id"] in queued or t["id"] in list_marker             or t["id"] in urgent             or (resp.get(t["id"]) or {}).get("source") == "manual" and (resp.get(t["id"]) or {}).get("person") not in (None, "—")
+        owner_pick = (t.get("imdb_id") or t.get("series_imdb_id") or "") in top_imdb or t["id"] in wanted or t["id"] in queued or t["id"] in list_marker             or t["id"] in urgent             or (resp.get(t["id"]) or {}).get("source") == "manual" and (resp.get(t["id"]) or {}).get("person") not in (None, "—")
         # ↑ the owner asked for it (his lists, Дима's / Яна's manual lists): no year / cartoon-series rule
         if t.get("year") not in years and not in_franchise_scope and not owner_pick:
             hidden.append(f"год {t.get('year')}")
         if t.get("tracker_category") in ("animation", "anime") and t["kind"] == "series" and not owner_pick                 and not is_member:
             hidden.append("мультсериал")
+        if t["id"] in phantom:
+            hidden.append("сезон по нумерации трекера (раздачи — пачки сезонов TMDB)")
+        # «Мультипликация — в таблице только полнометражные» (2026-10-23); shorts only from the owner's franchises (2026-10-25:
+        # «Короткометражки тоже можно, и фильмы, и мультики») or his lists (review 2026-10-28: 29 shorts were visible)
+        if t["kind"] == "movie" and (t.get("is_animation") or t.get("tracker_category") == "animation") \
+                and (t.get("runtime_min") or 60) < 60 and not owner_pick and not is_member:
+            hidden.append("короткометражный мультфильм")
+        # anime (rutor cat 10 / anime forums) only from the owner's franchises — films too (R44; review 2026-10-28:
+        # «Клинок, рассекающий демонов», «Повелитель» … were visible)
+        anime_ok = owner_pick or (t.get("imdb_id") or t.get("series_imdb_id")) in anime_imdb or (
+            t.get("tracker_only") and _j(t.get("tracker_meta"), {}).get("franchise") in anime_keys)
+        if t.get("tracker_category") == "anime" and not anime_ok:
+            hidden.append("аниме не из франшиз")
         rd = t.get("release_date")
         old = not rd or date.fromisoformat(rd[:10]) < today - timedelta(days=flt["fresh_days"])
         # the owner's own pick keeps a low rating (2026-10-27, «Бордерлендс»: «Интересно и пофиг что там низкий рейтинг»)
         if t.get("imdb_rating") is not None and t["imdb_rating"] < flt["min_imdb"] and old and not owner_pick:
             hidden.append(f"IMDb {t['imdb_rating']}")
-        if flt["hide_without_voice"] and not t.get("no_dub_needed") and t["id"] not in queued and all(
-                (r.get("best_voice") or "none") == "none" for r in rels):
+        if flt["hide_without_voice"] and not t.get("no_dub_needed") and t["id"] not in queued and not is_cartoon(t) \
+                and not any(has_voice(r) for r in rels) and not original_voice_ok(t, owner_pick):
             hidden.append("нет озвучки")
+        # owner, 2026-10-28: Russian-language productions — «Скрыть все» … «Все кроме выбранных русских франшиз» (and his
+        # lists): a Russian original is hidden even with a Russian track; cartoons are not touched
+        if russian_original(t, all_rels) and not owner_pick and not in_franchise_scope:
+            hidden.append("русскоязычный (не из франшиз и списков)")
         upgrade = []
         have = None
         if plex_by_title.get(t["id"]):
@@ -723,8 +838,12 @@ def compute(conn) -> list[dict]:
             "imdb_per_point_over_5": round(max(0, (t.get("imdb_rating") or 0) - 5), 1),
             "rt_per_point_over_50": round(max(0, (fresh.rt_score(t) or 0) - 50), 1),
         }
-        is_top = (t.get("imdb_id") or "") in top_imdb
-        key = ((0, top_list.index(t["imdb_id"])) if is_top else (1 if t["id"] in urgent else 2, -score)) \
+        # a series in [top] is named by its series id: every season of it is on top (review 2026-10-28: «Братство:
+        # Последняя фантазия XV» — season row, imdb_id empty — never reached the top)
+        top_id = t.get("imdb_id") or t.get("series_imdb_id") or ""
+        is_top = top_id in top_imdb
+        key = ((0, top_list.index(top_id), t.get("season_number") or 0) if is_top
+               else (1 if t["id"] in urgent else 2, -score)) \
             + tuple(sort_vals[k] for k in cfg["sort"]["order"])
         at_max = max_quality(t, best, all_rels, cfg, pref, episodes)
         for vi, (label, r) in enumerate(variants):
@@ -734,7 +853,9 @@ def compute(conn) -> list[dict]:
             rows.append({"title": t, "variant": label, "variant_index": vi, "release": r,
                          "quality": q, "episodes_note": ep_note if vi == 0 else None, "max_quality": at_max,
                          "voice_pref_all_episodes": pref["all_episodes"], "voice_pref_hit": studio_hit(best, studios),
-                         "hidden_reasons": hidden, "upgrade": upgrade,
+                         "hidden_reasons": hidden, "upgrade": upgrade, "anime_ok": bool(anime_ok),
+                         "short_ok": bool(owner_pick or is_member),
+                         "ru_ok": bool(owner_pick or in_franchise_scope or not russian_original(t, all_rels)),
                          "have": have, "queued": queued.get(t["id"]), "wanted": t["id"] in wanted,
                          "list_marker": list_marker.get(t["id"]) or auto_mark.get(t["id"]), "auto_mark": auto_mark.get(t["id"]),
                          "urgent": t["id"] in urgent, "top": is_top, "quality_watch": (t.get("imdb_id") or "") in qwatch, "score": score, "score_parts": {k: v for k, v in parts.items() if v},

@@ -42,6 +42,7 @@ import re
 import sys
 import time
 import tomllib
+import unicodedata
 
 from . import db
 
@@ -58,7 +59,18 @@ def _now() -> str:
 
 
 def norm(s: str | None) -> str:
-    s = (s or "").casefold().replace("ё", "е")
+    """Casefolded words; Latin diacritics dropped («Kızılcık Şerbeti» = «Kizilcik Serbeti», review 2026-10-28), Cyrillic
+    kept (й stays й)."""
+    s = (s or "").casefold().replace("ё", "е").replace("ı", "i")
+    out, base = [], ""
+    for ch in unicodedata.normalize("NFKD", s):
+        if unicodedata.combining(ch):
+            if base and ord(base) < 0x250:   # a mark on a Latin letter: dropped; on Cyrillic (й, ї) kept
+                continue
+        else:
+            base = ch
+        out.append(ch)
+    s = unicodedata.normalize("NFC", "".join(out))
     return " ".join(re.sub(r"[^\w]+", " ", s).split())
 
 
@@ -168,7 +180,10 @@ def fields(rel: dict, p: dict) -> dict:
     category = rel.get("category") or ""
     y1, y2 = _years(p)
     kind = _kind(p, category, None)
-    ru = np.get("title_ru") or p.get("title_ru")
+    rname = rel.get("name") or ""
+    if kind == "movie" and name_seasons(rname) and re.search(r"(?i)\((?:ТВ|TV)-?\d|\[TV\b|сезон|season", rname):
+        kind = "series"   # anime «(ТВ-7) … [TV]» is a season, not a film (review 2026-10-28)
+    ru = clean_name(np.get("title_ru") or p.get("title_ru"))
     orig = np.get("title_original") or p.get("title_original")
     other = [t for t in np.get("titles_other") or [] if t and t != orig]
     latin = next((t for t in [orig, *other] if t and not _cyr(t)), None)
@@ -193,7 +208,7 @@ def fields(rel: dict, p: dict) -> dict:
         out["year"] = y1
         out["seasons"] = []
     else:
-        seasons = _seasons(np) or [1]
+        seasons = _seasons(np) or name_seasons(rname) or ([0] if is_special(rname) else [1])
         lo, hi = min(seasons), max(seasons)
         out["seasons"] = [(s, y1 if s == lo else (y2 or y1) if s == hi else None) for s in seasons]
         out["episodes_total"] = p.get("episodes_count") if len(seasons) == 1 else None
@@ -289,6 +304,131 @@ def known_seasons(conn, problem: str, cands) -> dict[int, int]:
     return out
 
 
+_ORD = r"(?:\s*-?\s*(?:й|ый|ой|ий|ій|th|st|nd|rd))?"
+_SEASON_WORD = r"(?:сезон|season)"
+_SEASON_RES = (
+    # «1-2 Сезоны», «9-13 сезоны», «1~7 сезоны», «full 1-7 season» — a range before the word
+    re.compile(rf"(?i)(?<![\d.])(\d{{1,2}})\s*[-–~]\s*(\d{{1,2}}){_ORD}\s*(?:полн\w*\s*)?{_SEASON_WORD}"),
+    # kinozal «Клиника (1 (10) сезон: …)» — the revival's own season, then the count from the show's start; TMDB keeps
+    # the 2026 «Scrubs» as its own series (season 1)
+    re.compile(rf"(?i)(?<![\d.])(\d{{1,2}})\s*\(\d{{1,2}}\)\s*{_SEASON_WORD}"),
+    # «2 сезон», «4 Сезон», «Полный 4 сезон», «2-ой сезон», «1-th Season»
+    re.compile(rf"(?i)(?<![\d.\-–~])(\d{{1,2}}){_ORD}\s*{_SEASON_WORD}"),
+    # «Сезон 4», «Сезон: 2 / Серии …», «сезон 2, серии 1-4», «Season: 16», «Сезоны 1-3»
+    re.compile(rf"(?i){_SEASON_WORD}\w*\s*[:#№]?\s*(\d{{1,2}})(?:\s*[-–~]\s*(\d{{1,2}})(?!\d|\s*(?:из|of|сер|эп|ep)))?(?![\d.])"),
+    re.compile(r"(?i)\((?:ТВ|TV)-?(\d{1,2})\b"),                                  # anime «(ТВ-7)»
+)
+_NAME_TAIL_RE = re.compile(r"(?i)\s*(?:\((?:ТВ|TV)-?\d+[^)]*\)|\d{1,2}(?:st|nd|rd|th)\s+season|season\s+\d{1,2}|"
+                           r"final\s+season|(?:part|часть)\s*\d{1,2}|\d{1,2})\s*$")   # «… Ver1.1a Part 2» (cour 2)
+
+
+_RU_SEASON_TAIL_RE = re.compile(r"(?i)\s*\((?:\d{1,2}\s*-?й?\s*сезон|сезон\s*\d)[^)]*(?:\)|$).*$")
+
+
+def clean_name(s: str | None) -> str | None:
+    """«Кизиловый щербет (3 сезон: 1-37 серии из 37 )» → «Кизиловый щербет» (kinozal names keep the season block in the
+    Russian name; review 2026-10-28)."""
+    if not s:
+        return s
+    return _RU_SEASON_TAIL_RE.sub("", s).strip() or s
+
+
+def name_seasons(name: str | None) -> list[int]:
+    """Seasons written in words in a release name, when the parser left them unread (review 2026-10-28: rustorka «Пацаны /
+    The Boys (Сезон 4 /Серии 1-8 из 8)» became a tracker-only «season 1», anime «(ТВ-7)» a film)."""
+    # every form in the name (toloka «(1 сезон, 1-14; 2 сезон, 1-5)» names two), the first pattern that matches decides
+    for rx in _SEASON_RES:
+        out: list[int] = []
+        for m in rx.finditer(name or ""):
+            a = int(m.group(1))
+            z = int(m.group(2)) if m.lastindex and m.lastindex > 1 and m.group(2) else a
+            out += [s for s in (range(a, z + 1) if z >= a else [a]) if s not in out]
+        if out:
+            return sorted(out)
+    # anime «Моя геройская академия 2 / Boku no Hero Academia 2 [TV] [25 из 25]» — the number closing the first name of a
+    # [TV] release is its season (films keep their numbers: no [TV] block)
+    m = re.match(r"^[^/\[(]*?\s(\d{1,2})\s*(?:/|\[)", name or "")
+    if m and re.search(r"(?i)\[TV\b", name or ""):
+        return [int(m.group(1))]
+    return []
+
+
+def is_special(name: str | None) -> bool:
+    """«Медведь (Спецвыпуск: Гэри)» — a special episode, TMDB season 0, not season 1."""
+    return bool(re.search(r"(?i)спецвыпуск|\bspecial\b(?!\])", _pack_names_part(name)))
+
+
+def _pack_names_part(name: str | None) -> str:
+    return re.split(r"\[", name or "", maxsplit=1)[0]
+
+
+def _cand_tconsts(cands) -> set[str]:
+    if isinstance(cands, list):
+        return {c.get("tconst") for c in cands if isinstance(c, dict) and c.get("title_type") in ("tvSeries", "tvMiniSeries")}
+    if isinstance(cands, dict) and cands.get("imdb"):
+        return {cands["imdb"]}
+    return set()
+
+
+def seasons_by_name(conn, rel: dict, p: dict, cands=None) -> dict[int, int]:
+    """{season: identified title} for a release of a series the DB already holds (review 2026-10-28: «Фоллаут» S2,
+    «Пацаны» S4, «Моя геройская академия» ТВ-3…8 got tracker-only twins). The series: an identified one whose Russian /
+    original / latin name (or the IMDb name of a matcher candidate) equals a name of the release with the season tail cut
+    («Boku no Hero Academia 3», «My Hero Academia 8th Season»); a matcher candidate wins when there are several. Seasons:
+    the parsed ones, else the words of the name; a special («Спецвыпуск») is season 0. A one-season release must fit the
+    season's years (the season's year −1 … the next season's year): «Блич … (ТВ-2, часть 1) 2022» is not «Блич» season 2."""
+    from .match import _seasons, _title_names, _years
+    name = rel.get("name") or (p.get("name_parsed") or {}).get("name") or ""
+    seasons = _seasons(_np(p)) or name_seasons(name) or ([0] if is_special(name) else [])
+    episodes_only = not seasons and bool(re.search(r"(?i)сери[ийя]|episodes?", name))
+    if not seasons and not episodes_only:
+        return {}
+    names = list(_title_names(p))
+    # kinozal «Shuang Shi Yi Wen Lu (Princess Across Time)» — the English name in brackets (review 2026-10-28: the TMDB
+    # series keeps «双世异闻录» / «Princess Across Time», the tracker-only twin «Shuang Shi Yi Wen Lu» was shown too)
+    names += [x.strip() for t in list(names) for x in re.findall(r"\(([^()]{3,})\)", t)]
+    names += [re.sub(r"\s*\([^()]*\)", "", t).strip() for t in list(names) if "(" in t]
+    keys = {norm(_NAME_TAIL_RE.sub("", t)) for t in names} | {norm(t) for t in names}
+    keys -= {""}
+    tconsts = _cand_tconsts(cands)
+    series: dict[str, set] = {}
+    # a series by its IMDb id, or by its TMDB id when TMDB alone has it (the Chinese dramas above have no IMDb id)
+    for sid, ru, orig, lat in conn.execute(
+            "SELECT DISTINCT coalesce(series_imdb_id, 'tmdb:' || series_tmdb_id), title_ru, title_original, title_latin "
+            "FROM titles WHERE kind = 'series' AND (series_imdb_id IS NOT NULL OR series_tmdb_id IS NOT NULL) "
+            "AND coalesce(tracker_only, 0) = 0 AND duplicate_of IS NULL"):
+        series.setdefault(sid, set()).update(norm(x) for x in (ru, orig, lat) if x)
+    for c in cands if isinstance(cands, list) else []:
+        if isinstance(c, dict) and c.get("tconst") in series:
+            series[c["tconst"]].add(norm(c.get("primary_title")))
+    hit = [sid for sid, names in series.items() if names & keys]
+    if len(hit) > 1:
+        hit = [sid for sid in hit if sid in tconsts]
+    if len(hit) != 1:
+        return {}
+    rows = {s: (tid, y) for tid, s, y in conn.execute(
+        "SELECT id, season_number, year FROM titles WHERE coalesce(series_imdb_id, 'tmdb:' || series_tmdb_id) = ? "
+        "AND coalesce(tracker_only, 0) = 0 AND duplicate_of IS NULL", (hit[0],))}
+    y1, _ = _years(p)
+    if episodes_only:   # «Ван-Пис (892-1051 серии)»: absolute episode numbers (≥ 100) — season 1, as the matcher links the
+        # rutor releases of the series («Ван-Пис / One Piece [1061-1121]» → 4928); a plain «1-8 серии» only into the
+        # only season of the series, its years fitting (a new season with no number written is not season 1)
+        eps = [int(x) for x in re.findall(r"(?<!\d)(\d{1,4})(?!\d)", re.split(r"(?i)сери", name)[0][-40:])]
+        if 1 in rows and eps and max(eps) >= 100:
+            return {1: rows[1][0]}
+        if len(rows) == 1:
+            s, (tid, ys) = next(iter(rows.items()))
+            if ys and y1 and ys - 1 <= y1 <= ys + 1:
+                return {s: tid}
+        return {}
+    if len(seasons) == 1 and y1 and seasons[0] in rows:
+        s = seasons[0]
+        ys, nxt = rows[s][1], next((rows[k][1] for k in sorted(rows) if k > s and rows[k][1]), None)
+        if ys is None or not (ys - 1 <= y1 and (nxt is None or y1 <= nxt)):
+            return {}
+    return {s: rows[s][0] for s in seasons if s in rows}
+
+
 # ------------------------------------------------------------------------------------------------ create
 
 def pending(conn) -> list[dict]:
@@ -331,7 +471,7 @@ def create(conn, dry: bool = False, log=print) -> dict:
                                "seasons": f["seasons"], "year": f.get("year"), "franchise": fr})
             st["linked_releases"] += 1
             continue
-        known = known_seasons(conn, rel["problem"], cands)
+        known = known_seasons(conn, rel["problem"], cands) or seasons_by_name(conn, rel, p, cands)
         with conn:
             for tid in dict.fromkeys(known.values()):
                 conn.execute("INSERT OR IGNORE INTO release_titles (release_id, title_id, how) VALUES (?, ?, ?)",
@@ -512,12 +652,12 @@ def reidentify(conn, dry: bool = False, log=print, min_age_hours: float = 20) ->
     st = {"releases": 0, "identified": 0, "via": {}, "rows_merged": 0, "merged": [], "skipped_recent": 0}
     cutoff = time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime(time.time() - min_age_hours * 3600))
     rels = conn.execute(
-        """SELECT DISTINCT r.id, r.category, r.parsed FROM release_titles x JOIN releases r ON r.id = x.release_id
+        """SELECT DISTINCT r.id, r.category, r.parsed, r.name FROM release_titles x JOIN releases r ON r.id = x.release_id
            JOIN titles t ON t.id = x.title_id
            WHERE x.how = ? AND t.tracker_only = 1 AND t.duplicate_of IS NULL AND r.parsed IS NOT NULL
            ORDER BY r.id""", (HOW,)).fetchall()
     now = _now()
-    for rid, category, parsed in rels:
+    for rid, category, parsed, rname in rels:
         st["releases"] += 1
         p = json.loads(parsed)
         olds = [r[0] for r in conn.execute(
@@ -544,8 +684,18 @@ def reidentify(conn, dry: bool = False, log=print, min_age_hours: float = 20) ->
             if tids:
                 via = "exact_name_year"
                 with conn:
-                    conn.execute("INSERT OR IGNORE INTO release_titles (release_id, title_id, how) VALUES (?, ?, ?)",
+                    conn.execute(db.RELINK_SQL,
                                  (rid, tids[0], via))
+        if not tids:   # a season of a series the DB holds, by name + season number (review 2026-10-28)
+            meta = json.loads(conn.execute("SELECT tracker_meta FROM titles WHERE id = ?", (olds[0],)).fetchone()[0] or "{}") \
+                if olds else {}
+            known = seasons_by_name(conn, {"name": rname}, p, (meta.get("candidates") or {}).get(str(rid)))
+            if known:
+                tids, via = list(dict.fromkeys(known.values())), "tracker_only_known_season"
+                with conn:
+                    for t in tids:
+                        conn.execute(db.RELINK_SQL,
+                                     (rid, t, via))
         with conn:
             for o in olds:
                 conn.execute("UPDATE titles SET identify_checked_at = ? WHERE id = ?", (now, o))
@@ -584,6 +734,96 @@ def reidentify(conn, dry: bool = False, log=print, min_age_hours: float = 20) ->
     return st
 
 
+def move_duplicate_links(conn, log=print) -> int:
+    """Active links still on a duplicate_of row (an 'exact_name_year' link made after the merge — review 2026-10-28: «Рита»,
+    «Проєкт «Тиша»») go to the title it duplicates; the old link becomes 'wrong_link: duplicate → <id>' (kept)."""
+    rows = conn.execute(
+        """SELECT x.release_id, x.title_id, t.duplicate_of, x.how FROM release_titles x JOIN titles t ON t.id = x.title_id
+           WHERE t.duplicate_of IS NOT NULL AND coalesce(x.how, '') NOT LIKE 'wrong_link%'""").fetchall()
+    now = _now()
+    with conn:
+        for rid, tid, tgt, how in rows:
+            conn.execute(db.RELINK_SQL,
+                         (rid, tgt, f"{how} via-duplicate-{tid}"))
+            conn.execute("UPDATE release_titles SET how = ? WHERE release_id = ? AND title_id = ?",
+                         (f"wrong_link: duplicate → {tgt} ({now[:10]})", rid, tid))
+            log(f"  duplicate link {rid}: {tid} → {tgt}")
+    return len(rows)
+
+
+def _seasons_parsed(p: dict) -> list[int]:
+    from .match import _seasons
+    return _seasons(_np(p))
+
+
+def reseason(conn, log=print) -> dict:
+    """Tracker-only series rows made before name_seasons / clean_name (review 2026-10-28: «Кизиловый щербет» seasons 3, 4
+    and 5 as three «season 1» rows, one of them holding all three, the Russian name with «(3 сезон: 1-37 серии …)»): every
+    release goes to the row of its own season and name (found or made), the old link becomes 'wrong_link: reseason → …'
+    (kept, never used), a row left with no release gets duplicate_of (the owner's mark / manual «ответственный» copied).
+    Nothing is deleted."""
+    from .match import _title_names
+    st = {"moved": 0, "rows_merged": 0, "merged": []}
+    rows = conn.execute(
+        """SELECT x.release_id, x.title_id, r.name, r.category, r.parsed, t.season_number, t.series_key, t.tracker_meta,
+                  t.kind
+           FROM release_titles x JOIN releases r ON r.id = x.release_id JOIN titles t ON t.id = x.title_id
+           WHERE coalesce(x.how, '') NOT LIKE 'wrong_link%' AND t.tracker_only = 1 AND t.duplicate_of IS NULL
+             AND r.parsed IS NOT NULL ORDER BY x.release_id""").fetchall()   # any active link: «Атака титанов» OVA row
+    # held an nnmclub «сезон 2» by 'exact_name_year' (review 2026-10-28)
+    now = _now()
+    olds: dict[int, int] = {}
+    for rid, tid, name, cat, parsed, s, key, meta, kind in rows:
+        p = json.loads(parsed)
+        rel = {"name": name, "category": cat}
+        f = fields(rel, p)
+        # a season release on a film row («Атака титанов» OVA + an nnmclub «сезон 2»), or a season row of another season
+        if f["kind"] != "series":
+            continue
+        own = kind == "series" and (key, s) in {(series_key(f), ss) for ss, _ in f["seasons"]}
+        if kind == "movie" and not (f["seasons"] and (name_seasons(name) or _seasons_parsed(p))):
+            continue   # a film row's release read as «series» only by its category — not moved
+        m = json.loads(meta or "{}")
+        cands = (m.get("candidates") or {}).get(str(rid))
+        known = seasons_by_name(conn, rel, p, cands)   # a season of a series the DB holds first
+        if own and not known:
+            continue   # its own season, no identified twin (review 2026-10-28: a twin of a TMDB-only series is moved too)
+        with conn:
+            if known:
+                tids = [t for t in dict.fromkeys(known.values()) if t != tid]
+                for t in tids:
+                    conn.execute(db.RELINK_SQL,
+                                 (rid, t, "tracker_only_known_season"))
+            else:
+                tids = [t for t in make_titles(conn, rel, p) if t != tid]
+                for t in tids:
+                    conn.execute(db.RELINK_SQL,
+                                 (rid, t, HOW))
+                    _meta_add(conn, t, rid, (m.get("problems") or {}).get(str(rid), "reseason"), cands,
+                              m.get("franchise"), _title_names(p))
+            if not tids:
+                continue
+            conn.execute("UPDATE release_titles SET how = ? WHERE release_id = ? AND title_id = ?",
+                         (f"wrong_link: reseason → {','.join(map(str, tids))} ({now[:10]})", rid, tid))
+        st["moved"] += 1
+        olds.setdefault(tid, tids[0])
+        log(f"  reseason {rid}: {tid} → {tids}")
+    for o, tgt in sorted(olds.items()):
+        if conn.execute("SELECT 1 FROM release_titles WHERE title_id = ? AND coalesce(how, '') NOT LIKE 'wrong_link%'",
+                        (o,)).fetchone():
+            continue   # another release still belongs to the row
+        with conn:
+            conn.execute("UPDATE titles SET duplicate_of = ?, updated_at = datetime('now') WHERE id = ?", (tgt, o))
+            conn.execute("INSERT OR IGNORE INTO user_marks (title_id, mark, ordered_by, note, updated_at) "
+                         "SELECT ?, mark, ordered_by, note, updated_at FROM user_marks WHERE title_id = ?", (tgt, o))
+            conn.execute("INSERT OR IGNORE INTO responsibility (title_id, person, source, updated_at) "
+                         "SELECT ?, person, source, updated_at FROM responsibility WHERE title_id = ? AND source = 'manual'",
+                         (tgt, o))
+        st["rows_merged"] += 1
+        st["merged"].append({"tracker_only": o, "into": tgt})
+    return st
+
+
 class _Counter(dict):
     """match_one's stats for a re-identification run: any counter starts at 0 (they are not reported)."""
     def __missing__(self, key):
@@ -594,8 +834,12 @@ class _Counter(dict):
 
 def run(conn, dry: bool = False, log=print, force: bool = False) -> dict:
     """Part of every match run: identify the tracker-only rows again, then make rows for what is still unlinked."""
-    return {"reidentify": reidentify(conn, dry, log, min_age_hours=0 if force else 20), "create": create(conn, dry, log),
-            "out_of_scope": close_out_of_scope(conn, dry, log)}
+    out = {"reidentify": reidentify(conn, dry, log, min_age_hours=0 if force else 20)}
+    if not dry:
+        out["reseason"] = reseason(conn, log)
+        out["duplicate_links_moved"] = move_duplicate_links(conn, log)
+    out.update(create=create(conn, dry, log), out_of_scope=close_out_of_scope(conn, dry, log))
+    return out
 
 
 def listing(conn) -> list[dict]:
@@ -624,7 +868,7 @@ def main(argv=None):
         return
     res = run(conn, a.dry, log=lambda *x: print(*x, file=sys.stderr), force=a.force)
     for part in res.values():
-        if len(part.get("made") or []) > 30:
+        if isinstance(part, dict) and len(part.get("made") or []) > 30:
             part["made"] = part["made"][:30] + [f"… {len(part['made']) - 30} more"]
     print(json.dumps(res, ensure_ascii=False, indent=1, default=str))
 

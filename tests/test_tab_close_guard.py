@@ -19,6 +19,7 @@ def run(tool="mcp__claude-in-chrome__tabs_close_mcp", logs=None):
     payload = json.dumps({"tool_name": tool, "tool_input": {"tabId": 1}})
     if logs:   # point the gate at a scratch logs dir through a sitecustomize-free shim
         shim = Path(tempfile.mkdtemp())
+        __import__("atexit").register(__import__("shutil").rmtree, shim, True)   # review 2026-10-28: the folders were left in %TEMP%
         (shim / "films").mkdir()
         for name in ("__init__.py", "db.py", "watchdog.py", "gate.py"):
             src = (ROOT / "films" / name).read_text(encoding="utf-8")
@@ -34,11 +35,13 @@ def run(tool="mcp__claude-in-chrome__tabs_close_mcp", logs=None):
 class TabCloseGuardTest(unittest.TestCase):
     def test_denied_while_collecting(self):
         d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
         (d / "agent_src_kinozal.log").write_text("x PROGRESS 30% — kinozal topics 9000/30110\n", encoding="utf-8")
         self.assertTrue(run(logs=d))
 
     def test_allowed_when_all_done(self):
         d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
         (d / "agent_src_kinozal.log").write_text("x PROGRESS 100%\nAGENT_SRC_KINOZAL_OK\n", encoding="utf-8")
         self.assertFalse(run(logs=d))
 

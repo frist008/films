@@ -6,6 +6,7 @@ Usage:
     python -X utf8 -m films.sources.trailer_lang check --ids 12,34
     python -X utf8 -m films.sources.trailer_lang video <youtube_id>          # one video, prints the verdict
     python -X utf8 -m films.sources.trailer_lang cuts 2827 6870              # distinct cuts → owner questions
+    python -X utf8 -m films.sources.trailer_lang answer 330=LPmFV3HaPG0      # the owner's pick (or 330=none)
 
 Order of checks for one video (cheapest first, owner's instruction 2026-10-23):
 1. Watch page (films.sources.youtube.YouTube.watch): audio-track language / automatic ('asr') captions = the
@@ -511,8 +512,9 @@ def fill_fallbacks(conn) -> dict:
     from . import tmdb
     latest = yt_mod.latest_decisions()
     stats = {"uk": 0, "ru_sub": 0, "original": 0, "none": 0}
+    # the owner's own pick stays (2026-10-28)
     rows = conn.execute("""SELECT id, kind, tmdb_id, series_tmdb_id, season_number FROM titles
-                           WHERE trailer_ru_url IS NULL""").fetchall()
+                           WHERE trailer_ru_url IS NULL AND coalesce(trailer_alt_source, '') != 'owner'""").fetchall()
     with conn:
         for tid, kind, tm, stm, season in rows:
             d = latest.get(tid) or {}
@@ -536,45 +538,228 @@ def fill_fallbacks(conn) -> dict:
     return stats
 
 
-def search_originals(conn, log=print) -> dict:
-    """Titles still without any trailer: the original trailer from YouTube search — «<original> <year> trailer»
-    (series: «… season N trailer»); accepted when the video title contains every word of the original name and
-    says trailer / teaser / трейлер, length 30 s – 5 min."""
+# words a video title may put before the name («Official Trailer: Doubt», «NEW 4K Trailer Doubt», «Bande-annonce Le
+# Mystère …», «LEGO Disney Frozen: …»); compared as youtube.norm tokens («трейлер» → «треилер»)
+_ORIG_PREFIX = {yt_mod.norm(w) for w in (
+    "official", "new", "final", "main", "first", "exclusive", "international", "us", "uk", "hd", "4k", "uhd", "trailer",
+    "teaser", "трейлер", "тизер", "netflix", "hbo", "max", "prime", "video", "apple", "tv", "disney", "hulu", "peacock",
+    "paramount", "original", "eng", "engsub", "sub", "subs", "drama", "series", "movie", "film", "bande", "annonce", "lego",
+    "ard", "zdf", "tf1", "m6", "trt", "rtl", "canal", "official", "virallinen", "officiell", "oficjalny", "officiele")}
+# words a video title may put right after the name («Doubt 2008 Official Trailer», «Stuntman (2024) 武替道 - Movie Trailer»,
+# «Missing (2024) Japanese Movie Trailer», «Paolo Temp.1», «(ARD Trailer)») — any other word makes it another title
+# («The Company You Keep»)
+_ORIG_SUFFIX = _ORIG_PREFIX | {yt_mod.norm(w) for w in (
+    "season", "temp", "temporada", "saison", "staffel", "sezon", "сезон", "tanıtım", "fragman", "fragmanı", "bande",
+    "zwiastun", "promo", "japanese", "korean", "chinese", "thai", "indian", "french", "german", "spanish", "italian",
+    "turkish", "english", "russian", "polish", "dutch", "danish", "swedish", "norwegian", "finnish", "brazilian", "mexican",
+    "argentine", "hindi", "dubbed", "dub", "version", "subtitles", "subtitled", "full", "redband", "red", "band",
+    "ufficiale", "oficial", "officiel", "officielle", "offizieller", "resmi", "vf", "vostfr", "русский", "трейлер", "тизер",
+    "the", "movie", "film", "official", "säsong", "sæson", "sesong", "sezona", "seizoen", "series", "traileri",
+    # review round 13: «Vefa Sultan İlk Tanıtım», «Vicdansız Dizisi …», «Hawaiian Vacation Short Official Trailer»,
+    # «… elokuvateattereissa (traileri)», «… Tamil Trailer»
+    "ilk", "dizisi", "short", "elokuvateattereissa", "tamil", "telugu", "malayalam", "kannada")}
+# before the name only: «Bande-annonce de l'École des espions»
+_PREFIX_ONLY = {"de", "du", "des", "l", "d"}
+_ARTICLES = {"il", "le", "la", "el", "der", "die", "das", "o", "a", "un", "une"}
+_YEAR_TOKEN = re.compile(r"(?:19|20)\d\d")   # a year after the name, not a number («Pati 2 | zwiastun» is the sequel)
+# a word of another script — no Latin letter and at least one non-ASCII character («红色日子», «3分鐘預告»)
+_NON_ASCII = re.compile(r"^[^a-z]*[^\x00-\x7f][^a-z]*$")
+_CYR_WORD = re.compile(r"[а-яёіїєґ]")
+# Russian / Ukrainian words describing the video before a Cyrillic name («Тизер новой серии / Мастер Витя и Мотор»)
+_CYR_PREFIX = {yt_mod.norm(w) for w in (
+    "официальный", "официальный", "офіційний", "трейлер", "тизер", "анонс", "новый", "новой", "новые", "серии", "серия",
+    "сериала", "сериал", "серіалу", "серіал", "фильм", "фильма", "фільм", "мультфильм", "мультфильма", "мультсериал",
+    "мультсериала", "мультфільм", "русский", "український", "премьера", "прем'єра", "сезон", "сезона", "второй", "1", "2")}
+# tags in brackets that are no name: «【DRAMA SERIES】», «[ENG SUB]», «【Trailer】»
+_TAG_WORDS = _ORIG_PREFIX | {"short", "official", "trailer", "teaser", "full", "ep", "multi"}
+# words saying the video's language is the original one (a one-word name of a non-English title needs one, a year or
+# another script: «Kaboul - Bande annonce VF - France TV»; «Patriot - Official Trailer | Prime Video» is another film)
+_LANG_WORDS = re.compile(r"bande|annonce|\bvf\b|vostfr|officiel|offizieller|deutsch|ufficiale|italiano|oficial|tráiler|"
+                         r"fragman|tan[ıi]t[ıi]m|zwiastun|virallinen|traileri|officiell|säsong|sæson|sesong|"
+                         r"temporada|saison|staffel|sezon|resmi|offici[eë]le|hindi|tamil|telugu|malayalam|kannada|"
+                         r"turkish|予告|预告|預告|예고", re.I)
+
+
+def _plain(vt: str) -> str:
+    """Full-width bars and colons as ASCII; tags in 【】 / [] as separators — a tag of service words dropped («【DRAMA
+    SERIES】Name｜Trailer», «[ENG SUB]»), a bracketed name kept between bars («|【西施新传 New Biography of Xishi】|»)."""
+    vt = vt.replace("｜", "|").replace("：", ":").replace("💟", " ")
+
+    def tag(m):
+        inner = m.group(1)
+        return " | " if all(w in _TAG_WORDS for w in yt_mod.tokens(inner)) else f" | {inner} | "
+    # round brackets are no separator: «Name (Alt name)» let clips, «(Movie)» and other names in (review round 13)
+    return re.sub(r"[\[【]([^\]】]*)[\]】]", tag, vt)
+
+
+_ORIG_EPISODE = re.compile(r"\b\d+\s*\.?\s*(?:bolum|bölüm|folge|серия|серии)\b|\b(?:episode|ep|серия|bolum|bölüm|folge|"
+                           r"capitulo|capítulo)\s*\d", re.I)
+_SEASON_WORDS = r"season|сезон|sezon|staffel|temporada|saison|säsong|sasong|sæson|sesong|sezona|seizoen"
+_ORIG_SEASON = re.compile(r"\b(?:" + _SEASON_WORDS + r"|series)\s*(\d{1,2})\b|\b(\d{1,2})\s*(?:\.\s*)?"
+                          r"(?:" + _SEASON_WORDS + r")\b", re.I)
+
+
+_ANY_TRAILER = re.compile(r"trailer|teaser|трейлер|тизер|трейлър|bande[- ]?annonce|fragman|tan[ıi]t[ıi]m|zwiastun|promo|"
+                          r"tr[aá]iler|treiler|avance|anons|анонс|予告|预告|預告|예고", re.I)
+_ANY_NOT = re.compile(r"\bintro\b|opening|\bcredits\b|\bclip\b|\bscene\b|deleted|explained|recap|\bending\b|сцена|отрывок|"
+                      r"клип|пересказ|опенинг|эндинг|титры|заставка|\bop\b|\bed\b", re.I)
+
+
+_INDIAN = {"hi": "hindi", "ta": "tamil", "te": "telugu", "ml": "malayalam", "kn": "kannada"}
+_INDIAN_RE = re.compile(r"\b(" + "|".join(_INDIAN.values()) + r")\b", re.I)
+
+
+def original_fits(name: str, year: int | None, kind: str | None, season: int | None, video_title: str | None,
+                  lang: str | None = None, orig_lang: str | None = None, runtime: int | None = None) -> bool:
+    """The video is a trailer of this very title (review round 9: «Doubt» took «Reasonable Doubt», «Jumanji» 1997 «Jumanji:
+    Open World» 2026, «Blood & Sweat» «Blood, Sweat & Tears», season 1 «Arafta Season 2», episode promos «7. Bölüm»):
+    the whole name as a phrase, opening the title or a part of it after | – : (or after words like «Official Trailer»);
+    no year in the video title other than the title's ±1; a series' video naming no other season; no episode promo,
+    game, review, reaction or fan edit. `lang` — the original language (TMDB) of a one-word name IMDb has namesakes for:
+    a non-English one is ambiguous in English videos (review round 12: «Patriot», «Ghosts», «Surface») and needs a year,
+    a word of its language or another script. `orig_lang` — the title's original language: a video naming another Indian
+    language is a dub's trailer (review round 14: «Ayalaan» ta got the Telugu one); `runtime` — «Short» after the name
+    only for a short film (round 14: «Dark Romance Short Film»)."""
+    vt = video_title or ""
+    need = yt_mod.tokens(name)
+    if not need or _CUT_NOT.search(vt) or _ORIG_EPISODE.search(vt):
+        return False
+    if orig_lang and any(w.lower() != _INDIAN.get(orig_lang) for w in _INDIAN_RE.findall(vt)):
+        return False
+    # a year that is a part of the name is no year of the video («Estado de fuga 1986», review round 12)
+    years = [int(y) for y in _CUT_YEAR.findall(vt) if y not in need]
+    if year and years and not any(abs(y - year) <= 1 for y in years):
+        return False
+    if kind == "series" and season:
+        named = {int(a or b) for a, b in _ORIG_SEASON.findall(vt)}
+        if named and season not in named:
+            return False
+    if len(need) == 1 and lang and lang != "en" and not (
+            (year and any(abs(y - year) <= 1 for y in years)) or _LANG_WORDS.search(vt)
+            or any(_NON_ASCII.match(w) for w in yt_mod.tokens(vt))):
+        return False
+    latin_name = not _CYR_WORD.search(" ".join(need))
+
+    def other_script(w, after=False, quoted=False):
+        # «红色日子 Red Days»; a Cyrillic word next to a Cyrillic name goes on with another name («Друзі та сусіди»,
+        # «Телефонные мошенники» for «Мошенники»), unless it is a description word or the name is quoted after it
+        # («Мультсериал "Нейроны" | Трейлер», «Официальный трейлер комедийной драмы "Билет из Рая"»)
+        if not _NON_ASCII.match(w):
+            return False
+        return latin_name or not _CYR_WORD.search(w) or (not after and (quoted or w in _CYR_PREFIX))
+
+    vt = _plain(vt)
+    # the whole title too: a name with its own «:» / « - » («Red Days 2: Cecilia Trailer»), or the video's «:» inside the
+    # name («Angel Flight: The Movie» for «Angel Flight THE MOVIE»)
+    whole = [vt]
+    pieces = re.split(r"(\s[|–—-]\s|[|:–—])", vt)
+    parts, seps = pieces[0::2], pieces[1::2]
+    first = re.escape(name.split()[0]) if name.split() else ""
+    # a leading article the video may leave out («Ainsley McGregor Mysteries: …» for «The Ainsley McGregor Mysteries»)
+    # (only «The»: «A Family Thanksgiving» is not «Family Thanksgiving»); one or two words left are too little without the
+    # title's year in the video (review round 14: «The Shadow Dancer» 2005 took «Shadow Dancer» 2012)
+    year_seen = bool(year and year in years)
+    needs = [need] + ([need[1:]] if need[0] == "the" and len(need) > 1 and (len(need) > 3 or year_seen) else [])
+    short_film = bool(runtime and runtime < 40)
+    for k, part in enumerate(parts + whole):
+        toks = yt_mod.tokens(part)
+        quoted = bool(first and re.search(r"[\"«“„”']\s*" + first, part, re.I))
+        for nd, i in ((nd, i) for nd in needs for i in yt_mod.find_phrase(toks, nd)):
+            # before the name: «Official Trailer», a tag, or the title in another script («红色日子 Red Days»)
+            if not all(w in _ORIG_PREFIX or w in _PREFIX_ONLY or other_script(w, quoted=quoted) or _ANY_TRAILER.match(w)
+                       for w in toks[:i]):
+                continue
+            # a short name opening a part after «Other name:» is the other work's subtitle («Dune: Prophecy», «BLADE
+            # RUNNER: 2099», «Black Bag: Doppio Gioco» — review round 12); a longer one is this title under a franchise
+            # tag («Cars Toon: Mater's Tall Tales»)
+            if len(nd) <= 2 and 0 < k < len(parts) and seps[k - 1] == ":" and not all(
+                    w in _ORIG_PREFIX or other_script(w) or _ANY_TRAILER.match(w) for w in yt_mod.tokens(parts[k - 1])):
+                continue
+            after = toks[i + len(nd):]
+            if kind == "series" and (after[:1] in (["movie"], ["film"]) or after[:2] == ["the", "movie"]):
+                continue   # the film of the series («No. 1 Sentai Gozyuger THE MOVIE»)
+            # right after it: a year, «Official Trailer», a language, another script; a series' own season number
+            # («Pati 2 | zwiastun» for S2, «Rüzgarlı Tepe 2. Sezon») — any other word is another title the name only
+            # opens (review round 11: «The Company» → «The Company You Keep», «Dream» → «Dream Scenario»)
+            season_no = kind == "series" and season and after[:1] == [str(season)]
+            if after and not (season_no or _YEAR_TOKEN.fullmatch(after[0]) or after[0] in _ORIG_SUFFIX
+                              or other_script(after[0], True) or _ANY_TRAILER.match(after[0])):
+                continue
+            if after[:1] == ["the"] and after[1:2] != ["movie"]:
+                continue
+            if after[:1] == ["short"] and not short_film:
+                continue   # «Dark Romance Short Film» is a short of the name, not this feature
+            # «Jumanji: Open World Trailer» — the name closing a part and a subtitle after «:» → another work; «: bande-
+            # annonce», «: il trailer», «: Original Trailer», «: The Movie» are no subtitles
+            nxt = yt_mod.tokens(parts[k + 1]) if k < len(seps) and seps[k] == ":" and not after else []
+            if nxt and not (nxt[0] in _ORIG_PREFIX or _YEAR_TOKEN.fullmatch(nxt[0]) or _ANY_TRAILER.match(" ".join(nxt))
+                            or (nxt[0] in _ARTICLES and len(nxt) > 1 and _ANY_TRAILER.match(nxt[1]))
+                            or nxt[:2] == ["the", "movie"]):
+                continue
+            return True
+    return False
+
+
+def search_originals(conn, recheck: bool = False, log=print) -> dict:
+    """Unwatched titles still without any trailer: the original trailer from YouTube search — «<original> <year> trailer»
+    (series: «… season N trailer»); accepted by original_fits and saying trailer / teaser / трейлер, length 30 s – 5 min.
+    `recheck`: the earlier finds are judged again from the search cache — a find no longer accepted is replaced or
+    taken back."""
     yt = yt_mod.YouTube()
-    stats = {"titles": 0, "found": 0}
-    rows = conn.execute("""SELECT id, title_original, title_latin, year, kind, season_number FROM titles t
-                           WHERE trailer_ru_url IS NULL AND (trailer_alt_url IS NULL OR trailer_alt_kind = 'ru_sub')
-                           AND EXISTS (SELECT 1 FROM release_titles r WHERE r.title_id = t.id)""").fetchall()
-    for tid, orig, latin, year, kind, season in rows:
+    stats = {"titles": 0, "found": 0, "replaced": 0, "taken_back": 0}
+    again = " OR (trailer_alt_source = 'youtube_search' AND trailer_alt_kind IN ('original', 'any'))" if recheck else ""
+    if recheck:
+        # a row that is another's duplicate is not looked for any more — its old find goes (review round 12: 82 left)
+        with conn:
+            stats["taken_back"] += conn.execute(
+                """UPDATE titles SET trailer_alt_url = NULL, trailer_alt_kind = NULL, trailer_alt_source = NULL
+                   WHERE duplicate_of IS NOT NULL AND trailer_alt_source = 'youtube_search'
+                     AND trailer_alt_kind IN ('original', 'any')""").rowcount
+    rows = conn.execute(f"""SELECT id, title_original, title_latin, year, kind, season_number, trailer_alt_url,
+                               trailer_alt_kind, original_language, runtime_min FROM titles
+                            WHERE trailer_ru_url IS NULL AND (trailer_alt_url IS NULL OR trailer_alt_kind = 'ru_sub'{again})
+                            AND duplicate_of IS NULL AND EXISTS (SELECT 1 FROM release_titles r WHERE r.title_id = titles.id)"""
+                        + yt_mod.NOT_WATCHED).fetchall()
+    for tid, orig, latin, year, kind, season, had, had_kind, lang, runtime in rows:
         name = latin or orig
         if not name:
             continue
         stats["titles"] += 1
         q = f"{name} {'season ' + str(season) + ' ' if kind == 'series' and season else ''}{year or ''} trailer"
         res = yt.search(q)
-        words = [w for w in yt_mod.tokens(name) if len(w) > 1]
-        pick = None
-        for v in res.get("videos") or []:
-            t = yt_mod.norm(v.get("title"))
-            ln = yt_mod.parse_length(v.get("length"))
-            if all(w in t for w in words) and re.search(r"trailer|teaser|трейлер|тизер", t) and ln and 30 <= ln <= 300:
-                pick = v
-                break
+        # a one-word name with IMDb namesakes («Surface», «Ghosts») is checked against its language (original_fits)
+        ambiguous = len(yt_mod.tokens(name)) == 1 and conn.execute(
+            """SELECT count(*) FROM imdb_basics WHERE primary_title = ? COLLATE NOCASE
+               AND title_type IN ('movie', 'tvSeries', 'tvMiniSeries')""", (name,)).fetchone()[0] >= 2
+        fits = [v for v in res.get("videos") or [] if original_fits(name, year, kind, season, v.get("title"),
+                                                                       lang if ambiguous else None, lang, runtime)
+                and 30 <= (yt_mod.parse_length(v.get("length")) or 0) <= 300]
+        # normalized («Tráiler») and raw: youtube.norm folds «й» («трейлер» → «треилер», review round 12)
+        pick = next((v for v in fits if re.search(r"trailer|teaser|тизер", yt_mod.norm(v.get("title")))
+                     or re.search(r"трейлер", v.get("title") or "", re.I)), None)
         kind_ = "original"
-        if not pick and not conn.execute("SELECT trailer_alt_url FROM titles WHERE id = ?", (tid,)).fetchone()[0]:
+        if not pick and (not had or had_kind in ("original", "any")):
             # nothing at all: any trailer of this title, preferring 4K / HD in the video title (owner: «в лучшем качестве»)
-            hits = [v for v in res.get("videos") or [] if all(w in yt_mod.norm(v.get("title")) for w in words)
-                    and 30 <= (yt_mod.parse_length(v.get("length")) or 0) <= 300]
-            hits.sort(key=lambda v: (0 if re.search(r"4k|2160|uhd", v.get("title") or "", re.I) else
+            # — a trailer in another language's word, not an intro, a scene or a recap (review round 10: 40 of 418 were)
+            fits = [v for v in fits if _ANY_TRAILER.search(v.get("title") or "") and not _ANY_NOT.search(v.get("title") or "")]
+            fits.sort(key=lambda v: (0 if re.search(r"4k|2160|uhd", v.get("title") or "", re.I) else
                                      1 if re.search(r"hd|1080", v.get("title") or "", re.I) else 2))
-            pick, kind_ = (hits[0], "any") if hits else (None, None)
-        if pick:
+            pick, kind_ = (fits[0], "any") if fits else (None, None)
+        url = f"https://www.youtube.com/watch?v={pick['id']}" if pick else None
+        if had_kind in ("original", "any"):
+            if url == had and (kind_ if url else None) == had_kind:   # the same video and kind
+                continue
+            stats["replaced" if url else "taken_back"] += 1
+            with conn:
+                conn.execute("UPDATE titles SET trailer_alt_url = ?, trailer_alt_kind = ?, trailer_alt_source = ? WHERE id = ?",
+                             (url, kind_ if url else None, "youtube_search" if url else None, tid))
+        elif pick:
             with conn:
                 conn.execute("""UPDATE titles SET trailer_alt_url = ?, trailer_alt_kind = ?,
-                                trailer_alt_source = 'youtube_search' WHERE id = ?""",
-                             (f"https://www.youtube.com/watch?v={pick['id']}", kind_, tid))
+                                trailer_alt_source = 'youtube_search' WHERE id = ?""", (url, kind_, tid))
             stats["found"] += 1
-        log(f"  {stats['titles']}/{len(rows)} {name} {year}: {'→ ' + pick['title'][:60] if pick else 'нет'}")
+        log(f"  {stats['titles']}/{len(rows)} {name} {year}: {'→ ' + pick['title'][:60] if pick else 'нет'}"
+            f"{' (было ' + had + ')' if had_kind in ('original', 'any') else ''}")
     db.mark_sync(conn, "trailer_originals", None, stats)
     return stats
 
@@ -617,6 +802,12 @@ def cut_title_ok(row: dict, title: str | None, cast: set[str] = frozenset()) -> 
         return False
     if row.get("kind", "movie") == "movie" and _CUT_EPISODE.search(title):
         return False
+    if row.get("kind") == "series" and row.get("season_number"):
+        # a season's trailer names that season; season 1 may go without a number, a later one may not
+        # (review 2026-10-28: Heartstopper S3 was offered S1 / S2 cuts and the «Forever» film)
+        nums = yt_mod.season_mentions(title)
+        if (nums and row["season_number"] not in nums) or (not nums and row["season_number"] > 1):
+            return False
     ys = [int(x) for x in _CUT_YEAR.findall(title)]
     if ys and row.get("year") and not any(abs(y - row["year"]) <= 1 for y in ys):
         return False
@@ -743,7 +934,7 @@ def title_cuts(conn, yt: yt_mod.YouTube, cache: dict, tid: int, log=print) -> di
     log(f"  cuts {tid} {row['title_ru']}: {len(pool)} uploads → {len(cuts)} cuts: " +
         "; ".join(f"{c['length']}s {c['lang_label']}" for c in cuts))
     return {"title_id": tid, "title_ru": row["title_ru"], "orig": row["title_original"], "year": row["year"],
-            "is_animation": row["is_animation"], "cuts": cuts}
+            "is_animation": row["is_animation"], "kind": row["kind"], "season": row["season_number"], "cuts": cuts}
 
 
 def cuts_question(f: dict, max_options: int = 3) -> dict:
@@ -763,13 +954,21 @@ def cuts_question(f: dict, max_options: int = 3) -> dict:
     pri = sorted(cuts, key=lambda c: (c["verdict"] != "ru", not c["current"], -(c["length"] or 0)))[:max_options]
     opts = []
     for c in sorted(pri, key=lambda c: c["length"] or 0):
+        # the language is already known from the speech check — said plainly (owner 2026-10-28: «Что значит станет?»)
+        # Whisper reads Ukrainian as Russian at times («Тоди я оптимист», «Netflix українською», Heartstopper 2026-10-28)
+        ua_chan = c["verdict"] == "ru" and re.search(r"(?i)україн|украин|\bua\b", c.get("channel") or "")
         desc = (c.get("channel") or "") + (f"; слышно: «{c['quote']}»" if c["quote"] else "") + \
             ("; сейчас стоит" if c["current"] else "") + \
-            (". Станет русским трейлером." if c["verdict"] == "ru" else ". Станет запасным трейлером (не русский).")
+            ("; канал украиноязычный — возможно, речь украинская" if ua_chan else "") + \
+            (". Русская речь (проверено по звуку) — в таблицу как русский трейлер." if c["verdict"] == "ru" else
+             ". Украинская речь — в таблицу как украинский трейлер." if c["verdict"] == "uk" else
+             ". Не русская речь — в таблицу как трейлер на другом языке." if c["verdict"] == "other" else
+             ". Язык не определён (речь под музыкой или звук недоступен) — в таблицу как трейлер с неизвестным языком.")
         opts.append({"label": f"{mmss(c['length'])} — {c['lang_label'].split(' (')[0]}"[:60], "description": desc[:200],
                      "video": c["id"], "russian": c["verdict"] == "ru"})
     opts.append({"label": "Ни один", "description": "Ни один не подходит: русского трейлера нет, запасной не меняется."})
-    cat = "мультфильм" if f.get("is_animation") else "фильм"
+    cat = ("мультсериал" if f.get("is_animation") else "сериал") + (f", сезон {f['season']}" if f.get("season") else "") \
+        if f.get("kind") == "series" else "мультфильм" if f.get("is_animation") else "фильм"
     name = f"«{f['title_ru']}»" + (f" / {f['orig']}" if f.get("orig") and f["orig"] != f["title_ru"] else "")
     found = "найдена одна версия" if len(cuts) == 1 else f"{len(cuts)} разных версий"
     extra = f" В вариантах {len(pri)} из {len(cuts)}, остальные — в списке." if len(cuts) > len(pri) else ""
@@ -779,7 +978,8 @@ def cuts_question(f: dict, max_options: int = 3) -> dict:
                          f"{extra} Какую поставить?"),
             "links_markdown": links, "options": opts,
             "apply": "вариант с russian=true → titles.trailer_ru_url = видео, trailer_ru_source='owner', "
-                     "trailer_ru_check='owner'; иначе → trailer_alt_url = видео (trailer_alt_kind по языку); "
+                     "trailer_ru_check='owner'; иначе → trailer_ru_url = NULL, trailer_ru_check='owner_alt', "
+                     "trailer_alt_url = видео, trailer_alt_source='owner' (trailer_alt_kind по языку); "
                      "«Ни один» → без изменений"}
 
 
@@ -828,6 +1028,31 @@ def run_cuts(ids: list[int], write_questions: bool = True, log=print) -> dict:
     return {"titles": len(ids), "watched_skipped": sorted(seen), "questions": len(qs)}
 
 
+def apply_answer(conn, tid: int, video: str | None) -> str:
+    """The owner's pick from a trailers_left question (cuts_question «apply»); video None = «Ни один»."""
+    q = next((q for q in json.loads(QUESTIONS_FILE.read_text(encoding="utf-8"))["questions"] if q["title_id"] == tid), None)
+    if q is None:
+        raise SystemExit(f"no question for title {tid}")
+    if video is None:
+        return "Ни один: без изменений"
+    opt = next((o for o in q["options"] if o.get("video") == video), None)
+    if opt is None:
+        raise SystemExit(f"{video} is not an option of title {tid}")
+    url = f"https://www.youtube.com/watch?v={video}"
+    with conn:
+        if opt["russian"]:
+            conn.execute("""UPDATE titles SET trailer_ru_url = ?, trailer_ru_source = 'owner', trailer_ru_check = 'owner',
+                            trailer_ru_checked_at = datetime('now') WHERE id = ?""", (url, tid))
+            return "русский трейлер"
+        lang = next((c["verdict"] for c in (json.loads(CUTS_FILE.read_text(encoding="utf-8")).get(str(tid)) or {})
+                     .get("cuts", []) if c["id"] == video), None) if CUTS_FILE.exists() else None
+        kind = "uk" if lang == "uk" else "original" if lang == "other" else "any"   # unknown speech → «другой»
+        conn.execute("""UPDATE titles SET trailer_ru_url = NULL, trailer_ru_check = 'owner_alt',
+                        trailer_ru_checked_at = datetime('now'), trailer_alt_url = ?, trailer_alt_kind = ?,
+                        trailer_alt_source = 'owner' WHERE id = ?""", (url, kind, tid))
+        return f"трейлер на другом языке ({kind})"
+
+
 def main(argv=None):
     p = argparse.ArgumentParser(prog="films.sources.trailer_lang")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -837,13 +1062,22 @@ def main(argv=None):
     c.add_argument("--limit", type=int)
     c.add_argument("--dry-run", action="store_true")
     sub.add_parser("fallbacks")
-    sub.add_parser("originals")
+    o = sub.add_parser("originals")
+    o.add_argument("--recheck", action="store_true", help="judge the earlier finds again (search cache)")
     v = sub.add_parser("video")
     v.add_argument("id")
     cu = sub.add_parser("cuts")
     cu.add_argument("ids", nargs="+", help="title ids (space or comma separated)")
     cu.add_argument("--no-questions", action="store_true", help="only data/cache/trailer_cuts.json")
+    an = sub.add_parser("answer", help="the owner's pick: title id and video id (or «none»)")
+    an.add_argument("pairs", nargs="+", help="330=LPmFV3HaPG0 889=none …")
     a = p.parse_args(argv)
+    if a.cmd == "answer":
+        conn = db.connect()
+        for pair in a.pairs:
+            tid, video = pair.split("=", 1)
+            print(tid, apply_answer(conn, int(tid), None if video == "none" else video))
+        return
     if a.cmd == "cuts":
         ids = [int(x) for s in a.ids for x in s.split(",") if x.strip()]
         try:
@@ -854,7 +1088,7 @@ def main(argv=None):
         print(json.dumps(st, ensure_ascii=False, indent=1))
         return
     if a.cmd == "originals":
-        print(json.dumps(search_originals(db.connect(), log=lambda m: print(m, file=sys.stderr, flush=True)),
+        print(json.dumps(search_originals(db.connect(), a.recheck, log=lambda m: print(m, file=sys.stderr, flush=True)),
                          ensure_ascii=False, indent=1))
         return
     if a.cmd == "fallbacks":

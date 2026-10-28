@@ -13,7 +13,7 @@ import unittest
 from pathlib import Path
 
 from films import db
-from films.parse.rutracker import (category_for_forum, compact_topic_html, parse_reged, parse_title_only, parse_topic,
+from films.parse.rutracker import (_name_ru_audio, category_for_forum, compact_topic_html, parse_reged, parse_title_only, parse_topic,
                                    rutor_style_name, split_topic)
 from films.sources import rutracker as rt
 
@@ -79,6 +79,17 @@ class TestTitle(unittest.TestCase):
         n, _ = rutor_style_name("[MULTSERIAL] Южный парк / South Park / Сезон: 14-15 (Мэтт Стоун, Трей Паркер)[28 Серии]"
                                 "[2010-2011, мультсериал, комедия, пародия, WEB-DLRip][VO-Production]")
         self.assertEqual(n, "Южный парк / South Park [S14-15] (2010-2011) WEB-DLRip")
+        # review round 11: anime episodes in brackets, no season — episodes, not a film
+        n, _ = rutor_style_name("[ANIME] Одним куском / One Piece [Серии 501-519] (Уда Коносукэ) [2011, приключения, HDTVRip]")
+        self.assertEqual(n, "Одним куском / One Piece [501-519] (2011) HDTVRip")
+        n, _ = rutor_style_name("Ван-Пис / One Piece [Уда Коносукэ][378 Серий][1999-2008, приключения, DVDRip]")
+        self.assertEqual(n, "Ван-Пис / One Piece [1-378 из 378] (1999-2008) DVDRip")
+        # review round 12: «[ONA] [10 из 10]» — episodes; an OVA «[1 из 1]» stays one work
+        n, _ = rutor_style_name("Киберпанк: Бегущие по краю 2 / Cyberpunk: Edgerunners 2 [ONA] [10 из 10] "
+                                "[2026, фантастика, WEB-DL 1080p]")
+        self.assertEqual(n, "Киберпанк: Бегущие по краю 2 / Cyberpunk: Edgerunners 2 [1-10 из 10] (2026) WEB-DL 1080p")
+        n, _ = rutor_style_name("Боец Баки / Grappler Baki [Асада Юдзи][OVA][1 из 1][1994, боевые искусства, DVDRip]")
+        self.assertNotIn("из 1]", n)
 
     def test_hdr_dv_tags_and_dub(self):
         n, _ = rutor_style_name("Дюна: Часть вторая / Dune: Part Two (Дени Вильнёв / Denis Villeneuve) [2024, США, "
@@ -115,6 +126,11 @@ class TestForumAndDates(unittest.TestCase):
         self.assertIsNone(category_for_forum("Горячие Новинки (Игры для Windows)"))
         self.assertIsNone(category_for_forum("Документальные фильмы (HD Video)"))
         self.assertIsNone(category_for_forum("Саундтреки к фильмам (lossless)"))
+        # review 2026-10-28: «[ANIME] Семья шпиона …» in a film forum is anime
+        from films.parse.rutracker import category_for
+        self.assertEqual(category_for("Фильмы HD Video", "[ANIME] Семья шпиона / Spy x Family / Сезон: 1-3"), "anime")
+        self.assertEqual(category_for("Фильмы HD Video", "Семья / Family (2024)"), "foreign_films")
+        self.assertIsNone(category_for("Наше кино", "[ANIME] x"))
 
     def test_reged(self):
         self.assertEqual(parse_reged("24-Июл-25 18:22"), "2025-07-24T18:22:00")
@@ -124,6 +140,26 @@ class TestForumAndDates(unittest.TestCase):
 
 
 class TestTopic(unittest.TestCase):
+    def test_external_russian_audio_file(self):
+        # review 2026-10-28: «[RUS(ext), JAP+Sub]» — the Russian voice-over is a separate file, MediaInfo of the video has
+        # only Japanese; 80 releases were «no voice-over», «Братство: Последняя фантазия XV» from [top] was hidden
+        d = parse_topic(fx("topic_rus_ext_audio.html"))
+        ru = [a for a in d["audio"] if a["lang"] == "ru"]
+        self.assertEqual([(a["kind"], a.get("external")) for a in ru], [("mvo", True)])
+        self.assertEqual(d["best_voice"], "mvo")
+
+    def test_russian_track_named_only_in_title(self):
+        t = parse_title_only("Моя геройская академия (ТВ-1) / Boku no Hero Academia [TV] [13 из 13] [RUS(ext), JAP+Sub] "
+                             "[2016, экшен, BDRemux] [1080p]", "Аниме (HD Video)")
+        self.assertEqual([(a["lang"], a["kind"], a["external"], a.get("kind_assumed")) for a in t["audio"]
+                          if a["lang"] == "ru"], [("ru", "amateur", True, True)])
+        self.assertEqual(parse_title_only("X / Y [TV] [RUS(Dub, 9*MVO), JAP+Sub] [2016, BDRip] [1080p]")["best_voice"], "dub")
+        d = {"audio": [{"lang": "ru", "kind": None}, {"lang": "ja", "kind": None}], "best_voice": None}
+        _name_ru_audio(d, "One Outs [TV] [25 из 25] [RUS(int),JAP+Sub] [2008, HDTVRip] [720p]", "")
+        self.assertEqual((d["best_voice"], d["audio"][0]["kind_assumed"]), ("amateur", True))
+        subs = parse_title_only("X / Y [TV] [JAP+Sub] [RUS Sub] [2016, BDRip] [1080p]")
+        self.assertFalse([a for a in subs.get("audio") or [] if a.get("from_name")])   # subtitles are not a voice
+
     def test_sp_body_title_mediainfo(self):
         d = parse_topic(fx("topic_6731886.html"))
         self.assertEqual(d["rutracker"], {"topic_id": "6731886", "forum": "Зарубежные сериалы (HD Video)", "forum_id": "2366"})
@@ -234,7 +270,7 @@ class TestCollectorJs(unittest.TestCase):
 JS_LOOP = r"""
 // the browser loop with fetch / localStorage mocked: rutracker pages from cp1251 files, bridge POSTs captured
 const fs = require('fs'); const [js, search, topic, mode] = process.argv.slice(1);
-const posted = []; const store = {}; let outage = mode === 'relogin' ? 3 : 0;
+const posted = []; const urls = []; const store = {}; let outage = mode === 'relogin' ? 3 : 0;
 globalThis.document = {};
 globalThis.localStorage = {getItem: k => store[k] || null, setItem: (k, v) => { store[k] = v; }};
 const resp = (path, status) => ({ok: !!path, status: path ? 200 : status,
@@ -244,6 +280,7 @@ globalThis.fetch = async (url, opts) => {
   if (url === 'http://127.0.0.1:8765/queries/rutracker') return {ok: true, status: 200, json: async () => (
     {run: 'u', delayMs: 1, known: [], queries: [{q: 'South Park', lo: 2023, hi: null, need: ['4k', 'hdr', 'dub']}]})};
   if (url.startsWith('http://127.0.0.1:8765/ingest/')) { posted.push(JSON.parse(opts.body)); return {ok: true, status: 200}; }
+  urls.push(url);
   // relogin mode: maintenance page, then a login page, then logged in again — the loop waits and goes on
   if (outage-- > 0) return page(outage === 2 ? '<h1>Technical maintenance / технические работы</h1>' : '<input name="login_username">');
   if (url.includes('/tracker.php?nm=South+Park')) return resp(search);
@@ -253,10 +290,11 @@ globalThis.fetch = async (url, opts) => {
 require(js);
 const msg = mode === 'url' ? __rtCollect({queriesUrl: 'http://127.0.0.1:8765/queries/rutracker'})
   : __rtCollect({run: 't', delayMs: 1, known: [], maxTopics: 5, waitPollMs: 5,
-                 queries: [{q: 'South Park', lo: 2023, hi: null, need: ['4k', 'hdr', 'dub']}]});
+                 queries: [{q: 'South Park', lo: 2023, hi: null, need: ['4k', 'hdr', 'dub'],
+                            ...(mode === 'since' ? {since: 1893456000} : {})}]});
 (async () => {
   for (let i = 0; i < 200 && !/^(done|stopped|crashed|no queries)/.test(__rtStatus().state || ''); i++) await new Promise(r => setTimeout(r, 50));
-  console.log(JSON.stringify({msg, status: __rtStatus(), posted, progress: store.rtc_progress}));
+  console.log(JSON.stringify({msg, status: __rtStatus(), posted, urls, progress: store.rtc_progress}));
 })();
 """
 
@@ -266,6 +304,7 @@ class TestCollectorLoop(unittest.TestCase):
     def test_loop_posts_one_payload_per_query_and_final(self):
         import tempfile
         d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
         for name in ("search_south_park.html", "topic_6731886.html"):   # rutracker serves windows-1251
             (d / name).write_bytes(fx(name).replace('charset="Windows-1251"', "").encode("cp1251", errors="replace"))
         r = node(JS_LOOP, d / "search_south_park.html", d / "topic_6731886.html")
@@ -297,11 +336,48 @@ class TestCollectorLoop(unittest.TestCase):
         res = [p for p in w["posted"] if p.get("kind") == "rutracker" and not p.get("final")]
         self.assertEqual((len(res), res[0]["errors"], [t["topic_id"] for t in res[0]["topics"]]), (1, [], ["6731886"]))
 
+    def test_since_sorts_new_first_and_stops_at_old_rows(self):
+        # R207 / R212 (owner 2026-10-26: «только на новые от даты последнего сканирования»): with `since` the search is
+        # sorted by registration date (o=1&s=2), rows older than the sync point are not selected, no topic is fetched
+        import tempfile
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
+        for name in ("search_south_park.html", "topic_6731886.html"):
+            (d / name).write_bytes(fx(name).replace('charset="Windows-1251"', "").encode("cp1251", errors="replace"))
+        r = node(JS_LOOP, d / "search_south_park.html", d / "topic_6731886.html", "since")
+        self.assertEqual(r["status"]["state"], "done", r["status"])
+        searches = [u for u in r["urls"] if "tracker.php" in u]
+        self.assertTrue(searches and all("&o=1&s=2" in u for u in searches), searches)
+        self.assertFalse([u for u in r["urls"] if "viewtopic.php" in u])
+        s = r["posted"][0]["searches"][0]
+        self.assertTrue(s["rows"] and not any(x.get("sel") for x in s["rows"]))
+
+    def test_since_stops_paging_at_a_full_page_of_old_rows(self):
+        # review 2026-10-28: sinceStop was not covered — a full first page (50 rows), all older than the sync point, and
+        # 120 results: the next pages are not fetched
+        import re
+        import tempfile
+        d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
+        s = fx("search_south_park.html")
+        row = re.search(r'<tr\b[^>]*id="trs-tr-6731886"[\s\S]*?</tr>', s).group(0)
+        full = s.replace(row, "".join(row.replace("6731886", str(7000000 + i)) for i in range(50)), 1)
+        full = full.replace("Результатов поиска: 9", "Результатов поиска: 120")
+        (d / "search.html").write_bytes(full.replace('charset="Windows-1251"', "").encode("cp1251", errors="replace"))
+        (d / "topic.html").write_bytes(fx("topic_6731886.html").replace('charset="Windows-1251"', "").encode("cp1251", errors="replace"))
+        r = node(JS_LOOP, d / "search.html", d / "topic.html", "since")
+        self.assertEqual(r["status"]["state"], "done", r["status"])
+        res = r["posted"][0]["searches"][0]
+        self.assertTrue(res.get("sinceStop"), res.get("pages"))
+        self.assertEqual(res["pages"], 1)
+        self.assertEqual(len([u for u in r["urls"] if "tracker.php" in u]), 1)
+
     def test_sync_points_and_since(self):
         # R207 / R212 (owner, 2026-10-26: «фильтр на сканер только на новые от даты последнего сканирования»): a clean
         # payload moves its query's point to the newest registration it saw; a failed one does not; `since` = point − 2 days
         import tempfile
         st = Path(tempfile.mkdtemp()) / "state.json"
+        self.addCleanup(__import__("shutil").rmtree, st.parent, True)   # review 2026-10-28: the folders were left in %TEMP%
         q1, q2 = {"q": "Dune", "lo": 2024, "hi": 2024}, {"q": "Alien", "lo": 2024, "hi": 2024}
         pays = [{"run": "R", "query": q1, "errors": [], "searches": [{"rows": [{"t": "1", "added": 1700000000},
                                                                               {"t": "2", "added": 1760000000}]}]},
@@ -405,9 +481,23 @@ class TestIngest(unittest.TestCase):
         self.assertEqual((st2["new"], st2["seeds_refreshed"]), (0, 1))
         self.assertEqual(self.rel("6755275")["seeders"], 180)
 
+    def test_row_without_page_dv5_by_title_excluded(self):
+        # review 2026-10-28: «… WEB-DL 2160p | Dolby Vision TV» rows stored from the title alone reached the table
+        p = payload_from_fixtures(sel_ids=("7000001",))
+        p["topics"] = []
+        p["searches"][0]["rows"].append({"t": "7000001", "forum": "Зарубежное кино (UHD Video)", "sel": 1, "size": 1,
+                                         "seeds": 3, "title": "Тайная жизнь животных / Secret Lives (2024) "
+                                                              "WEB-DL 2160p | Dolby Vision TV | D"})
+        st = rt.ingest(self.conn, [p])
+        self.assertEqual((st["new"], st["dv5_excluded"]), (0, 1))
+        self.assertIsNone(self.rel("7000001"))
+        self.assertEqual(self.conn.execute("SELECT reason FROM excluded_releases WHERE source='rutracker' AND "
+                                           "source_id='7000001'").fetchone()[0], "dv5_only")
+
     def test_load_payloads_chunk_readout(self):
         import tempfile
         d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
         (d / "bridge.txt").write_text(json.dumps(payload_from_fixtures()), encoding="utf-8")
         (d / "chunks.json").write_text(json.dumps([json.dumps(payload_from_fixtures()), "not json"]), encoding="utf-8")
         ps = rt.load_payloads([str(d / "bridge.txt"), str(d / "chunks.json")])
@@ -443,6 +533,7 @@ class TestQueries(unittest.TestCase):
     def test_write_run(self):
         import tempfile
         d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
         res = rt.write_run([{"q": "South Park", "lo": None, "hi": None, "need": ["any"], "why": ["extra"], "titles": []}],
                            [6731886], out=d, part_size=1)
         self.assertEqual(res["inline_parts"], ["run_inline_1.js"])

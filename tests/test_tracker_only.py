@@ -222,6 +222,100 @@ class TestCreateAndReidentify(unittest.TestCase):
         self.assertEqual(T.known_seasons(c, "season_year_mismatch", {"tmdb_id": 57243, "kind": "series", "seasons": [8]}), {})
 
 
+class TestSeasonsByName(unittest.TestCase):
+    """Review 2026-10-28: tracker-only twins of seasons the DB holds — «Пацаны» S4 (rustorka «Сезон 4») made as season 1,
+    «Моя геройская академия (ТВ-7)» as a film, «Блич … (ТВ-2, часть 1)» must not become «Блич» season 2."""
+    def setUp(self):
+        c = self.c = mem_db()
+        for s, y in ((1, 2019), (4, 2024)):
+            c.execute("INSERT INTO titles (kind, season_number, series_imdb_id, title_ru, title_original, year) "
+                      "VALUES ('series', ?, 'tt1190634', 'Пацаны', 'The Boys', ?)", (s, y))
+        for s, y in ((1, 2016), (7, 2024), (8, 2025)):
+            c.execute("INSERT INTO titles (kind, season_number, series_imdb_id, title_ru, title_original, year) "
+                      "VALUES ('series', ?, 'tt5626028', 'Моя геройская академия', 'Boku no Hero Academia', ?)", (s, y))
+        for s, y in ((1, 2022), (2, None)):
+            c.execute("INSERT INTO titles (kind, season_number, series_imdb_id, title_ru, title_original, year) "
+                      "VALUES ('series', ?, 'tt14986406', 'Блич: Тысячелетняя кровавая война', 'Bleach: Sennen Kessen-hen', ?)",
+                      (s, y))
+        self.id = lambda imdb, s: c.execute("SELECT id FROM titles WHERE series_imdb_id = ? AND season_number = ?",
+                                            (imdb, s)).fetchone()[0]
+
+    def test_words_and_tv_n(self):
+        self.assertEqual(T.name_seasons("Пацаны / The Boys (Сезон 4 /Серии 1-8 из 8) [2024]"), [4])
+        self.assertEqual(T.name_seasons("Фоллаут / Fallout / 2 сезон: 1-8 серии из 8 [2024]"), [2])
+        self.assertEqual(T.name_seasons("Правдива терапія / Shrinking (Сезон 1-3) (2024)"), [1, 2, 3])
+        self.assertEqual(T.name_seasons("Моя геройская академия (ТВ-7) / Boku no Hero Academia 7 [TV]"), [7])
+        self.assertTrue(T.is_special("Медведь (Спецвыпуск: Гэри) / The Bear (Gary) / 2026"))
+        self.assertFalse(T.is_special("Моя геройская академия (ТВ-7) [TV+Special] [21+4 из 21+4]"))
+
+    def test_tmdb_only_series_and_name_in_brackets(self):
+        # review 2026-10-28: «双世异闻录 / Princess Across Time» has no IMDb id; kinozal names it «Shuang Shi Yi Wen Lu
+        # (Princess Across Time)» — the tracker-only twin was shown next to it
+        tid = self.c.execute("INSERT INTO titles (kind, season_number, series_tmdb_id, tmdb_id, title_original, title_latin, "
+                             "year) VALUES ('series', 1, 262241, 262241, '双世异闻录', 'Princess Across Time', 2024)").lastrowid
+        name = "Принцесса сквозь время (1 сезон: 1-27 серии из 27) / Shuang Shi Yi Wen Lu (Princess Across Time) / 2024"
+        p = parsed(name, "Принцесса сквозь время", "Shuang Shi Yi Wen Lu (Princess Across Time)", 2024)
+        self.assertEqual(T.seasons_by_name(self.c, {"name": name}, p), {1: tid})
+
+    def test_link_to_known_season(self):
+        name = "Пацаны / The Boys (Сезон 4 /Серии 1-8 из 8) [2024, WEB-DL (2160p)] DUB [Red Head Sound]"
+        p = parsed(name, "Пацаны", "The Boys", 2024)
+        self.assertEqual(T.seasons_by_name(self.c, {"name": name}, p), {4: self.id("tt1190634", 4)})
+        name = "Моя геройская академия (ТВ-7) / Boku no Hero Academia 7 / My Hero Academia 7th Season [TV] [2024]"
+        p = parsed(name, "Моя геройская академия", "Boku no Hero Academia 7", 2024)
+        self.assertEqual(T.seasons_by_name(self.c, {"name": name}, p), {7: self.id("tt5626028", 7)})
+        self.assertEqual(T.fields({"category": "anime", "name": name}, p)["kind"], "series")
+
+    def test_round5_names(self):
+        # review round 5, 2026-10-28: Turkish letters, the kinozal season tail in the Russian name, «… 2 [TV]»
+        self.assertEqual(T.norm("Kızılcık Şerbeti"), T.norm("Kizilcik Serbeti"))
+        self.assertEqual(T.norm("Мій й Її"), "мій й її")
+        self.assertEqual(T.clean_name("Кизиловый щербет (3 сезон: 1-37 серии из 37 )"), "Кизиловый щербет")
+        self.assertEqual(T.name_seasons("Моя геройская академия 2 / Boku no Hero Academia 2 [TV] [25 из 25] [2017]"), [2])
+        self.assertEqual(T.name_seasons("Мстители 2 / Avengers 2 (2015) BDRip"), [])
+
+    def test_absolute_episodes_to_season_1(self):
+        c = self.c
+        for s, y in ((1, 1999), (21, 2019)):
+            c.execute("INSERT INTO titles (kind, season_number, series_imdb_id, title_ru, title_original, title_latin, year) "
+                      "VALUES ('series', ?, 'tt0388629', 'Ван-Пис', 'ワンピース', 'One Piece', ?)", (s, y))
+        name = "Ван-Пис (892-1051 серии) / One Piece / 2019-2023 / ЛМ (AniMaunt) / WEBRip"
+        self.assertEqual(T.seasons_by_name(c, {"name": name}, parsed(name, "Ван-Пис", "One Piece", 2019)),
+                         {1: self.id("tt0388629", 1)})
+        name = "Пацаны / The Boys (1-8 серии) [2026]"   # a plain «1-8 серии» of a series with several seasons: no guess
+        self.assertEqual(T.seasons_by_name(c, {"name": name}, parsed(name, "Пацаны", "The Boys", 2026)), {})
+
+    def test_reseason_and_duplicate_links(self):
+        c = mem_db()
+        n3 = "Кизиловый щербет / Kizilcik Serbeti (2024-2025) WEB-DLRip (сезон 3, серии 1-37 (67-103) из 37)"
+        n4 = "Кизиловый щербет / Kizilcik Serbeti (2025-2026) WEB-DLRip (сезон 4, серии 1-35 (104-138) из 35)"
+        old = c.execute("INSERT INTO titles (kind, season_number, series_key, title_ru, tracker_only, tracker_meta) "
+                        "VALUES ('series', 1, 'tracker:кизиловый щербет', 'Кизиловый щербет', 1, '{}')").lastrowid
+        for rid, n, y in ((1, n3, 2024), (2, n4, 2025)):
+            c.execute("INSERT INTO releases (id, source, source_id, url, name, category, parsed) VALUES (?, 'nnmclub', ?, 'u', ?, "
+                      "'foreign_series', ?)", (rid, str(rid), n, json.dumps(parsed(n, "Кизиловый щербет", "Kizilcik Serbeti", y))))
+            c.execute("INSERT INTO release_titles (release_id, title_id, how) VALUES (?, ?, 'tracker_only')", (rid, old))
+        st = T.reseason(c, log=lambda *_: None)
+        self.assertEqual((st["moved"], st["rows_merged"]), (2, 1))
+        got = {r[0] for r in c.execute("SELECT t.season_number FROM release_titles x JOIN titles t ON t.id = x.title_id "
+                                       "WHERE x.how = 'tracker_only'")}
+        self.assertEqual(got, {3, 4})
+        self.assertIsNotNone(c.execute("SELECT duplicate_of FROM titles WHERE id = ?", (old,)).fetchone()[0])
+        # an active link left on a duplicate row goes to its title
+        real = c.execute("INSERT INTO titles (kind, title_ru) VALUES ('movie', 'Рита')").lastrowid
+        dup = c.execute("INSERT INTO titles (kind, title_ru, duplicate_of) VALUES ('movie', 'Рита', ?)", (real,)).lastrowid
+        c.execute("INSERT INTO releases (id, source, source_id, url, name) VALUES (9, 'rutor', '9', 'u', 'Рита (2024)')")
+        c.execute("INSERT INTO release_titles (release_id, title_id, how) VALUES (9, ?, 'exact_name_year')", (dup,))
+        self.assertEqual(T.move_duplicate_links(c, log=lambda *_: None), 1)
+        self.assertEqual(c.execute("SELECT how FROM release_titles WHERE release_id = 9 AND title_id = ?", (real,)).fetchone()[0],
+                         f"exact_name_year via-duplicate-{dup}")
+
+    def test_season_years_must_fit(self):
+        name = "Блич: Тысячелетняя кровавая война (ТВ-2, часть 1) / Bleach: Sennen Kessen-hen [TV] [2022]"
+        p = parsed(name, "Блич: Тысячелетняя кровавая война", "Bleach: Sennen Kessen-hen", 2022)
+        self.assertEqual(T.seasons_by_name(self.c, {"name": name}, p), {})
+
+
 class TestOutOfScope(unittest.TestCase):
     """Releases the base does not collect (anime outside the owner's anime franchises, before 2024 and not in
     qBittorrent, КПК, old packs of no franchise) — their open issues are closed with the rule as the note, the matcher
@@ -265,8 +359,14 @@ class TestOutOfScope(unittest.TestCase):
         add_release(c, 26, "Другой фильм (2026)", "foreign_films", parsed("x", "Другой фильм", None, 2026))
         c.execute("UPDATE match_issues SET resolved_at = datetime('now') WHERE release_id = 26")
         c.commit()
-        from films import match
-        with mock.patch.object(match, "link_packs", return_value={}), \
+        import tempfile
+        from pathlib import Path
+        from films import locks, match
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        # the matcher's lock in a temp folder, not the live data/cache/locks (review round 12)
+        with mock.patch.object(locks, "DIR", Path(tmp.name)), \
+                mock.patch.object(match, "link_packs", return_value={}), \
                 mock.patch.object(match, "merge_redirected_titles", return_value={}), \
                 mock.patch.object(match, "match_one", return_value=None) as m1, \
                 mock.patch.object(T, "anime_franchises", return_value=self.FRS):

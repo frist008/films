@@ -538,6 +538,7 @@ _EDITION_TAGS = [
     (r"\bcut\b|\bedition\b|anniversary|версия|издание", "other"),
 ]
 
+_EXT_AUDIO_RE = re.compile(r"внешн\w*\s+(?:файл|дорожк)\w*|отдельн\w*\s+файл\w*|\(ext\)|\bext(?:ernal)?\b", re.I)
 _UPSCALE_RE = re.compile(r"up\s*-?\s*scal\w*|апск[еэ]йл\w*|ai[\s-]*upscal\w*|ai[\s-]*enhanced|нейросет\w*\s+апск", re.I)
 _NATIVE4K_RE = re.compile(r"нативн\w*\s*4\s*[KК]|native\s*4\s*k|true\s*4k|4k\s*di\b|4k\s*digital intermediate", re.I)
 _2KDI_RE = re.compile(r"2k\s*(?:di|digital intermediate|мастер|master)|мастер\w*\s*2k|di\s*2k", re.I)
@@ -1465,6 +1466,18 @@ def _desc_fields(text: str) -> dict[str, list]:
             key = _label_key(label)
             if key == "title_ru" and re.search(r"(?i)^\W*title", label) and "title_ru" in fields:
                 key = None
+        if not key:
+            # «<b>Перевод </b>Любительский … - Jetvis Studio», «<b>Звук </b>AC3, 192 kbps … (RU)» — a label without a colon
+            # (review 2026-10-28: 14 pages, «Ферма Кларксона» S5 hidden «нет озвучки»); only the track labels, only with a
+            # value that reads as a track / a voice kind
+            nc = re.match(r"(?i)^(перевод|озвучка|озвучивание|звук|аудио|субтитры)\s+([^:].{2,})$", ln)
+            if nc:
+                k2 = _label_key(nc.group(1))
+                v2 = nc.group(2).strip()
+                if (k2 == "translation" and _kind_in(v2)[0]) or (k2 == "audio" and (_norm_acodec(v2) or _detect_lang(v2))) \
+                        or (k2 == "subs" and _detect_lang(v2)):
+                    m = re.match(r"^(.*?)\s+(.*)$", ln)
+                    key = k2
         if key:
             val = m.group(2).strip()
             # "Перевод: Перевод 1: ..." -> unwrap
@@ -1546,7 +1559,8 @@ def _mi_duration_min(val: str | None) -> int | None:
         return None
     v = val.lower()
     h = re.search(r"(\d+)\s*(?:h|ч)", v)
-    mi = re.search(r"(\d+)\s*(?:min|м(?:ин)?\.?)(?!s)", v)
+    # older MediaInfo writes «1h 37mn» (review round 11: read as 60 min — «Гадкий я 2», «Заложница 3» …)
+    mi = re.search(r"(\d+)\s*(?:min|mn|м(?:ин)?\.?)(?!s)", v)
     s = re.search(r"(\d+)\s*(?:s\b|с\.|сек)", v)
     if not (h or mi):
         m = re.match(r"(\d{1,2}):(\d{2}):(\d{2})", v)
@@ -2387,6 +2401,13 @@ def parse_release_page(html: str) -> dict:
                     if len(cand) == 1:
                         a["kind"] = a["kind"] or cand[0]["kind"]
                         a["studio"] = a["studio"] or cand[0]["studio"]
+            # a voice-over shipped as a separate file («Язык Русский (внешним файлом)», «[RUS(ext), JAP+Sub]») is not in
+            # the MediaInfo of the video file (review 2026-10-28: 80 rutracker anime releases read as «no voice-over»)
+            mi_langs = {a.get("lang") for a in audio}
+            for d in desc_audio:
+                if d.get("lang") and d["lang"] not in mi_langs and _EXT_AUDIO_RE.search(d.get("raw") or ""):
+                    audio.append(dict(d, external=True))
+                    w.append(f"external audio file from the description: {d['raw']!r}")
     else:
         audio = desc_audio
         out["field_sources"]["audio"] = "description" if desc_audio else None

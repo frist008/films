@@ -748,9 +748,39 @@ def years() -> list[int]:
     return list(range(start, date.today().year + 2))
 
 
+def purge_dv5(conn) -> int:
+    """Remove the releases a parser found Dolby-Vision-Profile-5-only (excluded_releases, reason 'dv5_only') — the one
+    deletion the owner allows («раздачи только с DV Profile 5 не сохраняем вообще»; review 2026-10-28: 47 were kept with
+    their titles). The excluded_releases row stays, so the release is never stored again; references are cleared."""
+    ids = [r[0] for r in conn.execute(
+        """SELECT r.id FROM releases r JOIN excluded_releases e ON e.source = r.source AND e.source_id = r.source_id
+           WHERE e.reason = 'dv5_only'""")]
+    if not ids:
+        return 0
+    with conn:
+        for i in range(0, len(ids), 500):
+            chunk = ids[i:i + 500]
+            q = ",".join("?" * len(chunk))
+            for table in ("release_raw", "release_titles"):
+                conn.execute(f"DELETE FROM {table} WHERE release_id IN ({q})", chunk)
+            for table, col in (("match_issues", "release_id"), ("qbt_torrents", "release_id"), ("titles", "poster_release_id")):
+                try:
+                    conn.execute(f"UPDATE {table} SET {col} = NULL WHERE {col} IN ({q})", chunk)
+                except sqlite3.OperationalError:   # table / column not migrated yet
+                    pass
+            conn.execute(f"DELETE FROM releases WHERE id IN ({q})", chunk)
+    return len(ids)
+
+
+TRACKERS = ("rutor", "rutracker", "nnmclub", "kinozal", "rustorka", "toloka", "mazepa")
+
+
 def mark_sync(conn, source: str, cursor: str | None = None, details: dict | None = None) -> None:
-    """Record a finished sync of `source` (keeps the previous cursor when none is given)."""
+    """Record a finished sync of `source` (keeps the previous cursor when none is given). After a tracker's sync the
+    DV5-only releases its pages revealed are removed (purge_dv5)."""
     import json
+    if source in TRACKERS:
+        purge_dv5(conn)
     with conn:
         conn.execute(
             """INSERT INTO sync_state (source, last_run_at, cursor, details) VALUES (?, datetime('now'), ?, ?)
@@ -774,6 +804,20 @@ def private() -> dict:
                            "from the Google Keep note «films — секреты» (see docs/google-setup.md)")
     with open(path, "rb") as f:
         return tomllib.load(f)
+
+
+# A link made on purpose (a recheck, a twin merge, a move off a duplicate): a new row, or a 'wrong_link' row of the same
+# pair revived — review rounds 9–10: INSERT OR IGNORE left releases with wrong links only. Params: (release_id, title_id, how).
+# an older title worth older tracker pages (R162 / R180): not a tracker-only row the trackers alone made (review round 12:
+# a recheck made «Breaking In» 2018 of releases; the gate then wanted two dead 2018 kinozal pages) — unless the owner has it
+# (qBittorrent, Plex, Jellyfin, a disk); owner 2026-10-28: «ходить только за новыми франшизами и фильмами и медиа другими»
+OLD_TITLE_WANTED_SQL = """(coalesce(t.tracker_only, 0) = 0
+    OR EXISTS (SELECT 1 FROM qbt_torrents q WHERE q.title_id = t.id)
+    OR EXISTS (SELECT 1 FROM plex_items p WHERE p.title_id = t.id)
+    OR EXISTS (SELECT 1 FROM jellyfin_items j WHERE j.title_id = t.id)
+    OR EXISTS (SELECT 1 FROM disk_files d WHERE d.title_id = t.id))"""
+RELINK_SQL = ("INSERT INTO release_titles (release_id, title_id, how) VALUES (?, ?, ?) ON CONFLICT (release_id, title_id) "
+              "DO UPDATE SET how = excluded.how WHERE coalesce(release_titles.how, '') LIKE 'wrong_link%'")
 
 
 def connect(path: Path = DB_PATH) -> sqlite3.Connection:

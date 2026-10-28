@@ -28,7 +28,7 @@ from email.utils import parsedate_to_datetime
 from typing import Any
 
 from .rutor import parse_release_page
-from .rutracker import _NOT_VIDEO, rutor_shape_html, rutor_style_name
+from .rutracker import _NOT_VIDEO, name_tail_voice, rutor_shape_html, rutor_style_name
 
 BASE = "https://rustorka.com/forum"
 FEED = "rss.php?t=1&c=100"          # the guest feed: newest topics of all forums (the site caps it at 100)
@@ -309,4 +309,5 @@ def parse_item(page: str) -> dict:
     d["added_at"] = t["added"] or d.get("added_at")
     d["rustorka"] = {"post_id": t["post_id"], "topic_id": t["topic_id"], "forum": t["forum"],
                      "forum_path": t["forum_path"], "pub": t["pub"]}
+    name_tail_voice(d, t["title"] or "")
     return d

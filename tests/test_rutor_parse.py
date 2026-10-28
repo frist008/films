@@ -113,6 +113,12 @@ class TestReleaseName(unittest.TestCase):
         r = parse_release_name("Полковник Редль / Colonel Redl / Oberst Redl (1984) BDRemux 1080p | P1 | Малишевский")
         self.assertEqual(r["best_voice"], "svo")
 
+    def test_mediainfo_duration_mn(self):
+        # review round 11: «Duration : 1h 37mn» (older MediaInfo) was read as 60 min
+        from films.parse.rutor import _mi_duration_min
+        self.assertEqual([_mi_duration_min(v) for v in ("1h 37mn", "1h 48mn ", "1 ч. 38 мин.", "01:38:20", "45mn 30s")],
+                         [97, 108, 98, 98, 46])
+
     def test_upscale_and_other_tags(self):
         r = parse_release_name("Тариф Новогодний (2008) UHD BDRip 2160p | 4K | SDR | Upscale")
         self.assertTrue(r["is_upscale"])
@@ -141,6 +147,13 @@ class TestReleaseName(unittest.TestCase):
 
 
 class TestReleasePage(unittest.TestCase):
+    def test_1102883_labels_without_colon(self):
+        # «<b>Перевод </b>Любительский … - Jetvis Studio», «<b>Звук </b>AC3 … (RU)» (review 2026-10-28: «Ферма Кларксона» S5
+        # was hidden «нет озвучки»)
+        r = page("1102883")
+        self.assertEqual(tracks(r, "ru"), [("amateur", "Jetvis Studio")])
+        self.assertEqual(r["best_voice"], "amateur")
+
     def test_1110909_uhd_bdremux_dv7_with_ukrainian(self):
         r = page("1110909")
         self.assertEqual(r["imdb_id"], "tt14205554")

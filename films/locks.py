@@ -32,7 +32,10 @@ import time
 
 from . import db
 
-DIR = db.ROOT / "data" / "cache" / "locks"
+from pathlib import Path
+
+# FILMS_LOCK_DIR: tests run their locks in a temp folder, not the live one (review round 11)
+DIR = Path(os.environ["FILMS_LOCK_DIR"]) if os.environ.get("FILMS_LOCK_DIR") else db.ROOT / "data" / "cache" / "locks"
 
 
 def _alive(pid: int) -> bool:

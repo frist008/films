@@ -464,7 +464,9 @@ def _main_row(r: dict, people: dict, collections: dict) -> list:
         _cell(NL.join(_companies(t)) or None),
         _cell(" / ".join(x for x in (_money(t.get("budget_usd")), _money(t.get("box_office_usd"))) if x) or None),
         _cell(season_info),
-        _links_cell([("Трейлер", t.get("trailer_ru_url")) if t.get("trailer_ru_url") else
+        # speech not determined (trailer-check: «unknown» waits for the owner) — said in the link (review round 12)
+        _links_cell([("Трейлер" + (" (язык не подтверждён)" if t.get("trailer_ru_check") == "unknown" else ""),
+                      t.get("trailer_ru_url")) if t.get("trailer_ru_url") else
                      ("Трейлер (" + {"uk": "укр", "original": "ориг.", "ru_sub": "рус. суб.", "any": "другой"}
                       .get(t.get("trailer_alt_kind"), "?") + ")", t.get("trailer_alt_url")),
                      ("IMDb", imdb_url), ("RT", t.get("rt_url")),
@@ -938,6 +940,9 @@ def _rebuild(conn) -> dict:
         stats["read_back"] = read_back(conn, sh)
         stats["read_back"].update(read_back_weights(sh))   # constants edited on «Баллы» → settings (before compute)
     rows = rank.compute(conn)
+    from . import visible_check   # invariants of the visible rows (review 2026-10-28) — refuse to write a wrong sheet
+    if problems := visible_check.check(conn, rows):
+        raise SystemExit("Таблица не записана — нарушены правила видимых строк:\n" + "\n".join(problems[:40]))
     _OWNER_CARTOONS.clear()
     _OWNER_CARTOONS.update(owner_cartoons(conn))
     people = _people(conn)

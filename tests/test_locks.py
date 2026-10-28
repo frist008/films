@@ -9,6 +9,20 @@ from films import locks
 
 
 class LocksTest(unittest.TestCase):
+    def setUp(self):
+        # a temp lock folder, the live data/cache/locks untouched (review round 11); subprocesses get it by the env var
+        import os
+        import tempfile
+        from pathlib import Path
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        old_dir, old_env = locks.DIR, os.environ.get("FILMS_LOCK_DIR")
+        locks.DIR = Path(tmp.name)
+        os.environ["FILMS_LOCK_DIR"] = tmp.name
+        self.addCleanup(setattr, locks, "DIR", old_dir)
+        self.addCleanup(lambda: os.environ.pop("FILMS_LOCK_DIR") if old_env is None
+                        else os.environ.__setitem__("FILMS_LOCK_DIR", old_env))
+
     def test_reentrant_same_process(self):
         with locks.lock("test_reent", timeout=2):
             with locks.lock("test_reent", timeout=2):      # match_releases inside an outer lock('match')

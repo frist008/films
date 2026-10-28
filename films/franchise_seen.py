@@ -69,6 +69,8 @@ def kids_ids(conn) -> set[str]:
 
 _COUNTRY: dict[str, list] = {}   # imdb → production / origin countries, for franchises with hide_country
 _ANIMATED_FR: set[str] = set()   # franchises that are cartoons themselves (Shrek, Toy Story…) — the owner's own
+_ANIM_TITLES: set[str] = set()   # members whose title is a cartoon by its genres (a member kind «short» / «special» does
+                                 # not say it: «Бегущий по лезвию: Блэкаут 2022», review 2026-10-28)
 
 
 def animation_decided(fr: dict) -> bool:
@@ -85,7 +87,7 @@ def _too_old(fr: dict, m: dict) -> bool:
     """hide_films_before / hide_animated_films_before of a franchise (DC: films < 1990, animated films < 2009)."""
     if m.get("imdb_id") in (fr.get("hide") or []):   # hidden one by one by the owner
         return True
-    animated = "animated" in (m.get("kind") or "")
+    animated = "animated" in (m.get("kind") or "") or m.get("imdb_id") in _ANIM_TITLES
     if animated and (fr.get("animation") == "hide" or (fr.get("animation") == "films_only" and "series" in m.get("kind", ""))):
         return True
     if fr.get("hide_all_series") and "series" in (m.get("kind") or ""):
@@ -96,9 +98,9 @@ def _too_old(fr: dict, m: dict) -> bool:
                 return True
     if fr.get("keep_only") is not None and m.get("imdb_id") not in fr["keep_only"]:   # only these works matter
         return True
-    if fr.get("hide_animation") and "animated" in (m.get("kind") or ""):
+    if fr.get("hide_animation") and animated:
         return True
-    if "animated" in (m.get("kind") or "") and fr.get("animation_only") is not None and m["imdb_id"] not in fr["animation_only"]:
+    if animated and fr.get("animation_only") is not None and m["imdb_id"] not in fr["animation_only"]:
         return True
     # shorts / specials / documentaries follow the films' cut-off, cartoon series the series' one (Captain America 1944
     # serial slipped through as a «short» past Marvel's «до 1990 — скрыть», 2026-10-24)
@@ -107,6 +109,13 @@ def _too_old(fr: dict, m: dict) -> bool:
            "animated film": fr.get("hide_animated_films_before"), "series": fr.get("hide_series_before"),
            "animated series": fr.get("hide_series_before")}.get(m.get("kind"))
     return bool(lim and m.get("year") and m["year"] < lim)
+
+
+def kept_elsewhere(fr: dict, imdb: str, followed: dict, in_frs: dict) -> bool:
+    """Another followed franchise (scope all) has this work and does not hide it — `fr`'s hide rules do not apply
+    (review 2026-10-28: Marvel's «animation only MCU» hid «Паук внутри» of the owner's own Spider-Verse franchise)."""
+    return any(o["franchise_key"] != fr["key"] and o["franchise_key"] in followed
+               and not _too_old(followed[o["franchise_key"]], o) for o in in_frs.get(imdb, []))
 
 
 def _give_yana(conn, items: list) -> int:
@@ -139,30 +148,45 @@ def hide_excluded_series(conn) -> int:
     global _KIDS, _ANIMATED_FR
     _KIDS = kids_ids(conn)
     _COUNTRY.update(countries(conn))
+    _ANIM_TITLES.update(r[0] for r in conn.execute(
+        """SELECT imdb_id FROM titles WHERE imdb_id IS NOT NULL AND season_number IS NULL
+           AND (genres LIKE '%мультфильм%' OR genres LIKE '%Animation%')"""))
     _ANIMATED_FR = {k for k, a, t in conn.execute(
         """SELECT franchise_key, sum(kind LIKE '%animated%'), count(*) FROM franchise_members
            WHERE confidence != 'review' GROUP BY 1""") if t and a / t >= 0.5}
     keep, n = owner_series_ids(conn), 0
     to_yana = []
+    followed = {f["key"]: f for f in franchises if f.get("scope") == "all"}
+    in_frs: dict[str, list] = {}
+    for m in conn.execute("SELECT * FROM franchise_members WHERE imdb_id IS NOT NULL AND confidence != 'review'"):
+        in_frs.setdefault(m["imdb_id"], []).append(dict(m))
     for fr in franchises:
         if not (fr.get("hide_films_before") or fr.get("hide_animated_films_before") or fr.get("hide_series_before") or fr.get("hide") or fr.get("keep_only") is not None or fr.get("animation_only") is not None or True):
             continue
         for m in conn.execute("SELECT * FROM franchise_members WHERE franchise_key = ? AND imdb_id IS NOT NULL", (fr["key"],)).fetchall():
             if not _too_old(fr, dict(m)):
                 continue
+            # a member of another followed franchise that keeps it is not hidden by this one (review 2026-10-28:
+            # «Паук внутри» — Marvel's «animation only MCU» hid a member of the owner's own Spider-Verse franchise)
+            if kept_elsewhere(fr, m["imdb_id"], followed, in_frs):
+                continue
             for (tid,) in conn.execute("""SELECT id FROM titles WHERE (imdb_id = ? AND season_number IS NULL)
                                            OR series_imdb_id = ?""", (m["imdb_id"], m["imdb_id"])).fetchall():
                 n += conn.execute("""INSERT INTO user_marks (title_id, mark, note) VALUES (?, 'not_interested', ?)
-                                     ON CONFLICT(title_id) DO NOTHING""", (tid, f"{fr['name']}: hide_*_before / animation_only")).rowcount
+                                     ON CONFLICT(title_id) DO UPDATE SET mark = 'not_interested', note = excluded.note
+                                     WHERE user_marks.mark IS NULL""", (tid, f"{fr['name']}: hide_*_before / animation_only")).rowcount
     cfg = [fr for fr in franchises if fr.get("series_only") is not None]
     for fr in cfg:
         for (imdb,) in conn.execute("""SELECT imdb_id FROM franchise_members WHERE franchise_key = ? AND kind LIKE '%series%'
                                        AND imdb_id IS NOT NULL""", (fr["key"],)).fetchall():
             if imdb in fr["series_only"] or imdb in keep:
                 continue
-            for (tid,) in conn.execute("SELECT id FROM titles WHERE series_imdb_id = ?", (imdb,)).fetchall():
+            # a serial filed as one movie title (Batman and Robin 1949: imdb_id, no season) is the same series
+            for (tid,) in conn.execute("""SELECT id FROM titles WHERE series_imdb_id = ?
+                                           OR (imdb_id = ? AND season_number IS NULL)""", (imdb, imdb)).fetchall():
                 n += conn.execute("""INSERT INTO user_marks (title_id, mark, note) VALUES (?, 'not_interested', ?)
-                                     ON CONFLICT(title_id) DO NOTHING""", (tid, f"{fr['name']}: сериалы вне series_only")).rowcount
+                                     ON CONFLICT(title_id) DO UPDATE SET mark = 'not_interested', note = excluded.note
+                                     WHERE user_marks.mark IS NULL""", (tid, f"{fr['name']}: сериалы вне series_only")).rowcount
     conn.commit()
     return n
 

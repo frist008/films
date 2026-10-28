@@ -256,7 +256,9 @@ def _walk_videos(o):
             yield from _walk_videos(v)
 
 
-def parse_length(s: str | None) -> int | None:
+def parse_length(s: str | int | None) -> int | None:
+    if isinstance(s, (int, float)) and not isinstance(s, bool):
+        return int(s)          # the search already gives seconds (review 2026-10-28: `originals` crashed on an int)
     if not s or not re.fullmatch(r"\d+(:\d{2}){0,2}", s.strip()):
         return None
     sec = 0
@@ -1241,8 +1243,10 @@ NOT_WATCHED = (" AND NOT EXISTS (SELECT 1 FROM watched w WHERE w.title_id = titl
 
 
 def _todo(conn, recheck_days: float | None, ids: list[int] | None = None) -> list:
-    # owner_none: the owner listened to every version and said none is Russian — not searched again
-    sql = ("SELECT * FROM titles WHERE trailer_ru_url IS NULL AND coalesce(trailer_ru_check, '') != 'owner_none'"
+    # owner_none: the owner listened to every version and said none is Russian — not searched again;
+    # owner_alt: the owner chose a trailer in another language (2026-10-28, «Жатва», «Бруталист») — the same
+    sql = ("SELECT * FROM titles WHERE trailer_ru_url IS NULL"
+           " AND coalesce(trailer_ru_check, '') NOT IN ('owner_none', 'owner_alt')"
            + NOT_WATCHED)
     args: list = []
     if ids:
@@ -1336,6 +1340,10 @@ def run(limit: int | None = None, recheck_days: float | None = 30, ids: list[int
                 print(f"  {i}/{len(rows)} acc {stats['accepted']} amb {stats['ambiguous']} "
                       f"nf {stats['not_found']} req {yt.stats['requests']} cache {yt.stats['from_cache']} "
                       f"{el / 60:.0f} min", file=log, flush=True)
+                # the watchdog reads only timestamped PROGRESS lines (percent + ETA, owner 2026-10-25)
+                eta = time.strftime("%H:%M", time.localtime(time.time() + el / i * (len(rows) - i)))
+                print(f"{time.strftime('%Y-%m-%d %H:%M:%S')} PROGRESS {100 * i // len(rows)}% ETA {eta} — "
+                      f"поиск трейлеров {i}/{len(rows)}", file=log, flush=True)
     except Blocked as e:
         stats["stopped"] = f"YouTube blocked: {e}"
         print(f"STOPPED: {e}", file=log, flush=True)
@@ -1499,9 +1507,23 @@ def main(argv=None):
     au = sub.add_parser("audit", help="re-decide trailers this module wrote, with the current rules")
     au.add_argument("--dry-run", action="store_true")
     au.add_argument("--ids", help="comma-separated title ids")
+    t.add_argument("--ids-file", help="file with comma-separated title ids (like --ids)")
+    t.add_argument("--skip-checked-hours", type=float,
+                   help="with --ids / --ids-file: skip titles searched in the last H hours (a restart after a reboot "
+                        "must not search again what the run already did — review 2026-10-28)")
     a = p.parse_args(argv)
     if a.cmd == "trailers":
-        ids = [int(x) for x in a.ids.split(",")] if a.ids else None
+        raw = a.ids or (Path(a.ids_file).read_text(encoding="utf-8") if a.ids_file else "")
+        ids = [int(x) for x in raw.split(",") if x.strip()] or None
+        if ids and a.skip_checked_hours:
+            conn = db.connect()
+            recent = {r[0] for r in conn.execute(
+                "SELECT id FROM titles WHERE trailer_checked_at >= datetime('now', ?)", (f"-{a.skip_checked_hours} hours",))}
+            ids = [i for i in ids if i not in recent] or None
+            print(f"  ids after --skip-checked-hours: {len(ids or [])}", file=sys.stderr, flush=True)
+            if not ids:
+                print(json.dumps({"titles": 0, "note": "all searched recently"}))
+                return
         res = run(limit=a.limit, recheck_days=a.recheck_days, ids=ids, dry=a.dry_run, uk=not a.no_uk,
                   sample=a.sample, max_hours=a.max_hours, offline=a.offline)
         print(json.dumps(res, ensure_ascii=False, indent=1))

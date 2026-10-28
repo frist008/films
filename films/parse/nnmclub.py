@@ -317,9 +317,13 @@ _VOICE_TOKEN = re.compile(r"(?i)^(?:\d+\s*[xх×]\s*)?(?:Dub|D|MVO|DVO|AVO|VO|SV
 _LANG_TOKEN = re.compile(r"(?i)^(?:UKR|UA|ENG|EN|RUS|RU|PL|KOR|JPN|JAP|FRA|FR|GER|DE|ITA|ESP|ES|CHN|ORIGINAL|ORIG)$")
 _AI_RE = re.compile(r"(?i)handmade|\bAI\b|нейро")
 # «сезон 1-6, 12, Серий 1-148» / «сезон 1-8, 208 серий»: a number followed by «серий» is not one more season
+# … nor a range right before «серии»: «(1-5 сезоны: 1-76 серии из 76)» is seasons 1-5 (_SEASON_BEFORE_RE), not 1-76
+# (review round 10: 71 phantom X-Men 1992 rows S6–S76)
 _SEASON_WORD_RE = re.compile(r"(?i)сезон\w*\s*:?\s*(\d{1,3}(?:\s*[-–—]\s*\d{1,3})?"
+                             r"(?![\d\s\-–—]*(?:сер|эпиз|выпуск)\w*+(?!\s*:?\s*\d))"   # «Сезон 1 - 4 Серии 1-87» — seasons
                              r"(?:\s*,\s*\d{1,3}(?:\s*[-–—]\s*\d{1,3})?(?![\d\s\-–—]*(?:сер|эпиз|выпуск)))*)"
                              r"(?:\s*из\s*\d{1,3})?")
+_SEASON_BEFORE_RE = re.compile(r"(?i)(?<![\d-])(\d{1,2}(?:\s*[-–—]\s*\d{1,2})?)\s*сезон(?:ы|ов|а)?\b")
 _EPIS_RES = [
     re.compile(r"(?i)(?:серии|серия|серий|эпизоды|эпизод|выпуски|выпуск)\s*:?\s*(\d{1,4})(?:\s*[-–—]\s*(\d{1,4}))?"
                r"(?:\s*из\s*(\d{1,4}|\?+|xx))?"),
@@ -358,7 +362,10 @@ def _season_info(text: str) -> tuple[list[int], tuple | None]:
     seasons: list[int] = []
     for m in _SEASON_WORD_RE.finditer(text):
         seasons += _season_list(m.group(1))
-    rest = _SEASON_WORD_RE.sub(" ", text)
+    if not seasons:
+        for m in _SEASON_BEFORE_RE.finditer(text):
+            seasons += _season_list(m.group(1))
+    rest = _SEASON_WORD_RE.sub(" ", _SEASON_BEFORE_RE.sub(" ", text))
     ep = None
     for i, rx in enumerate(_EPIS_RES):
         m = rx.search(rest)

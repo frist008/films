@@ -269,6 +269,13 @@ class TestCrawl(unittest.TestCase):
         c.execute("INSERT INTO watched (title_id, source) VALUES (2, 'plex')")
         idx = mz.old_title_index(c, 2024)
         self.assertEqual(idx, {"old film": {2010}, "старий": {2010}})
+        # review round 12: an old tracker-only row the trackers alone made wants no old pages; one the owner has does
+        c.execute("INSERT INTO titles (id, kind, title_original, year, tracker_only) VALUES (3, 'movie', 'Breaking In', 2018, 1)")
+        c.execute("INSERT INTO releases (id, source, source_id, url, name) VALUES (3, 'rutor', '3', 'u', 'n')")
+        c.execute("INSERT INTO release_titles (release_id, title_id) VALUES (3, 3)")
+        self.assertNotIn("breaking in", mz.old_title_index(c, 2024))
+        c.execute("INSERT INTO qbt_torrents (infohash, name, title_id, present, synced_at) VALUES ('h', 'Breaking In', 3, 1, 'x')")
+        self.assertIn("breaking in", mz.old_title_index(c, 2024))
 
 
 class TestIngest(unittest.TestCase):

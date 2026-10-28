@@ -3,17 +3,24 @@
 ютуб»)."""
 import json
 import os
+import sqlite3
 import tempfile
 import time
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from films import gate
+from films import db, gate
+from films.sources import kinozal as kz
 
 
 class GateTest(unittest.TestCase):
     def setUp(self):
+        patcher = mock.patch.object(gate, "pages_left", return_value={})   # the live DB's pages: PagesLeftTest
+        patcher.start()
+        self.addCleanup(patcher.stop)
         self.d = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, self.d, True)   # review 2026-10-28: the folders were left in %TEMP%
         self.logs = self.d / "logs"
         self.logs.mkdir()
         self.plan = self.d / "PLAN.md"
@@ -50,6 +57,36 @@ class GateTest(unittest.TestCase):
         os.utime(self.logs / "agent_src_toloka.log", (later, later))
         with self.assertRaises(SystemExit):
             gate.require_sheet(self.logs, self.plan, self.ok)
+
+    def test_unread_pages_block_the_sheet(self):
+        # review 2026-10-28: kinozal wrote AGENT_SRC_KINOZAL_OK with 131 topics unread — the markers alone are not enough
+        self.log("agent_src_kinozal", ["x PROGRESS 100%", "AGENT_SRC_KINOZAL_OK"])
+        gate.pages_left.return_value = {"kinozal": 5}
+        st = gate.check(self.logs, self.plan)
+        self.assertEqual((st["open"], st["pages_left"]), (False, {"kinozal": 5}))
+        with self.assertRaises(SystemExit):
+            gate.require_db(self.logs, self.plan)
+
+
+class PagesLeftTest(unittest.TestCase):
+    def test_db_and_kinozal_topics(self):
+        c = sqlite3.connect(":memory:")
+        c.row_factory = sqlite3.Row
+        db.migrate(c)
+        ins = "INSERT INTO releases (source, source_id, name, url, page_skip, details_parsed_at) VALUES (?, ?, 'x', 'u', ?, ?)"
+        c.execute(ins, ("rutor", "1", 0, None))              # neither page nor parse: left
+        c.execute(ins, ("rutor", "2", 1, None))              # skipped on purpose (broad search noise)
+        c.execute(ins, ("nnmclub", "3", 0, "2026-10-26"))    # parsed from the listing (page for members only)
+        c.execute(ins, ("rutracker", "4", 0, None))          # rutracker opens only chosen topics: not counted
+        c.execute(ins, ("kinozal", "5", 0, "2026-10-28"))
+        c.execute("INSERT INTO excluded_releases (source, source_id, reason, name) VALUES ('kinozal', '6', 'dv5', 'x')")
+        tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, tmp, True)   # review 2026-10-28: the folders were left in %TEMP%
+        rows = {t: {"title": f"Фильм {t} / Film {t} / 2025 / ДБ / WEB-DL (1080p)", "cat": 8} for t in ("5", "6", "7")}
+        (tmp / "rows.json").write_text(json.dumps(rows, ensure_ascii=False), encoding="utf-8")
+        with mock.patch.object(kz, "ROWS", tmp / "rows.json"):
+            self.assertEqual(kz.topics_left(c), ["5", "7"])     # «6» excluded by its page: not fetched again
+            self.assertEqual(gate.pages_left(c), {"rutor": 1, "kinozal": 2})
 
 
 if __name__ == "__main__":

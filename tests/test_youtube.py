@@ -37,6 +37,126 @@ class TestParsing(unittest.TestCase):
         self.assertEqual(yt.parse_length("1:22:22"), 4942)
         self.assertIsNone(yt.parse_length(""))
         self.assertIsNone(yt.parse_length("LIVE"))
+        # review 2026-10-28: the search gives seconds already — `trailer_lang originals` crashed on `int.strip`
+        self.assertEqual(yt.parse_length(87), 87)
+        self.assertEqual(yt.parse_length(yt.parse_length("1:27")), 87)
+
+    def test_originals_on_parsed_search(self):
+        import sqlite3
+        from unittest import mock
+        from films import db
+        from films.sources import trailer_lang
+        c = sqlite3.connect(":memory:")
+        c.row_factory = sqlite3.Row
+        db.migrate(c)
+        c.execute("INSERT INTO titles (id, kind, title_original, year) VALUES (1, 'movie', 'Dune', 2021)")
+        c.execute("INSERT INTO releases (id, source, source_id, url, name) VALUES (1, 'rutor', '1', 'u', 'n')")
+        c.execute("INSERT INTO release_titles (release_id, title_id) VALUES (1, 1)")
+        fake = mock.Mock()
+        fake.search.return_value = {"videos": [{"id": "abc", "title": "Dune Official Trailer", "length": 150}]}
+        with mock.patch.object(trailer_lang.yt_mod, "YouTube", return_value=fake):
+            st = trailer_lang.search_originals(c, log=lambda *_: None)
+        self.assertEqual(st["found"], 1)
+        # review round 9: a watched title gets no search; a find no longer accepted is taken back on --recheck
+        c.execute("INSERT INTO titles (id, kind, title_original, year) VALUES (2, 'movie', 'Doubt', 2008)")
+        c.execute("INSERT INTO release_titles (release_id, title_id) VALUES (1, 2)")
+        c.execute("INSERT INTO watched (title_id, source) VALUES (2, 'plex')")
+        c.execute("UPDATE titles SET trailer_alt_url = 'https://www.youtube.com/watch?v=old' WHERE id = 1")
+        fake.search.return_value = {"videos": [{"id": "x", "title": "Dune: Part Two Official Trailer 2024", "length": 150}]}
+        with mock.patch.object(trailer_lang.yt_mod, "YouTube", return_value=fake):
+            st = trailer_lang.search_originals(c, recheck=True, log=lambda *_: None)
+        self.assertEqual((st["titles"], st["taken_back"]), (1, 1))
+        self.assertIsNone(c.execute("SELECT trailer_alt_url FROM titles WHERE id = 1").fetchone()[0])
+
+    def test_original_fits(self):
+        from films.sources.trailer_lang import original_fits as fits
+        self.assertTrue(fits("Doubt", 2008, "movie", None, "DOUBT | Official Trailer (2008)"))
+        self.assertTrue(fits("Doubt", 2008, "movie", None, "Official Trailer: Doubt"))
+        self.assertFalse(fits("Doubt", 2008, "movie", None, "Reasonable Doubt Official Trailer"))
+        self.assertFalse(fits("Jumanji", 1995, "movie", None, "Jumanji: Open World Trailer 2026"))
+        self.assertFalse(fits("Dogtown 2", 2025, "movie", None, "Lords of Dogtown (2005) Trailer"))
+        self.assertFalse(fits("Blood & Sweat", 2026, "series", 1, "What the Hell Happened to Blood, Sweat & Tears? | TRAILER"))
+        self.assertFalse(fits("Arafta", 2026, "series", 1, "Arafta Season 2 - Official Trailer"))
+        self.assertTrue(fits("Arafta", 2026, "series", 2, "Arafta Season 2 - Official Trailer"))
+        self.assertFalse(fits("Güneşin Doğduğu Yer", 2026, "series", 1, "Güneşin Doğduğu Yer 7. Bölüm Fragman"))
+        # review round 10: a name with its own «:»
+        self.assertTrue(fits("Red Days 2: Cecilia", 2026, "movie", None, "Red Days 2: Cecilia Trailer"))
+        self.assertFalse(fits("Jumanji", 1995, "movie", None, "Jumanji: Open World Trailer"))
+        # review round 11: tags, full-width marks, another script first, a subtitle that is a trailer word …
+        for name, vt in (("Lost in Paradise", "【DRAMA SERIES】Lost in Paradise｜Trailer"),
+                         ("Lost in Paradise", "Lost in Paradise: Original Trailer"),
+                         ("Red Days", "红色日子 Red Days 预告"), ("Face à face", "Face à face : bande-annonce"),
+                         ("Angel Flight", "Angel Flight: The Movie Trailer"), ("Doubt", "[ENG SUB] Doubt Trailer"),
+                         ("Stuntman", "Stuntman (2024) 武替道 - Movie Trailer"),
+                         ("Missing", "Missing (2024) Japanese Movie Trailer English Subtitles")):
+            self.assertTrue(fits(name, 2024, "movie", None, vt), vt)
+        # … and a name that only opens another title
+        for name, vt in (("The Company", "The Company You Keep Official Trailer"), ("Dream", "Dream Scenario Trailer"),
+                         ("102", "102 Dalmatians Trailer"), ("Klara", "Klara and the Sun Trailer"),
+                         ("Daddy", "Daddy's Head Trailer"), ("Pati", "Pati 2 | zwiastun")):
+            self.assertFalse(fits(name, None, "movie", None, vt), vt)
+        # review round 12: a series' own season number, other languages' words, a bracketed name, a year in the name …
+        for args in (("Pati", 2025, "series", 2, "Pati 2 | zwiastun", "pl"),
+                     ("Rüzgarlı Tepe", 2025, "series", 2, "Rüzgarlı Tepe 2. Sezon 1. Tanıtım", "tr"),
+                     ("STHLM Blackout", 2024, "series", 1, "STHLM Blackout Säsong 1 - Officiell Trailer", "sv"),
+                     ("Sygeplejeskolen", 2025, "series", 6, "Trailer: Sygeplejeskolen sæson 6", "da"),
+                     ("Estado de fuga 1986", 2025, "series", 1, "Estado de fuga 1986 | Tráiler oficial | Netflix", "es"),
+                     ("New Biography of Xishi", 2025, "series", 1, "|【西施新传 New Biography of Xishi】| Trailer", "zh"),
+                     ("Le Mystère de la chambre jaune", 2025, "movie", None, "Bande-annonce Le Mystère de la chambre jaune TF1", "fr"),
+                     ("Informant – Angst über der Stadt", 2024, "series", 1, "Informant – Angst über der Stadt (ARD Trailer)", "de"),
+                     ("The New Dragon Gate Inn", 2024, "movie", None, "《新龍門客棧 The New Dragon Gate Inn》 3分鐘預告", "zh"),
+                     ("Angel Flight THE MOVIE", 2025, "movie", None, "Angel Flight: The Movie | Official Trailer", "ja"),
+                     ("Kaboul", 2024, "series", 1, "Kaboul - Bande annonce VF - France TV", "fr"),
+                     ("102", 2025, "movie", None, "102 | ТРЕЙЛЕР | Режиссер Эрнест Абдыжапаров", "ky"),
+                     ("Мастер Витя и Мотор", 2024, "series", 1, "Тизер новой серии / Мастер Витя и Мотор", None),
+                     ("Билет из рая", 2025, "movie", None, 'Официальный трейлер комедийной драмы "Билет из Рая".', None),
+                     ("Mater's Tall Tales", 2008, "series", 1, "Cars Toon: Mater's Tall Tales - Trailer", None),
+                     # review round 13
+                     ("Vefa Sultan", 2024, "series", 1, "Vefa Sultan İlk Tanıtım", "tr"),
+                     ("Vicdansız", 2023, "series", 1, "Vicdansız Dizisi Tanıtım Fragmanı", "tr"),
+                     ("L'École des espions", 2025, "series", 1, "Bande-annonce de l'École des espions", "fr"),
+                     ("The Ainsley McGregor Mysteries: A Case for the Winemaker", 2024, "movie", None,
+                      '"Ainsley McGregor Mysteries: A Case for the Winemaker" | Official Trailer', "en"),
+                     ("Naari Naari Naduma Murari", 2026, "movie", None, "Naari Naari Naduma Murari Tamil Trailer", "te")):
+            self.assertTrue(fits(*args), args[4])
+        # … and another work's trailer: the name after «Other name:», a one-word name of a non-English title in an
+        # English video, another season as «Series 3», the series' film, a Cyrillic name going on
+        for args in (("Prophecy", 2024, "movie", None, "Dune: Prophecy | Official Series Trailer | Max", "it"),
+                     ("2099", 2026, "movie", None, "BLADE RUNNER: 2099 Teaser Trailer (2026)", "zh"),
+                     ("Doppio gioco", 2025, "series", 1, "Black Bag: Doppio Gioco | Trailer Ufficiale", "it"),
+                     ("Patriot", 2025, "movie", None, "Patriot - Official Trailer | Prime Video", "ml"),
+                     ("Surface", 2025, "series", 1, "Surface Season 1 Trailer | Rotten Tomatoes TV", "fr"),
+                     ("Mandy", 2025, "series", 4, "Mandy Series 3 OFFICIAL Trailer – BBC", "en"),
+                     ("No. 1 Sentai Gozyuger", 2025, "series", 1, "No. 1 Sentai Gozyuger THE MOVIE FINAL TRAILER", "ja"),
+                     ("Друзі", 2025, "series", 1, "Друзі та сусіди | Apple TV+", "uk"),
+                     ("Мошенники", 2025, "series", 1, "Телефонные мошенники - Русский трейлер", None),
+                     # review round 13: an alt name in brackets is no separator; no «A» dropped
+                     ("Sword of Coming", 2024, "series", 1, "Sword of Coming (Movie) | Official Trailer", "zh"),
+                     ("A Family Thanksgiving", 2025, "movie", None, "Family Thanksgiving | Official Trailer", "en"),
+                     ("Pati", 2025, "movie", None, "Pati 2 | zwiastun", "pl")):
+            self.assertFalse(fits(*args), args[4])
+        # review round 14: «Short» only for a short film; another Indian language is a dub; «The» left out — two words
+        # or the year
+        self.assertTrue(fits("Hawaiian Vacation", 2011, "movie", None, "Toy Story - Hawaiian Vacation Short Official Trailer",
+                             runtime=6))
+        self.assertFalse(fits("Dark Romance", 2025, "movie", None, "Dark Romance Short Film Trailer", runtime=104))
+        self.assertTrue(fits("Ayalaan", 2024, "movie", None, "Ayalaan - Official Tamil Trailer", orig_lang="ta"))
+        self.assertFalse(fits("Ayalaan", 2024, "movie", None, "Ayalaan - Official Telugu Trailer", orig_lang="ta"))
+        self.assertFalse(fits("Naari Naari Naduma Murari", 2026, "movie", None, "Naari Naari Naduma Murari Tamil Trailer",
+                              orig_lang="te"))
+        self.assertTrue(fits("Pushpa 2", 2024, "movie", None, "Pushpa 2 Official Trailer", orig_lang="te"))
+        self.assertFalse(fits("The Shadow Dancer", 2005, "movie", None, "Shadow Dancer Official Trailer #1 (2012)"))
+        self.assertFalse(fits("The Shadow Dancer", 2005, "movie", None, "Shadow Dancer Official Trailer"))
+        self.assertTrue(fits("The Shadow Dancer", 2005, "movie", None, "Shadow Dancer (2005) Trailer"))
+        self.assertTrue(fits("The Ainsley McGregor Mysteries", 2024, "movie", None, "Ainsley McGregor Mysteries | Trailer"))
+
+    def test_any_is_still_a_trailer(self):
+        from films.sources.trailer_lang import _ANY_NOT, _ANY_TRAILER
+        for t in ("Paolo Temp.1 2026 | Trailer Oficial HD HBO", "Haysiyet 1. Bölüm Fragmanı", "Kardeşlerim Yeni Sezon Tanıtım",
+                  "映画『X』予告"):
+            self.assertTrue(_ANY_TRAILER.search(t) and not _ANY_NOT.search(t), t)
+        for t in ("Kid-E-Cats Cartoon", "Dune Opening Scene", "Dune Ending Explained", "X - Deleted Scene"):
+            self.assertFalse(_ANY_TRAILER.search(t) and not _ANY_NOT.search(t), t)
 
     def test_views(self):
         self.assertEqual(yt.parse_views("74\xa0215 просмотров"), 74215)

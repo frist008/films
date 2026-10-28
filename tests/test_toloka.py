@@ -25,6 +25,22 @@ NODE = shutil.which("node")
 TODAY = date(2026, 10, 26)
 
 
+_CACHE_TMP = None
+_CACHE_LIVE = tl.CACHE
+
+
+def setUpModule():
+    # ingest writes forums.json into tl.CACHE: never the live data/cache/toloka (tests/test_live_cache_untouched.py)
+    global _CACHE_TMP
+    _CACHE_TMP = tempfile.TemporaryDirectory()
+    tl.CACHE = Path(_CACHE_TMP.name)
+
+
+def tearDownModule():
+    tl.CACHE = _CACHE_LIVE
+    _CACHE_TMP.cleanup()
+
+
 def fx(name: str) -> str:
     return (FIX / name).read_text(encoding="utf-8")
 
@@ -247,6 +263,14 @@ class TestTopicPython(unittest.TestCase):
         c = u.compact_topic_html("toloka", dict(sp, fetched_at="x"))
         self.assertNotIn("SECRETKEY", c)
         self.assertEqual(u.parse_topic("toloka", c, TODAY)["audio"], d["audio"])
+
+    def test_ukr_in_title_is_a_track(self):
+        # review 2026-10-28: «Ігри звірів (Сезон 2)» — audio empty → hidden «нет озвучки»; «Sub Ukr» alone is subtitles
+        d = u.parse_title_only("Ігри звірів (Сезон 2) / Beast Games (Season 2) (2024) WEB-DL 1080p Ukr/Eng | Sub Ukr/Eng",
+                               "foreign_series")
+        self.assertEqual([(a["lang"], a["kind"]) for a in d["audio"] if a["lang"] == "uk"], [("uk", None)])
+        d = u.parse_title_only("Флоу / Flow (2024) WEB-DL 1080p Eng | Sub Ukr", "animation")
+        self.assertFalse([a for a in d["audio"] or [] if a.get("lang") == "uk"])
 
     def test_forum_names(self):
         self.assertEqual(u.category_for_forum("Фільми HD українською"), "foreign_films")

@@ -90,9 +90,9 @@ query GetWatchHistoryHub($uuid: ID = "", $first: PaginationInt!, $after: String)
 парка»), а размер 1000 даёт 403. Всегда через `films.sources.plex.discover_children` (страницы по 200 до `totalSize`).
 Отметка серии: Discover id серии = `…/{seasonId}/children` → `index`; `films.watched.mark_episode`.
 
-Ограничение: профиль показывает «25 серий», а история отдаёт только сериал Agatha All Along (9 серий).
-Остальные 16 серий не нашлись ни в `watchHistory`, ни в `activityFeed(types:[WATCH_HISTORY])` (там те же 529
-записей владельца); интроспекция схемы GraphQL закрыта (400).
+«25 серий» профиля — это `watchStats.episodeAmount`, а не счётчик всей истории (был 75 при 542 записях, 4 при 4473;
+ревью 2026-10-28). С 25.10 `watchHistory` отдаёт серии поштучно (3142 серии, 1174 фильма, 167 сезонов); целым сериалом
+осталась только Agatha All Along, и её 9 из 9 серий раскрыты — недостающих серий нет.
 
 **Перечитано 2026-10-25:** `watchHistory` теперь отдаёт и отдельные серии (`EPISODE` с `parent.index` = сезон,
 `index` = серия) и сезоны (`SEASON` — отметки «сезон целиком», в «видел» не считаются): 4473 записи владельца

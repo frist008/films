@@ -20,9 +20,13 @@ description: Отметить фильм/сериал/мультфильм ка�
    - читает состояние обратно и пишет `confirmed`; в БД `watched` (`manual`, и `plex` при подтверждении);
    - записывает `sync_state('plex_mark')`.
    - **и в Jellyfin** (владелец, 2026-10-25: «Да, и в Jellyfin»): `films/sources/jellyfin_guard.py` — фильм и каждая серия,
-     если они есть в Jellyfin; уже просмотренное не трогает, снимать отметки нельзя (хук `jellyfin-guard.sh`). Нужен ключ API
-     Jellyfin «films» (Панель управления → Ключи API) или `JELLYFIN_API_KEY` в `.env`; без ключа — в ответе
-     `jellyfin: no API key`, сказать владельцу.
+     если они есть в Jellyfin; уже просмотренное не трогает, снимать отметки нельзя (хук `jellyfin-guard.sh`). Ключа API
+     нет (владелец, 2026-10-26: «Никакого ключа у тебя есть доступ в хром чтобы всё делать и там скрипты гонять если
+     надо») → в ответе `jellyfin: no API key` — тогда через вкладку Jellyfin в Chrome (`http://localhost:8096`, вход
+     есть): `python -X utf8 -m films.sources.jellyfin_chrome code --title <id>` (серия — `--episode <imdb> <сезон>
+     <серия>`; несколько фильмов — `--titles <id>,<id>,…`, сезон целиком — `--season <imdb> <сезон>`: всё одним вызовом,
+     одно подтверждение, R274) → этот текст целиком одним `javascript_tool` во вкладке Jellyfin → в ответе по каждому id `already` /
+     `played: true` / `error`; ошибку — владельцу. Другой JS с отметками хук `jellyfin-chrome-guard.sh` не пропустит.
    `--dry-run` — только проверить, что Plex находит тайтл. Если `confirmed: false` — сказать владельцу, не скрывать.
    Для сезона `confirmed` по Discover может не прийти (сезон не отдаёт viewState) — проверить серии поштучно
    (`plex.discover_children` — Discover отдаёт детей страницами по 20, хелпер листает по 200).

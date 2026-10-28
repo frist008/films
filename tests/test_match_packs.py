@@ -138,14 +138,18 @@ class TestPackParts(unittest.TestCase):
                 parts, info = match._pack_parts(self.conn, 1, p, 2014, 2025)
             self.assertIsNone(parts)                       # the 2025 film is not in the collection — left, not guessed
             self.assertEqual(info["reason"], "no TMDB collection fits the year span / count")
-            # … unless the owner's franchise built on that collection has it («Балерина» 2025, triage 2026-10-25)
+            # … unless the owner's franchise built on that collection has it («Балерина» 2025, triage 2026-10-25) and the
+            # page names it (review round 14: a franchise is a whole universe — «Супермен (Антология)» took ~40 DC films)
             ballerina = {"tmdb_id": 541671, "imdb_id": "tt7181546", "year": 2025, "title_original": "Ballerina",
                          "collection_id": 404609, "via_franchise": True}
-            with mock.patch.object(match, "_search_collections", return_value=[404609]), \
-                    mock.patch.object(match, "_franchise_films", return_value=[ballerina, dict(part(2014, 1), imdb_id="tt2911666")]):
-                parts, info = match._pack_parts(self.conn, 1, p, 2014, 2025)
-            self.assertEqual([x["tmdb_id"] for x in parts], [1, 2, 3, 4, 541671])   # the collection's film kept once
-            self.assertEqual(info["collection"], 404609)
+            for page, want in ((" джон уик 1 4 и ballerina 2025 ", [1, 2, 3, 4, 541671]), (" джон уик 1 4 ", None)):
+                with mock.patch.object(match, "_search_collections", return_value=[404609]), \
+                        mock.patch.object(match, "_page_text", return_value=page), \
+                        mock.patch.object(match, "_franchise_films",
+                                          return_value=[ballerina, dict(part(2014, 1), imdb_id="tt2911666")]):
+                    parts, info = match._pack_parts(self.conn, 1, p, 2014, 2025)
+                self.assertEqual([x["tmdb_id"] for x in parts] if parts else None, want, page)   # the collection's film once
+            self.assertEqual(info["collections"], [404609])
 
 
 class TestMergeRedirected(unittest.TestCase):

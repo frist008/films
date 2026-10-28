@@ -167,6 +167,7 @@ const msg = __kzCollect({run: 't', base: 'https://kinozal.guru', delayMs: 1, wai
 class TestCollectorLoopAndIngest(unittest.TestCase):
     def setUp(self):
         self.tmp = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, self.tmp, True)   # review 2026-10-28: the folders were left in %TEMP%
         for name in ("browse_search.html", "details_2091001.html"):     # kinozal serves windows-1251
             (self.tmp / name).write_bytes(fx(name).replace('charset="windows-1251"', "").encode("cp1251", errors="replace"))
         self.p = [mock.patch.object(KZ, "STATE", self.tmp / "state.json"), mock.patch.object(KZ, "ROWS", self.tmp / "rows.json"),

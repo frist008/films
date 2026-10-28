@@ -54,6 +54,15 @@ def category_for_forum(forum: str | None) -> str | None:
     return None if _RUSSIAN.search(f) else "foreign_films"
 
 
+def category_for(forum: str | None, title: str | None) -> str | None:
+    """category_for_forum, and a «[ANIME] …» topic is anime whatever video forum holds it (review 2026-10-28: «[ANIME]
+    Семья шпиона / Spy x Family …» in an HD Video film forum became a visible «foreign film» season)."""
+    cat = category_for_forum(forum)
+    if cat and re.match(r"\s*\[ANIME\]", title or "", re.I):
+        return "anime"
+    return cat
+
+
 # --------------------------------------------------------------------------------------------
 # topic title -> rutor-style name
 # --------------------------------------------------------------------------------------------
@@ -62,6 +71,11 @@ _INFO_RE = re.compile(r"\[\s*((?:19|20)\d{2})(?:\s*[-–—]\s*((?:19|20)?\d{2})
 _SEASON_RE = re.compile(r"(?i)(?:^|/|\s)\s*Сезон(?:ы)?\s*:?\s*([\d][\d\s,\-–—]*)(?=\s*(?:/|\(|\[|$|\s[А-Яа-яA-Za-z]))")
 _EPIS_RE = re.compile(r"(?i)(?:^|/|\s)\s*(?:Серии|Серия|Эпизоды|Выпуски)\s*:?\s*(\d{1,4})(?:\s*[-–—]\s*(\d{1,4}))?"
                       r"(?:\s*(?:из|of)\s*(\d{1,4}|\?+|xx|XX))?((?:\s*\+\s*[^/\[\]()]+?)?)(?=\s*(?:/|\(|\[|$))")
+_EPIS_BRACKET_RE = re.compile(r"(?i)\[\s*(?:(?:Серии|Серия|Эпизоды)\s*:?\s*(\d{1,4})(?:\s*[-–—]\s*(\d{1,4}))?"
+                              r"(?:\s*(?:из|of)\s*(\d{1,4}))?|(\d{1,4})\s*(?:Серий|Серии|эпизодов))\s*\]")
+# anime «[ONA] [10 из 10]», «[TV] [1-12 из 24]» (review round 12: «Cyberpunk: Edgerunners 2 [ONA] [10 из 10]» became a
+# film); not OVA / Movie — «[OVA][1 из 1]» is one work
+_EPIS_ANIME_RE = re.compile(r"(?i)\[\s*(?:TV|ONA|WEB)\s*\]\s*\[\s*(?:(\d{1,4})\s*[-–—]\s*)?(\d{1,4})\s*из\s*(\d{1,4}|\?+|[xх]+)\s*\]")
 _RES_RE = re.compile(r"(?<![\w])(2160|1440|1080|720|576|540|480|360)\s*[pi](?![\w])", re.I)
 _HDR_TOKEN_RE = re.compile(r"(?i)^(?:hdr10\+|hdr10|hdr|sdr|hlg|hdr vivid|dolby\s*vision.*|dv(?:\s*p?\d.*)?|dovi.*)$")
 _CODEC_RE = re.compile(r"(?i)^(?:hevc|avc|av1|x26[45]|h\.?26[45]|vp9|xvid)$")
@@ -205,6 +219,14 @@ def rutor_style_name(title: str) -> tuple[str, list[str]]:
         extra = _norm_space(m.group(4) or "")
         ep = (int(m.group(1)), int(m.group(2)) if m.group(2) else None, total, extra)
         head = head[: m.start()] + " / " + head[m.end():]
+    elif not seasons and (m := _EPIS_BRACKET_RE.search(head)):   # «Сезон: 14-15 …[28 Серии]» — a count over two seasons
+        # anime «[Серии 501-519]», «[378 Серий]» (review round 11: «One Piece [Серии 501-519] [2011]» became a film)
+        if m.group(4):
+            ep = (1, int(m.group(4)), m.group(4), "")
+        else:
+            ep = (int(m.group(1)), int(m.group(2)) if m.group(2) else None, m.group(3), "")
+    elif not seasons and (m := _EPIS_ANIME_RE.search(head)):
+        ep = (int(m.group(1)) if m.group(1) else 1, int(m.group(2)), m.group(3), "")
     head = re.sub(r"\[[^\]]*\]", " ", head)          # «[28 Серии]» and other stray brackets
     head, _ = _drop_parens(head)                     # directors «(Мэтт Стоун, Трей Паркер / Matt Stone, …)»
     titles = [_norm_space(t) for t in re.split(r"\s*/\s*", head) if _norm_space(t)]
@@ -503,14 +525,79 @@ def parse_topic(page: str) -> dict:
         d["warnings"].append("no first post (post_body) on rutracker page — name only")
     d["name"] = t["title"]
     d["name_rutor_style"] = rname
-    d["category"] = category_for_forum(t["forum"])
+    d["category"] = category_for(t["forum"], t["title"])
     d["size_bytes"] = t["size_bytes"] if t["size_bytes"] is not None else d.get("size_bytes")
     d["seeders"] = t["seeders"] if t["seeders"] is not None else d.get("seeders")
     d["leechers"] = t["leechers"] if t["leechers"] is not None else d.get("leechers")
     d["btih"] = t["btih"] or d.get("btih")
     d["added_at"] = parse_reged(t["reged"]) or d.get("added_at")
     d["rutracker"] = {"topic_id": t["topic_id"], "forum": t["forum"], "forum_id": t["forum_id"]}
+    _name_ru_audio(d, t["title"] or "", _html.unescape(re.sub(r"<[^>]+>", "\n", t["post_html"] or "")))
     return d
+
+
+_NAME_RUS_RE = re.compile(r"\[([^\]]*?)\bRUS\b(?!\s*Sub)(?:\s*\(([^)]*)\))?([^\]]*)\]", re.I)
+_NAME_CODES = (("dub", r"\bdub"), ("mvo", r"\bmvo"), ("dvo", r"\bdvo"), ("svo", r"\b(?:svo|vo)\b"), ("avo", r"\bavo"))
+
+
+def name_tail_voice(d: dict, title: str) -> None:
+    """rustorka names the Russian voice-over after the last bracket — «… [HEVC] MVO [1win Studio]», «… DUB | Red Head
+    Sound», «DVO» — while the MediaInfo track has no or a wrong language (review 2026-10-28: 15 titles hidden «нет
+    озвучки»). When the page gave no voiced Russian / Ukrainian track, the best code of the tail is the Russian track."""
+    from .rutor import VOICE_RANK
+    if d.get("best_voice") in VOICE_RANK:
+        return
+    info = re.search(r"\[(?:19|20)\d\d\b[^\]]*\]", title or "")      # the «[2024, genres, WEB-DL 1080p]» block
+    tail = re.sub(r"\[[^\]]*\]|\([^)]*\)", " ", title[info.end():]) if info else ""
+    tail = re.sub(r"(?i)movie\s+dubbing", "dub", tail)
+    kinds = [k for k, rx in _NAME_CODES if re.search(rx, tail, re.I)]
+    if not kinds:
+        return
+    kind = min(kinds, key=VOICE_RANK.index)
+    d.setdefault("audio", []).append({"lang": "ru", "kind": kind, "studio": None, "from_name": True})
+    d.setdefault("voice_by_lang", {}).setdefault("ru", []).append(kind)
+    d["best_voice"] = kind
+    d.setdefault("warnings", []).append(f"Russian voice-over from the title tail «{tail.strip()[:40]}»: {kind}")
+
+
+def _name_ru_audio(d: dict, title: str, post_text: str) -> None:
+    """A Russian track named only in the title — «[RUS(ext), JAP+Sub]» (a separate .mka file, not in the video's
+    MediaInfo), «[RUS(int)]», «[RUS(Dub, 9*MVO)]» — when the page gave none (review 2026-10-28: 80 anime releases read as
+    «no voice-over»). Kind: the codes in the brackets, else the «Озвучка» lines, else «amateur» (the lowest voiced kind;
+    fan voice-overs of anime), marked kind_assumed."""
+    m = _NAME_RUS_RE.search(title)
+    if not m:
+        return
+    from .rutor import VOICE_RANK, _kind_in
+    ru = [a for a in d.get("audio") or [] if a.get("lang") == "ru"]
+    if ru:
+        # Russian tracks on the page, kind not said («1)Русский,AAC … [NIKITOS] (SHIZA)»): the title's RUS tag says it is a
+        # voice-over — the lowest voiced kind, unless the page named one (an unknown kind counted as «no voice-over»)
+        if d.get("best_voice") is None and all(a.get("kind") is None for a in ru):
+            for a in ru:
+                a["kind"], a["kind_assumed"] = "amateur", True
+            d.setdefault("voice_by_lang", {})["ru"] = ["amateur"]
+            d["best_voice"] = "amateur"
+            d.setdefault("warnings", []).append(f"Russian tracks without a kind, title «{m.group(0)}»: amateur (assumed)")
+        return
+    codes = m.group(2) or ""
+    kinds = [k for k, rx in _NAME_CODES if re.search(rx, codes, re.I)]
+    kind = min(kinds, key=VOICE_RANK.index) if kinds else None
+    assumed = False
+    if kind is None:
+        lines = [l for l in post_text.split("\n") if re.search(r"(?i)озвуч|аудио\s*rus|rus\s*sound", l)]
+        kind = _kind_in(" ".join(lines))[0]
+        kind = kind if kind in VOICE_RANK else None
+    if kind is None:
+        kind, assumed = "amateur", True
+    d.setdefault("audio", []).append({"lang": "ru", "kind": kind, "studio": None, "external": "ext" in codes.lower(),
+                                      "from_name": True, **({"kind_assumed": True} if assumed else {})})
+    d.setdefault("voice_by_lang", {}).setdefault("ru", []).append(kind)
+    if (d.get("best_voice") or "none") in ("none", "original") or (
+            d["best_voice"] in VOICE_RANK and VOICE_RANK.index(kind) < VOICE_RANK.index(d["best_voice"])):
+        d["best_voice"] = kind
+    d.setdefault("warnings", []).append(f"Russian track from the title «{m.group(0)}»: {kind}"
+                                        + (" (kind assumed)" if assumed else ""))
 
 
 def parse_title_only(title: str, forum: str | None = None) -> dict:
@@ -520,5 +607,6 @@ def parse_title_only(title: str, forum: str | None = None) -> dict:
     d["warnings"] = w + ["rutracker search row only (topic page not collected)"] + d.get("warnings", [])
     d["name"] = title
     d["name_rutor_style"] = rname
-    d["category"] = category_for_forum(forum)
+    d["category"] = category_for(forum, title)
+    _name_ru_audio(d, title, "")
     return d

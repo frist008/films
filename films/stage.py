@@ -37,6 +37,10 @@ def start(name: str) -> dict:
 
 
 def done() -> dict | None:
+    from .cleanup import check   # leftovers first (owner, 2026-10-28: «не забывать чистить за собой мусор»)
+    left = check()
+    if left:
+        raise SystemExit("этап не закрыт — сначала убрать мусор (films.cleanup check):\n" + "\n".join(left))
     cur = current()
     if cur:
         PATH.unlink()

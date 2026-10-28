@@ -21,26 +21,27 @@ def apply_list(conn, key: str) -> dict:
         d = tomllib.load(f)["responsible"][key]
     path = db.ROOT / d["list"]
     entries = tomllib.loads(path.read_text(encoding="utf-8")).get("title", []) if path.exists() else []
-    out = {"person": d["name"], "entries": len(entries), "assigned": 0, "unmatched": []}
+    out = {"person": d["name"], "entries": len(entries), "assigned": 0, "unmatched": [], "skipped": []}
+    from .rank import excluded_for
+    # nobody is responsible for series (owner, 2026-10-24), nor for what [responsible.<key>] excludes later (Марио,
+    # DC / Marvel for Яна): the list entries the survey added before those rules lose their old assignments too
+    skip = excluded_for(conn, d)
+    with conn:
+        out["removed"] = conn.execute(
+            f"""DELETE FROM responsibility WHERE person = ? AND title_id IN (SELECT id FROM titles WHERE kind = 'series'
+                {"OR id IN (" + ",".join(map(str, skip)) + ")" if skip else ""})""", (d["name"],)).rowcount
     for e in entries:
         tid = None
         if e.get("imdb_id"):
-            tid = ensure_movie(conn, e["imdb_id"], f"list:{key}")
-            tv = None if tid else tmdb.find_by_imdb(conn, e["imdb_id"]).get("tv")
-            if tv:   # a series (kids' cartoon series of a franchise): every season is its own title
-                from .link import ensure_season
-                for s in (tmdb.tv_raw(conn, tv) or {}).get("seasons", []):
-                    try:
-                        stid = ensure_season(conn, tv, s["season_number"]) if s.get("season_number") else None
-                    except Exception as ex:   # namesake series_key clash (R82) — skip that season, keep going
-                        out["unmatched"].append({"name": e["name"], "season": s.get("season_number"), "error": str(ex)})
-                        continue
-                    if stid:
-                        with conn:
-                            conn.execute("INSERT OR REPLACE INTO responsibility (title_id, person, source) VALUES (?, ?, 'manual')",
-                                         (stid, d["name"]))
-                out["assigned"] += 1
+            found = tmdb.find_by_imdb(conn, e["imdb_id"])
+            if found.get("tv") and not found.get("movie"):   # «Стич!» (2009) once became a «movie» row too
+                with conn:
+                    out["removed"] += conn.execute(
+                        "DELETE FROM responsibility WHERE person = ? AND title_id IN (SELECT id FROM titles WHERE "
+                        "imdb_id = ? OR series_imdb_id = ?)", (d["name"], e["imdb_id"], e["imdb_id"])).rowcount
+                out["skipped"].append({"name": e["name"], "why": "сериал"})
                 continue
+            tid = ensure_movie(conn, e["imdb_id"], f"list:{key}")
             if not tid:
                 out["unmatched"].append({"name": e["name"], "imdb_id": e["imdb_id"]})
                 continue
@@ -63,6 +64,9 @@ def apply_list(conn, key: str) -> dict:
                                          "candidates": [(c.get("title"), c.get("year"), c.get("tmdb_id"))
                                                         for c in (res.get("candidates") or [])[:4]]})
                 continue
+        if tid in skip:
+            out["skipped"].append({"name": e["name"], "why": "исключено в [responsible]"})
+            continue
         with conn:
             conn.execute("INSERT OR REPLACE INTO responsibility (title_id, person, source) VALUES (?, ?, 'manual')",
                          (tid, d["name"]))

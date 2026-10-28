@@ -11,6 +11,7 @@ from films import db, survey_gates
 class YanaSyncTest(unittest.TestCase):
     def setUp(self):
         self.root = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, self.root, True)   # review 2026-10-28: the folders were left in %TEMP%
         (self.root / "config").mkdir()
         (self.root / "config" / "settings.toml").write_text('[responsible.yana]\nexclude_franchises = ["dc"]\n',
                                                             encoding="utf-8")

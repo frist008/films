@@ -6,7 +6,8 @@ rutor / rutracker release: the first post (description + MediaInfo) goes to `rel
 films.parse.ua_trackers.compact_topic_html, the rutor parser's output fills the same quality / audio columns and the
 release rules of the owner's survey (store_rules: 3D / TS-CAM / КПК → excluded_releases). A topic seen only in a listing
 or a search row is stored from its title (parse_title_only) and gets its page later. Releases with only Dolby Vision
-Profile 5 (no HDR10 fallback) are never inserted (excluded_releases, reason 'dv5_only'). Nothing is deleted.
+Profile 5 (no HDR10 fallback) are never inserted (excluded_releases, reason 'dv5_only'); one found DV5-only later by its
+page is removed after the sync (db.purge_dv5). Nothing else is deleted.
 Matching to titles is the normal step: `python -X utf8 -m films match`.
 """
 from __future__ import annotations

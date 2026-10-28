@@ -16,6 +16,7 @@ def denied(cmd: str, tool: str = "Bash", stage: str | None = None) -> bool:
     import os
     import tempfile
     d = Path(tempfile.mkdtemp())
+    __import__("atexit").register(__import__("shutil").rmtree, d, True)   # review 2026-10-28: the folders were left in %TEMP%
     if stage:
         (d / "data" / "cache" / "locks").mkdir(parents=True)
         (d / "data" / "cache" / "locks" / "stage.json").write_text(json.dumps({"stage": stage, "started": "x"}), encoding="utf-8")

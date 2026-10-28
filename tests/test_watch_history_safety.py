@@ -41,7 +41,9 @@ class GuardTest(unittest.TestCase):
         # real write there — review 2026-10-24)
         import tempfile
         from pathlib import Path
-        self.log = mock.patch.object(g, "LOG", Path(tempfile.mkdtemp()) / "plex_writes.jsonl")
+        tmpd = Path(tempfile.mkdtemp())
+        self.addCleanup(__import__("shutil").rmtree, tmpd, True)   # review 2026-10-28: the folders were left in %TEMP%
+        self.log = mock.patch.object(g, "LOG", tmpd / "plex_writes.jsonl")
         self.log.start()
         self.addCleanup(self.log.stop)
         g._APPROVED.clear()

@@ -188,6 +188,20 @@ class TestCutFilters(unittest.TestCase):
         for row, title in bad:
             self.assertFalse(tl.cut_title_ok(row, title), title)
 
+    def test_season_of_series(self):
+        s3 = {"kind": "series", "season_number": 3, "title_ru": "Трепет сердца", "title_uk": "Коли завмирає серце",
+              "title_original": "Heartstopper", "title_latin": "Heartstopper", "year": 2024}
+        self.assertTrue(tl.cut_title_ok(s3, "Heartstopper: Season 3 | Official Trailer | Joe Locke, Kit Connor",
+                                        cast={"locke"}))
+        for title in ("Трепет сердца, 2 сезон - русский тизер-трейлер (субтитры) | Netflix",
+                      "Трепет сердца - русский тизер-трейлер | Netflix",                  # season 1, no number
+                      "Коли завмирає серце: Назавжди | Український дубльований трейлер | Netflix",
+                      "Коли завмирає серце: Сезон 2 | Офіційний трейлер | Netflix"):
+            self.assertFalse(tl.cut_title_ok(s3, title), title)
+        s1 = {**s3, "season_number": 1}
+        self.assertTrue(tl.cut_title_ok(s1, "Трепет сердца - русский тизер-трейлер | Netflix"))
+        self.assertFalse(tl.cut_title_ok(s1, "Трепет сердца, 2 сезон - русский тизер-трейлер (субтитры) | Netflix"))
+
     def test_latin_name_with_cast(self):
         self.assertTrue(tl.cut_title_ok(HIDDEN_BLADE, "Hidden Blade trailer Tony Leung", cast={"leung"}))
 
@@ -257,6 +271,36 @@ class TestCutPresentation(unittest.TestCase):
         self.assertIn("таких роликов 4", q["links_markdown"][2])
         self.assertNotIn("http", q["question"])
         self.assertIn("4 разных версий", q["question"])
+        # the language is said plainly, never «станет русским» (owner 2026-10-28: «Что значит станет?»)
+        d = [o["description"] for o in q["options"]]
+        self.assertFalse(any("Станет" in x or "станет" in x for x in d), d)
+        self.assertIn("Русская речь (проверено по звуку)", d[0])
+        self.assertIn("Язык не определён", d[1])
+        self.assertIn("Не русская речь", d[2])
+        s = tl.cuts_question({**f, "kind": "series", "season": 3})
+        self.assertTrue(s["question"].startswith("сериал, сезон 3, 1997"), s["question"])
+
+    def test_answer(self):
+        import json, sqlite3, tempfile
+        from pathlib import Path
+        from unittest import mock
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        qf, cf = Path(tmp.name) / "q.json", Path(tmp.name) / "c.json"
+        qf.write_text(json.dumps({"questions": [{"title_id": 1, "options": [
+            {"video": "aaaaaaaaaaa", "russian": True}, {"video": "ccccccccccc", "russian": False}]}]}), encoding="utf-8")
+        cf.write_text(json.dumps({"1": {"cuts": [{"id": "ccccccccccc", "verdict": "other"}]}}), encoding="utf-8")
+        conn = sqlite3.connect(":memory:")
+        conn.execute("""CREATE TABLE titles (id INTEGER PRIMARY KEY, trailer_ru_url, trailer_ru_source, trailer_ru_check,
+                        trailer_ru_checked_at, trailer_alt_url, trailer_alt_kind, trailer_alt_source)""")
+        conn.execute("INSERT INTO titles (id, trailer_ru_url, trailer_ru_check) VALUES (1, 'x', 'unknown')")
+        with mock.patch.object(tl, "QUESTIONS_FILE", qf), mock.patch.object(tl, "CUTS_FILE", cf):
+            tl.apply_answer(conn, 1, "ccccccccccc")
+            self.assertEqual(conn.execute("SELECT trailer_ru_url, trailer_ru_check, trailer_alt_kind, trailer_alt_source "
+                                          "FROM titles").fetchone(), (None, "owner_alt", "original", "owner"))
+            tl.apply_answer(conn, 1, "aaaaaaaaaaa")
+            self.assertEqual(conn.execute("SELECT trailer_ru_url, trailer_ru_check FROM titles").fetchone(),
+                             ("https://www.youtube.com/watch?v=aaaaaaaaaaa", "owner"))
 
 
 if __name__ == "__main__":

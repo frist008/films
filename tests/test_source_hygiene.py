@@ -32,7 +32,8 @@ class TestNoControlChars(unittest.TestCase):
                 + list((ROOT / ".claude").rglob("*.sh")) + list((ROOT / "config").glob("*.toml")) \
                 + list(ROOT.glob("*.md")) + list((ROOT / ".claude").rglob("*.md")) + list((ROOT / "docs").glob("*.md")):
             text = p.read_text(encoding="utf-8", errors="replace")
-            for n, line in enumerate(text.splitlines(), 1):
+            # split on «\n» only: str.splitlines() also cuts at \x0c / \x0b, hiding a lost «\f» (review round 12)
+            for n, line in enumerate(text.split("\n"), 1):
                 if any(ord(c) < 32 and c not in ALLOWED for c in line):
                     bad.append(f"{p.relative_to(ROOT)}:{n}")
         self.assertEqual(bad, [], "control characters (a lost backslash?) in: " + ", ".join(bad[:20]))

@@ -1,4 +1,9 @@
 {
+  "enabledPlugins": {
+    "data@claude-plugins-official": false,
+    "gitlab@claude-plugins-official": false,
+    "firebase@claude-plugins-official": false
+  },
   "hooks": {
     "PostToolUse": [
       {
@@ -124,6 +129,16 @@
           {
             "type": "command",
             "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/tab-close-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
+        "matcher": "mcp__claude-in-chrome__javascript_tool|mcp__Claude_Browser__javascript_tool|Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/jellyfin-chrome-guard.sh\"",
             "timeout": 15
           }
         ]

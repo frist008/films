@@ -328,7 +328,8 @@ def old_title_index(conn, year_from: int) -> dict[str, set[int]]:
     idx: dict[str, set[int]] = {}
     for tid, y, *names in conn.execute(
             """SELECT t.id, t.year, t.title_original, t.title_latin, t.title_uk, t.title_ru FROM titles t
-               WHERE t.year < ? AND EXISTS (SELECT 1 FROM release_titles rt WHERE rt.title_id = t.id)""", (year_from,)):
+               WHERE t.year < ? AND EXISTS (SELECT 1 FROM release_titles rt WHERE rt.title_id = t.id)
+                 AND """ + db.OLD_TITLE_WANTED_SQL, (year_from,)):
         if tid in watched or not y:
             continue
         for n in names:

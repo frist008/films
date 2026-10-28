@@ -47,9 +47,38 @@ def open_questions(plan: Path = PLAN) -> list[str]:
     return [l.strip()[:120] for l in lines if re.match(r"\s*- \[ \]", l) and "❓" in l]
 
 
-def check(logs: Path = LOGS, plan: Path = PLAN) -> dict:
+PAGE_SOURCES = ("rutor", "nnmclub", "kinozal", "rustorka", "mazepa")   # rutracker / toloka open only chosen topics
+
+
+def pages_left(conn=None) -> dict[str, int]:
+    """«All pages» by the DB, not only by the collectors' markers (review 2026-10-28: kinozal wrote its OK marker with 131
+    topics unread): releases of the page-collecting sources neither stored with their page nor parsed from the listing
+    nor skipped, and kinozal's wanted topics not collected yet."""
+    from .sources import kinozal
+    own = conn is None
+    conn = conn or db.connect()
+    try:
+        out = {s: n for s, n in conn.execute(
+            f"""SELECT source, count(*) FROM releases r WHERE source IN ({','.join('?' * len(PAGE_SOURCES))})
+                AND page_skip = 0 AND details_parsed_at IS NULL
+                AND NOT EXISTS (SELECT 1 FROM release_raw w WHERE w.release_id = r.id) GROUP BY source""", PAGE_SOURCES)}
+        from .sources.rutor import LINKED_OR_WANTED   # rutor rows linked to a title whose page was skipped as noise
+        if n := conn.execute(f"""SELECT count(*) FROM releases r WHERE source = 'rutor' AND page_skip = 1
+                                 AND ({LINKED_OR_WANTED})
+                                 AND NOT EXISTS (SELECT 1 FROM release_raw w WHERE w.release_id = r.id)""").fetchone()[0]:
+            out["rutor"] = out.get("rutor", 0) + n
+        if n := len(kinozal.topics_left(conn)):
+            out["kinozal"] = out.get("kinozal", 0) + n
+        return out
+    finally:
+        if own:
+            conn.close()
+
+
+def check(logs: Path = LOGS, plan: Path = PLAN, conn=None, pages: bool = True) -> dict:
     c, q = open_collectors(logs), open_questions(plan)
-    return {"open": not c and not q, "collectors": c, "questions": q}
+    p = pages_left(conn) if pages else {}
+    return {"open": not c and not q and not p, "collectors": c, "questions": q, "pages_left": p}
 
 
 def record_ok(path: Path = GATE_OK) -> None:
@@ -60,9 +89,11 @@ def record_ok(path: Path = GATE_OK) -> None:
 def require_db(logs: Path = LOGS, plan: Path = PLAN) -> None:
     st = check(logs, plan)
     if not st["open"]:
+        left = ", ".join(f"{s} {n}" for s, n in st["pages_left"].items()) or "—"
         raise SystemExit("Таблица — только когда собраны все страницы всех источников и нет вопросов к владельцу "
                          "(владелец 2026-10-26: «Ждать всегда все страницы и вопросы ко мне. Потом только таблица»). "
-                         f"Не закончили: {', '.join(st['collectors']) or '—'}; вопросов открыто: {len(st['questions'])}")
+                         f"Не закончили: {', '.join(st['collectors']) or '—'}; несобранных страниц: {left}; "
+                         f"вопросов открыто: {len(st['questions'])}")
 
 
 def require_sheet(logs: Path = LOGS, plan: Path = PLAN, gate_ok: Path = GATE_OK) -> None:

@@ -78,8 +78,20 @@ def _since(state: dict, key: str, floor: str, full: bool) -> str | None:
 
 
 def known_topics(conn) -> list[str]:
+    """Topics not to fetch again: stored with their page, gone from the site (page_skip 2 = HTTP 404), or excluded by
+    their page (DV5-only, 3D …; review 2026-10-28: 155 excluded topics were put in every job again)."""
     return [str(r[0]) for r in conn.execute(
-        "SELECT r.source_id FROM releases r JOIN release_raw w ON w.release_id = r.id WHERE r.source = ?", (SOURCE,))]
+        """SELECT r.source_id FROM releases r WHERE r.source = ? AND (r.page_skip = 2
+           OR EXISTS (SELECT 1 FROM release_raw w WHERE w.release_id = r.id))
+           UNION SELECT source_id FROM excluded_releases WHERE source = ?""", (SOURCE, SOURCE))]
+
+
+def topics_left(conn) -> list[str]:
+    """Wanted topics of the listing cache whose page is not collected yet — the gate's «all pages» check for kinozal
+    (review 2026-10-28: the collector wrote its OK marker with 131 topics unread)."""
+    rows = common.load(ROWS, {})
+    have = set(known_topics(conn))
+    return [t for t in wanted_rows(conn, rows, min(db.years())) if t not in have]
 
 
 def wanted_rows(conn, rows: dict, year_from: int) -> dict[str, str]:
@@ -243,6 +255,10 @@ def ingest(conn, payloads: list[dict], today=None) -> dict:
             st["errors"] += 1
             if len(st["error_samples"]) < 12:
                 st["error_samples"].append({k: (str(v)[:300] if k == "snippet" else v) for k, v in e.items()})
+            if e.get("t") and e.get("err") == "HTTP 404":   # the topic is gone from kinozal: kept, never asked for again
+                with conn:   # (page_skip 2; review 2026-10-28: 131 old season topics answered 404)
+                    st["gone"] = st.get("gone", 0) + conn.execute(
+                        "UPDATE releases SET page_skip = 2 WHERE source = ? AND source_id = ?", (SOURCE, str(e["t"]))).rowcount
         if typ == "categories":
             cats = p.get("categories") or []
             st["categories"] = len(cats)

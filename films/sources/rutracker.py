@@ -13,7 +13,8 @@ side of that run:
               __rtChunk read-outs) into `releases` (source='rutracker') and the first post's HTML into `release_raw`,
               parse it with films.parse.rutracker (= the rutor page parser on the adapted page) and fill the same
               quality/audio columns rutor releases get. Matching to titles is the normal step: `films match`
-              (or `--match` here). DV-Profile-5-only releases are never inserted (excluded_releases);
+              (or `--match` here). DV-Profile-5-only releases are never inserted (excluded_releases; one found
+              DV5-only later by its page is removed after the sync — db.purge_dv5);
   parse     — re-parse stored rutracker pages (after a parser change; `--reparse` = all, otherwise unparsed only);
   status    — counts.
 
@@ -472,7 +473,7 @@ def ingest(conn, payloads: list[dict]) -> dict:
                 continue
             row, topic = rows.get(t, {}), topics.get(t)
             forum = (topic or {}).get("forum") or row.get("forum")
-            category = rparse.category_for_forum(forum)
+            category = rparse.category_for(forum, (topic or {}).get("title") or row.get("title"))
             if not category:
                 st["skipped_forum"] += 1
                 continue
@@ -485,19 +486,21 @@ def ingest(conn, payloads: list[dict]) -> dict:
                           seeders=topic.get("seeders") if topic.get("seeders") is not None else row.get("seeds"))
                 raw = rparse.compact_topic_html(tp)
                 d = rparse.parse_topic(raw)
-                if d.get("dv5_only"):
-                    def _ex():
-                        with conn:
-                            conn.execute("INSERT OR IGNORE INTO excluded_releases (source, source_id, reason, name) "
-                                         "VALUES ('rutracker', ?, 'dv5_only', ?)", (t, name))
-                            return conn.execute("SELECT id FROM releases WHERE source='rutracker' AND source_id=?",
-                                                (t,)).fetchone()
-                    old = _retry(_ex)
-                    excluded.add(t)
-                    st["dv5_excluded"] += 1
-                    if old:   # stored earlier from a search row only: never deleted, reported for the owner
-                        st["dv5_already_stored"].append(old[0])
-                    continue
+            # DV5-only by the page, or by the title alone («WEB-DL 2160p, Dolby Vision TV»: 27 slipped into the table
+            # before 2026-10-28) — never stored
+            if (d if d is not None else rparse.parse_title_only(name, forum)).get("dv5_only"):
+                def _ex():
+                    with conn:
+                        conn.execute("INSERT OR IGNORE INTO excluded_releases (source, source_id, reason, name) "
+                                     "VALUES ('rutracker', ?, 'dv5_only', ?)", (t, name))
+                        return conn.execute("SELECT id FROM releases WHERE source='rutracker' AND source_id=?",
+                                            (t,)).fetchone()
+                old = _retry(_ex)
+                excluded.add(t)
+                st["dv5_excluded"] += 1
+                if old:   # stored earlier from a search row only: never deleted, reported for the owner
+                    st["dv5_already_stored"].append(old[0])
+                continue
 
             def _write():
                 with conn:
