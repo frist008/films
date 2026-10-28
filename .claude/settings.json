@@ -129,6 +129,16 @@
         ]
       },
       {
+        "matcher": "mcp__ccd_turn__wrap_up",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/russian-guard.sh\"",
+            "timeout": 15
+          }
+        ]
+      },
+      {
         "matcher": "mcp__visualize__show_widget",
         "hooks": [
           {
