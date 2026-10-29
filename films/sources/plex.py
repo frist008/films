@@ -60,6 +60,7 @@ import requests
 PLEX_URL = "http://127.0.0.1:32400"
 OWNER_ACCOUNT_ID = 1          # account id of <plex.user> on this server
 from ..db import private  # noqa: E402
+from .. import personal  # noqa: E402
 
 OWNER_USERNAME = private()["plex"]["user"]
 PLEXTV = "https://plex.tv"
@@ -543,6 +544,7 @@ def scan_libraries(conn: sqlite3.Connection, px: Plex | None = None, log=print) 
     px = px or Plex()
     run_at = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
     stats = {"libraries": [], "items": 0, "errors": [], "run_at": run_at}
+    own = personal.names()
     for lib in _sections(px):
         listed = _list_section(px, lib["key"])
         keys = [str(m["ratingKey"]) for m in listed]
@@ -556,6 +558,8 @@ def scan_libraries(conn: sqlite3.Connection, px: Plex | None = None, log=print) 
                 meta = m  # still record what the listing gave
             item = build_item(lib, m, meta)
             item["title_id"] = _link_title(conn, item["guids"])
+            if personal.is_plex_row(item, own):   # the owner's own videos are not kept (films.personal)
+                continue
             item["synced_at"] = run_at
             for col in ("guids", "hdr", "audio"):
                 item[col] = json.dumps(item[col], ensure_ascii=False)
@@ -746,10 +750,14 @@ def _store_history(conn, rows: list[dict]) -> dict:
         for x in g:
             if x.split("://", 1)[0] in ("pms-history", "pms-settings", "plextv-activity", "plextv-episode"):
                 by_marker[x] = r["id"]
-    res = {"new": 0, "updated": 0, "merged": 0}
+    res = {"new": 0, "updated": 0, "merged": 0, "personal_skipped": 0}
+    own = personal.names()
     with conn:
         for row in rows:
             row = dict(row)
+            if personal.is_plex_row(dict(row, title_id=None), own):   # the owner's own videos (films.personal)
+                res["personal_skipped"] += 1
+                continue
             row.setdefault("season", None)    # Plex's own season / episode numbers of an episode view (else NULL)
             row.setdefault("episode", None)
             row["title_id"] = _link_title(conn, row["guids"])

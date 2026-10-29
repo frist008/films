@@ -21,7 +21,7 @@ import sqlite3
 import tomllib
 from pathlib import Path
 
-from .. import db
+from .. import db, personal
 
 TYPES = {"MediaBrowser.Controller.Entities.Movies.Movie": "movie",
          "MediaBrowser.Controller.Entities.TV.Series": "series",
@@ -118,8 +118,11 @@ def sync(conn) -> dict:
         played = _played(j, user, by_id)
     finally:
         j.close()
+    ns = personal.names()
     with conn:
         for i in items:
+            if personal.is_plex_row(i, ns):   # the owner's own videos are not kept (films.personal)
+                continue
             conn.execute(
                 """INSERT INTO jellyfin_items (item_id, kind, name, original_title, year, path, imdb_id, tmdb_id, tvdb_id,
                        series_item_id, season, episode, runtime_min, size_bytes, library, synced_at)

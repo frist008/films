@@ -38,7 +38,7 @@ from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from pathlib import Path
 
-from . import db
+from . import db, personal
 
 DRIVES = ["E"]   # owner 2026-10-25: «Только диск E» (C, D, G — не сканировать, из базы и GitHub убрать)
 VIDEO_EXT = {"mkv", "mp4", "avi", "m2ts", "ts", "mov", "wmv", "m4v", "webm", "iso", "vob"}
@@ -125,6 +125,8 @@ def walk(drives=DRIVES) -> dict:
                     continue
                 if ext == "ts" and not _is_mpeg_ts(p):
                     not_ts += 1          # TypeScript sources share the extension
+                    continue
+                if personal.is_path(p):  # the owner's own videos are not kept (films.personal)
                     continue
                 n += 1
                 path, folder = p, dp
@@ -435,7 +437,7 @@ NOT_FILM = ["/games/", "/steamapps/", "/steam/", "/android/", "/sdk/", "/work/an
             "/unity/", "/epic games/", "/test_data/", "/test/assets/"]
 EXTRA_DIRS = {"bonus", "extras", "extra", "featurettes", "nced", "ncop", "menu", "trailers", "sample", "samples"}
 EXTRA_NAME = re.compile(r"(?i)\b(?:creditless|nc[eo]p?\d*|ncop|nced|trailer|sample|menu|preview)\b")
-PERSONAL = ["/work/youtube/", "e:/vegas/"]
+PERSONAL = personal.DIRS
 
 
 def _slash(path: str) -> str:

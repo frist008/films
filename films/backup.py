@@ -19,6 +19,7 @@ import sqlite3
 import sys
 
 from . import db
+from . import personal as own
 
 OUT = db.ROOT / "backup"
 CHUNK = 45_000_000
@@ -74,27 +75,22 @@ def _personal(conn) -> dict:
     """The owner's own videos never go to git (owner, 2026-10-25: «Этих видео личных даже в базе не должно быть, они там на
     пару дней. Их не должно быть в гите»): disk files marked 'personal' and the shows the link step marked 'personal'
     (data/cache/plex_show_map_private.json) — their rows are left out of the copy entirely, not hashed."""
+    # since 2026-10-29 such rows are not stored at all (films.personal); this stays as a second net
     paths = {p for (p,) in conn.execute("SELECT path FROM disk_files WHERE how = 'personal'")}
-    try:
-        names = set(json.loads((db.ROOT / "data" / "cache" / "plex_show_map_private.json").read_text(encoding="utf-8")))
-    except (OSError, ValueError):
-        names = set()
-    return {"paths": paths, "names": names}
+    return {"paths": paths, "names": own.names()}
 
 
 def _skip(table: str, cols: list[str], row: tuple, personal: dict) -> bool:
     d = dict(zip(cols, row))
     if table == "disk_files":
-        return d.get("how") == "personal"
+        return d.get("how") == "personal" or own.is_path(d.get("path"))
     if table not in ("plex_items", "jellyfin_items", "plex_history") or d.get("title_id") is not None:
         return False
     if any(d.get(c) in personal["paths"] for c in ("file_path", "path") if d.get(c)):
         return True
     names = personal["names"]
-    for c in ("show_title", "plex_title", "name", "original_title", "grandparent_title", "title"):
-        v = d.get(c)
-        if v and (v in names or any(v.startswith(n + " ") or v.startswith(n + "_") for n in names)):
-            return True
+    if own.is_plex_row(d, names):
+        return True
     blob = " ".join(str(v) for v in row if isinstance(v, str) and '"show"' in v)
     return any(f'"show": "{n}"' in blob for n in names)
 

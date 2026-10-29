@@ -342,7 +342,7 @@ def pick_trailers(videos_body: dict | None) -> dict:
     best = next((v for v in ru if not v["not_trailer"]), None)   # a clip / episode cut is never "the trailer"
     return {"trailer_ru": best, "trailer_ru_url": best["url"] if best else None,
             "trailers_ru": ru, "trailers_uk": uk, "trailer_en_url": en[0]["url"] if en else None,
-            "videos_ru_other": ru_other}
+            "trailers_en": en, "videos_ru_other": ru_other}
 
 
 # ----------------------------------------------------------------------------------------------

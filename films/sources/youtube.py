@@ -466,6 +466,10 @@ def season_mentions(title: str) -> set[int]:
     nums: set[int] = set()
     for m in re.finditer(r"\b(?:сезон\w*|season|s)\s*0?(\d{1,2})\b", t):
         nums.add(int(m.group(1)))
+    # British «Series 6», Dutch / Spanish / French / German / Polish words, «Season 1&2» (2026-10-29)
+    for m in re.finditer(r"\b(?:сезон\w*|season|seasons|series|seizoen|temporada|saison|staffel|sezon\w*)\s*0?(\d{1,2})"
+                         r"(?:\s*(?:&|и|and|,|-|–)\s*0?(\d{1,2}))?\b", t):
+        nums.update(int(g) for g in m.groups() if g)
     for m in re.finditer(r"\b(\d{1,2})\s*(?:и|ии|ои|го|ыи)?\s*(?:сезон\w*|season)\b", t):
         nums.add(int(m.group(1)))
     for m in re.finditer(r"\bs(\d{1,2})e\d{1,3}\b", t):

@@ -504,6 +504,28 @@ def check_titles(ids: list[int], dry_run: bool = False, log=print) -> dict:
     return stats
 
 
+def _season_tmdb(conn, stm: int, n: int | None) -> tuple[str | None, str | None]:
+    """(uk url, original url) for one season: the season's own TMDB videos, else series-level videos of this season
+    (PLAN V4, 2026-10-29: the series-level trailer — usually season 1's — stood on every season). Season 1 / unknown
+    season takes the series-level ones as before."""
+    from . import tmdb
+    from .. import season_trailers as st
+    series = tmdb.tv(conn, stm)
+    if not series:
+        return None, None
+    if (n or 1) > 1:
+        own = tmdb.pick_trailers((tmdb.season_raw(conn, stm, n) or {}).get("videos"))
+        if own["trailers_uk"] or own["trailers_en"]:
+            return ((own["trailers_uk"] or [{}])[0].get("url"), (own["trailers_en"] or [{}])[0].get("url"))
+        dates = {s["season_number"]: s["air_date"] for s in series.get("seasons") or [] if s.get("air_date")}
+
+        def first(vs):
+            return next((v["url"] for v in vs if not v["not_trailer"]
+                         and st.verdict(n, v["name"], v["published_at"], dates)[0]), None)
+        return first(series.get("trailers_uk") or []), first(series.get("trailers_en") or [])
+    return (series.get("trailers_uk") or [{}])[0].get("url"), series.get("trailer_en_url")
+
+
 def fill_fallbacks(conn) -> dict:
     """titles without a Russian-speech trailer get trailer_alt_* in the owner's order (2026-10-23):
     Ukrainian voice-over (YouTube search finding, then TMDB) → the original trailer (TMDB here, YouTube in
@@ -521,14 +543,18 @@ def fill_fallbacks(conn) -> dict:
             url = kind_ = src = None
             uk = [c for c in d.get("uk") or [] if not c.get("reject")]
             sub = [c for c in d.get("subtitled") or [] if not c.get("reject")]
-            body = tmdb.movie(conn, tm) if kind == "movie" and tm else tmdb.tv(conn, stm) if stm else None
-            tmdb_uk = ((body or {}).get("trailers_uk") or [{}])[0].get("url")
+            if kind == "movie" and tm:
+                body = tmdb.movie(conn, tm)
+                tmdb_uk = ((body or {}).get("trailers_uk") or [{}])[0].get("url")
+                tmdb_en = (body or {}).get("trailer_en_url")
+            else:
+                tmdb_uk, tmdb_en = _season_tmdb(conn, stm, season) if stm else (None, None)
             if uk:
                 url, kind_, src = f"https://www.youtube.com/watch?v={uk[0]['id']}", "uk", "youtube_search"
             elif tmdb_uk:
                 url, kind_, src = tmdb_uk, "uk", "tmdb"
-            elif body and body.get("trailer_en_url"):
-                url, kind_, src = body["trailer_en_url"], "original", "tmdb"
+            elif tmdb_en:
+                url, kind_, src = tmdb_en, "original", "tmdb"
             elif sub:   # owner: Russian subtitles only after the original
                 url, kind_, src = f"https://www.youtube.com/watch?v={sub[0]['id']}", "ru_sub", "youtube_search"
             conn.execute("UPDATE titles SET trailer_alt_url = ?, trailer_alt_kind = ?, trailer_alt_source = ? WHERE id = ?",

@@ -19,7 +19,7 @@
 ["kostya_list","2026-10-23 13:59:44",null,"{\"lines\": 427, \"matched\": 370, \"ambiguous\": 23, \"not_found\": 30, \"skipped\": 4}"]
 ["kostya_list_rutor_check","2026-10-23 14:33:47",null,"{\"checked\": 424, \"confirmed\": 330, \"mismatch\": 26, \"no_rutor\": 43, \"fixed_unresolved\": 25}"]
 ["kostya_list_releases","2026-10-23 14:57:40",null,"{\"titles\": 399, \"queries\": 1531, \"new\": 25891}"]
-["trailer_fallbacks","2026-10-28 13:05:34",null,"{\"uk\": 623, \"ru_sub\": 39, \"original\": 4730, \"none\": 2469}"]
+["trailer_fallbacks","2026-10-29 08:07:41",null,"{\"uk\": 576, \"ru_sub\": 51, \"original\": 4128, \"none\": 3129}"]
 ["disks","2026-10-27 04:31:10",null,"{\"plex\": 471, \"nfo\": 302, \"manual\": 159, \"folder_tmdbid\": 72, \"unmatched\": 1, \"personal\": 464, \"conflicts\": 4}"]
 ["franchise_releases","2026-10-25 20:05:10",null,"{\"works\": 249, \"queries\": 690, \"rows\": 14188, \"kept\": 474, \"new\": 0, \"with_hits\": 20}"]
 ["youtube_trailers","2026-10-28 18:34:37","2026-10-28 18:34:37","{\"by\": \"films update --finish\", \"from\": \"SELECT max(trailer_checked_at) FROM titles\"}"]
