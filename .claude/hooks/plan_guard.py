@@ -206,6 +206,10 @@ def main(mode: str) -> None:
         open_stage = None
     if open_stage:
         dirty, ahead = [], "0"
+    # notes in the plan between stages (the inbox this hook fills itself, the answers) go with the next stage's commit
+    # (owner, 2026-10-29: «ты часто комитишь и пушишь? … более большими этапами а не по чуть чуть», «исправляй да»)
+    if dirty and all(l[3:].strip('"') in ("PLAN.md", "PLAN-done.md") for l in dirty):
+        dirty = []
     if dirty or (ahead and ahead != "0"):
         why.append(f"GitHub: {len(dirty)} незакоммиченных файлов, {ahead or '?'} незапушенных коммитов — `python -X utf8 -m "
                    "films.backup export` → `git add -A` → коммит → `git push origin main`.")
