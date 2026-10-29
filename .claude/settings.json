@@ -2,7 +2,9 @@
   "enabledPlugins": {
     "data@claude-plugins-official": false,
     "gitlab@claude-plugins-official": false,
-    "firebase@claude-plugins-official": false
+    "firebase@claude-plugins-official": false,
+    "data@synced": false,
+    "gitlab@synced": false
   },
   "hooks": {
     "PostToolUse": [
