@@ -459,15 +459,22 @@ _ORDINALS = {"перв": 1, "втор": 2, "трет": 3, "четверт": 4, "
 _ROMAN = {"i": 1, "ii": 2, "iii": 3, "iv": 4, "v": 5, "vi": 6, "vii": 7, "viii": 8, "ix": 9, "x": 10}
 
 
+_EN_NUMBERS = ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"]
+
+
 def season_mentions(title: str) -> set[int]:
     """Season numbers a video title names: '2 сезон', 'сезон 2', '2-й сезон', 'второй сезон', 'Season 2',
     'S2', 'S02E01' (not episode numbers), roman 'сезон II'."""
+    # Turkish «5. Sezon 1. Fragman»: the number before «Fragman / Bölüm» is the trailer's / episode's, not a season
+    title = re.sub(r"\b\d{1,3}\s*\.\s*(?:fragman|b[öo]l[üu]m|tan[ıi]t[ıi]m)\w*", " ", title or "", flags=re.I)
     t = norm(title).replace("ё", "е")
     nums: set[int] = set()
     for m in re.finditer(r"\b(?:сезон\w*|season|s)\s*0?(\d{1,2})\b", t):
         nums.add(int(m.group(1)))
     # British «Series 6», Dutch / Spanish / French / German / Polish words, «Season 1&2» (2026-10-29)
-    for m in re.finditer(r"\b(?:сезон\w*|season|seasons|series|seizoen|temporada|saison|staffel|sezon\w*)\s*0?(\d{1,2})"
+    # «5. Sezon», «2 Stagione»: taken out, so that «5. Sezon | 18 Eylül» does not read «sezon 18»
+    t = re.sub(r"\b(\d{1,2})\s*(?:sezon\w*|stagione|staffel|temporada)\b", lambda m: nums.add(int(m.group(1))) or " ", t)
+    for m in re.finditer(r"\b(?:сезон\w*|season|seasons|series|seizoen|temporada|saison|staffel|stagione|sezon\w*)\s*0?(\d{1,2})"
                          r"(?:\s*(?:&|и|and|,|-|–)\s*0?(\d{1,2}))?\b", t):
         nums.update(int(g) for g in m.groups() if g)
     for m in re.finditer(r"\b(\d{1,2})\s*(?:и|ии|ои|го|ыи)?\s*(?:сезон\w*|season)\b", t):
@@ -478,6 +485,8 @@ def season_mentions(title: str) -> set[int]:
         nums.add(_ORDINALS[m.group(1)])
     for m in re.finditer(r"\bсезон\w*\s+(i|ii|iii|iv|v|vi|vii|viii|ix|x)\b", t):
         nums.add(_ROMAN[m.group(1)])
+    for m in re.finditer(r"\b(?:season|series)\s+(one|two|three|four|five|six|seven|eight|nine|ten)\b", t):   # «Series Two»
+        nums.add(_EN_NUMBERS.index(m.group(1)) + 1)
     return {n for n in nums if 0 < n < 60}
 
 

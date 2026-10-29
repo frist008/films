@@ -504,6 +504,33 @@ def check_titles(ids: list[int], dry_run: bool = False, log=print) -> dict:
     return stats
 
 
+_WATCHED_FACTS: dict[str, dict] | None = None
+
+
+def _watch_facts() -> dict[str, dict]:
+    """{video id: last watch-page record} from youtube.VIDEO_CACHE — the video's own title and date on YouTube (TMDB's
+    name may differ: «STARGATE SG1 season 1 Trailer» is «Stargate SG-1 Trailer» there) and whether it still plays."""
+    global _WATCHED_FACTS
+    if _WATCHED_FACTS is None:
+        _WATCHED_FACTS = {}
+        try:
+            with yt_mod.VIDEO_CACHE.open(encoding="utf-8") as f:
+                for line in f:
+                    try:
+                        r = json.loads(line)
+                    except ValueError:
+                        continue
+                    _WATCHED_FACTS[r.get("id")] = r
+        except OSError:
+            pass
+    return _WATCHED_FACTS
+
+
+def _dead_videos() -> set[str]:
+    """Videos whose watch page said removed / private / sign-in only."""
+    return {k for k, r in _watch_facts().items() if r.get("status") not in (None, "OK")}
+
+
 def _season_tmdb(conn, stm: int, n: int | None) -> tuple[str | None, str | None]:
     """(uk url, original url) for one season: the season's own TMDB videos, else series-level videos of this season
     (PLAN V4, 2026-10-29: the series-level trailer — usually season 1's — stood on every season). Season 1 / unknown
@@ -514,19 +541,29 @@ def _season_tmdb(conn, stm: int, n: int | None) -> tuple[str | None, str | None]
     if not series:
         return None, None
     if (n or 1) > 1:
-        own = tmdb.pick_trailers((tmdb.season_raw(conn, stm, n) or {}).get("videos"))
-        if own["trailers_uk"] or own["trailers_en"]:
-            return ((own["trailers_uk"] or [{}])[0].get("url"), (own["trailers_en"] or [{}])[0].get("url"))
         dates = {s["season_number"]: s["air_date"] for s in series.get("seasons") or [] if s.get("air_date")}
+        dead = _dead_videos()
 
-        def first(vs):
-            return next((v["url"] for v in vs if not v["not_trailer"]
-                         and st.verdict(n, v["name"], v["published_at"], dates)[0]), None)
+        def first(vs, own=False):
+            # the season's own videos: not one naming another season TMDB has («STARGATE SG1 season 1 Trailer» on
+            # S2–S10); series-level ones: this season's by name or date; never a video YouTube says is gone
+            for v in vs:
+                if v["not_trailer"] or _vid(v["url"]) in dead:
+                    continue
+                seen = _watch_facts().get(_vid(v["url"])) or {}   # YouTube's own title / date when known
+                ok = st.verdict(n, seen.get("title") or v["name"], seen.get("publish_date") or v["published_at"], dates)[0]
+                if ok or (own and ok is None):
+                    return v["url"]
+            return None
+        own = tmdb.pick_trailers((tmdb.season_raw(conn, stm, n) or {}).get("videos"))
+        uk, en = first(own["trailers_uk"], True), first(own["trailers_en"], True)
+        if uk or en:
+            return uk, en
         return first(series.get("trailers_uk") or []), first(series.get("trailers_en") or [])
     return (series.get("trailers_uk") or [{}])[0].get("url"), series.get("trailer_en_url")
 
 
-def fill_fallbacks(conn) -> dict:
+def fill_fallbacks(conn, only_missing: bool = False) -> dict:
     """titles without a Russian-speech trailer get trailer_alt_* in the owner's order (2026-10-23):
     Ukrainian voice-over (YouTube search finding, then TMDB) → the original trailer (TMDB here, YouTube in
     search_originals) → the original with Russian subtitles (the search's 'subtitled' finding) → any trailer, best
@@ -536,7 +573,8 @@ def fill_fallbacks(conn) -> dict:
     stats = {"uk": 0, "ru_sub": 0, "original": 0, "none": 0}
     # the owner's own pick stays (2026-10-28)
     rows = conn.execute("""SELECT id, kind, tmdb_id, series_tmdb_id, season_number FROM titles
-                           WHERE trailer_ru_url IS NULL AND coalesce(trailer_alt_source, '') != 'owner'""").fetchall()
+                           WHERE trailer_ru_url IS NULL AND coalesce(trailer_alt_source, '') != 'owner'"""
+                        + (" AND trailer_alt_url IS NULL" if only_missing else "")).fetchall()
     with conn:
         for tid, kind, tm, stm, season in rows:
             d = latest.get(tid) or {}
@@ -620,7 +658,7 @@ def _plain(vt: str) -> str:
 
 _ORIG_EPISODE = re.compile(r"\b\d+\s*\.?\s*(?:bolum|bölüm|folge|серия|серии)\b|\b(?:episode|ep|серия|bolum|bölüm|folge|"
                            r"capitulo|capítulo)\s*\d", re.I)
-_SEASON_WORDS = r"season|сезон|sezon|staffel|temporada|saison|säsong|sasong|sæson|sesong|sezona|seizoen"
+_SEASON_WORDS = r"season|сезон|sezon|staffel|temporada|saison|säsong|sasong|sæson|sesong|sezona|seizoen|stagione"
 _ORIG_SEASON = re.compile(r"\b(?:" + _SEASON_WORDS + r"|series)\s*(\d{1,2})\b|\b(\d{1,2})\s*(?:\.\s*)?"
                           r"(?:" + _SEASON_WORDS + r")\b", re.I)
 
@@ -658,7 +696,12 @@ def original_fits(name: str, year: int | None, kind: str | None, season: int | N
         return False
     if kind == "series" and season:
         named = {int(a or b) for a, b in _ORIG_SEASON.findall(vt)}
-        if named and season not in named:
+        # a later season's video names it, as for the Russian ones (PLAN V4, 2026-10-29: season 1's «Official Trailer»
+        # stood on seasons 2–10); a whole-series trailer comes only from TMDB (_season_tmdb)
+        # «Pati 2 | zwiastun»; not Turkish «Kirli Sepeti 2. Teaser» / «Mahkum 2. Tanıtımı» — the 2nd teaser, not season 2
+        right_after = re.search(re.escape(name) + r"\W*0?" + str(season) + r"\b(?!\s*\.\s*(?:teaser|tan|fragman|trailer|promo))",
+                                vt, re.I)
+        if (named and season not in named) or (not named and season > 1 and not right_after):
             return False
     if len(need) == 1 and lang and lang != "en" and not (
             (year and any(abs(y - year) <= 1 for y in years)) or _LANG_WORDS.search(vt)
@@ -746,6 +789,7 @@ def search_originals(conn, recheck: bool = False, log=print) -> dict:
                             WHERE trailer_ru_url IS NULL AND (trailer_alt_url IS NULL OR trailer_alt_kind = 'ru_sub'{again})
                             AND duplicate_of IS NULL AND EXISTS (SELECT 1 FROM release_titles r WHERE r.title_id = titles.id)"""
                         + yt_mod.NOT_WATCHED).fetchall()
+    dead = _dead_videos()   # removed / private videos are never picked again (PLAN V4)
     for tid, orig, latin, year, kind, season, had, had_kind, lang, runtime in rows:
         name = latin or orig
         if not name:
@@ -759,7 +803,7 @@ def search_originals(conn, recheck: bool = False, log=print) -> dict:
                AND title_type IN ('movie', 'tvSeries', 'tvMiniSeries')""", (name,)).fetchone()[0] >= 2
         fits = [v for v in res.get("videos") or [] if original_fits(name, year, kind, season, v.get("title"),
                                                                        lang if ambiguous else None, lang, runtime)
-                and 30 <= (yt_mod.parse_length(v.get("length")) or 0) <= 300]
+                and 30 <= (yt_mod.parse_length(v.get("length")) or 0) <= 300 and v.get("id") not in dead]
         # normalized («Tráiler») and raw: youtube.norm folds «й» («трейлер» → «треилер», review round 12)
         pick = next((v for v in fits if re.search(r"trailer|teaser|тизер", yt_mod.norm(v.get("title")))
                      or re.search(r"трейлер", v.get("title") or "", re.I)), None)

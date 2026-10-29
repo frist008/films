@@ -56,7 +56,12 @@ def verdict(n: int, title: str | None, published: str | None, seasons: dict[int,
         return None, "no video title", []
     nums = yt_mod.season_mentions(title)
     if nums:
-        return (n in nums), f"title names season {sorted(nums)}", sorted(nums)
+        if n in nums:
+            return True, f"title names season {sorted(nums)}", sorted(nums)
+        if seasons and not any(k in seasons for k in nums):
+            # «Futurama | Season 14 Trailer | Hulu» on TMDB's season 11: the channel numbers the seasons otherwise
+            return None, f"title names season {sorted(nums)} — TMDB numbers the seasons otherwise", []
+        return False, f"title names season {sorted(nums)}", sorted(nums)
     if _WHOLE.search(yt_mod.norm(title)):
         return True, "a trailer of the whole series", [n]
     ws = windows(seasons)
