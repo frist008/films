@@ -1,0 +1,2557 @@
+# Франшизы и вселенные владельца (R34). Ответы опроса 2026-10-23 (круг 1 — то, что владелец уже смотрел).
+#
+# Франшиза = ВСЯ вселенная: фильмы, спин-оффы, сериалы по фильмам и фильмы по сериалам, мультфильмы.
+# Состав определяется по Wikidata («медиафраншиза» P8345 / «часть серии» P179), сверяется с Википедией (en/ru/uk)
+# и fandom-вики; tmdb_collections — только отправная точка.
+# scope: "all" — собирать за все годы; "2024-2026" — только наш диапазон; "none" — без приоритета;
+#        from_year — нижняя граница для "all".
+# review = ["tt…"] — члены, которые не поднимать (фан-фильмы, неофициальные документалки): confidence = review (films.franchise).
+# confirm = ["tt…"] — канон, который автоматический флаг сомнения (parody / weak link …) зря отправил в review.
+# При каждом «обнови базу» новые произведения этих вселенных подтягиваются и идут наверх таблицы.
+
+[[franchise]]
+key = "marvel"
+name = "Marvel — всё"
+scope = "all"
+tmdb_collections = [131296, 284433, 618529, 529892, 623911, 422834, 531241, 448150, 748, 453993, 556, 125574, 573436, 558216, 635362]
+note = "MCU, Люди Икс (Fox), Человек-паук и Веном (Sony), Каратель, Блэйд, Призрачный гонщик, Сорвиголова, Фантастическая четвёрка, сериалы Netflix/Disney+ (survey 1, 8, 9, 43 + владелец: «Каратель — это Марвел»)"
+# 2026-10-23 владелец: мультфильмы/мультсериалы Marvel — как сериалы DC: только то, что относится к киновселенной Marvel (MCU),
+# остальное не спрашивать и скрыть. Disney-мультфильмы («Город героев», «Бэймакс») — это не Marvel; «Люди в чёрном» — отдельная франшиза.
+# 2026-10-23 владелец: старое Marvel — фильмы и сериалы до 1990 — скрыть, как у DC
+hide_films_before = 1990
+hide_series_before = 1990
+hide = ["tt0283203", "tt0099387", "tt0128886"]  # владелец 2026-10-23: «Мутанты Икс», «Смерть невероятного Халка» (1990), «Найтмэн» — скрыть
+animation_only = ["tt10168312", "tt13968252", "tt16027014", "tt16027074"]  # Что, если…?, Глаза Ваканды, Зомби Marvel (MCU, Marvel Studios Animation); «Ваш дружелюбный сосед Человек-Паук» — владелец 2026-10-28: «Показывать»
+confirm = ["tt19037048", "tt48452696"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt29571712", "tt0053502", "tt0181947", "tt0077091", "tt0089893", "tt0119654", "tt0127385", "tt0120912", "tt0460946", "tt1486217", "tt1250777", "tt1302011", "tt2006269", "tt2056702", "tt1409024", "tt2280378", "tt2332811", "tt2739590", "tt1650554", "tt2945396", "tt3161824", "tt3311752", "tt3797892", "tt2245084", "tt2802144", "tt3798010", "tt3905688", "tt1851040", "tt3113456", "tt4647878", "tt5049520", "tt5289318", "tt2267968", "tt4817430", "tt5347264", "tt6321128", "tt4649466", "tt5515212", "tt7711762", "tt8205250", "tt9037290", "tt10163846", "tt10903006", "tt2283336", "tt10162586", "tt14103088", "tt14103648", "tt14176546", "tt14176558", "tt15261662", "tt15477432", "tt15477448", "tt16045628", "tt6856242", "tt13622958", "tt14235904", "tt19766896", "tt21098288", "tt21351612", "tt21862424", "tt22081368", "tt22852968", "tt14403178", "tt25363184", "tt26315895", "tt26345409", "tt26901868", "tt27798047", "tt28663201", "tt28663209", "tt28889780", "tt21692408", "tt30492278", "tt31031917", "tt33653255", "tt34570789", "tt34601931", "tt0800175", "tt38692893"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "dc"
+name = "DC — всё"
+scope = "all"
+tmdb_collections = [209131, 1540907, 948485, 573693, 724848, 468552, 531242, 987044, 248534, 256287, 334996, 466894, 876125, 1025281]
+note = "DCEU/DCU, Бэтмен, Джокер, анимация DC, Константин, Хранители (survey 2, 3)"
+# 2026-10-23 владелец: сериалы DC — только новая киновселенная DC (DCU Ганна) и то, что он сам прислал (config/watchlist.toml);
+# остальные сериалы/мультсериалы DC — «смотреть не буду»: не спрашивать, скрыть (user_marks not_interested). Фильмы DC — как обычно.
+# 2026-10-23 владелец: полнометражные мультфильмы DC до 2009 и фильмы DC до 1990 — не спрашивать и скрыть из таблицы (в БД остаются)
+hide_animated_films_before = 2009
+hide_films_before = 1990
+series_only = ["tt26545355", "tt13146488", "tt26545992", "tt19891732", "tt26546001", "tt5716028"]  # Монстры-коммандос, Миротворец, Фонари, Уоллер, Paradise Lost, Бустер Голд
+confirm = ["tt0047549", "tt0177267", "tt0421167", "tt2273975", "tt3348258", "tt7408556", "tt9293522", "tt9787636", "tt18305072"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0123430", "tt14219522", "tt32034208", "tt33041431", "tt4121026", "tt0035501", "tt0057875", "tt1228961", "tt0361763", "tt0063950", "tt0068051", "tt0068112", "tt1168705", "tt0074053", "tt0128000", "tt0303111", "tt0105598", "tt0121067", "tt0275956", "tt0119185", "tt0420324", "tt0430154", "tt0437745", "tt0460946", "tt0427969", "tt1569364", "tt1653823", "tt1776814", "tt2082320", "tt2317642", "tt2511450", "tt2739590", "tt1333125", "tt3125818", "tt4666866", "tt5034476", "tt5016504", "tt5824042", "tt5917122", "tt6321128", "tt6067832", "tt6874502", "tt6946580", "tt7325382", "tt8365122", "tt8660492", "tt10622136", "tt1190634", "tt12838958", "tt13676256", "tt3554046", "tt16549788", "tt21919270", "tt13159924", "tt27902121", "tt14513804", "tt16350094"]   # tt16350094 «Пацаны: Дьявольские» — во франшизе the_boys (2026-10-25, как и «Пацаны»); остальное — 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "conjuring"
+name = "Вселенная «Заклятия»"
+scope = "all"
+tmdb_collections = [313086, 402074, 968052]
+note = "survey 4"
+confirm = ["tt37897207", "tt39372868"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0070047", "tt4670016", "tt4786282", "tt10195206"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "wizarding_world"
+name = "Волшебный мир (Гарри Поттер)"
+scope = "all"
+tmdb_collections = [1241, 435259]
+note = "survey 5, вкл. сериал HBO"
+review = ["tt19373030", "tt2425712", "tt0839761", "tt3699762", "tt4116284", "tt7197166", "tt15431326", "tt11709244", "tt16116174", "tt32374361"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "star_wars"
+name = "Звёздные войны"
+scope = "all"
+tmdb_collections = [10, 1797552]
+note = "survey 6, вкл. сериалы"
+# 2026-10-23 владелец: «по ЗВ оставить только то, что сейчас считается официальным каноном» — Legends (Holiday Special, эвоки, «Дроиды»,
+# «Войны клонов» 2003), LEGO, «Видения», пародии и фан-ролики скрыть (в БД остаются)
+hide = ["tt0193524", "tt15311622", "tt0344288", "tt0087225", "tt0088510", "tt0088515", "tt0089110", "tt0094029", "tt0824442", "tt0361243", "tt2008565", "tt1024938", "tt1509637", "tt1773310", "tt2402600", "tt4855868", "tt5459566", "tt6343680", "tt8352934", "tt12885438", "tt13622982", "tt14573402", "tt15164924", "tt20784210", "tt32306451"]
+review = ["tt0458291", "tt0077658", "tt0490479", "tt0190774", "tt0094012", "tt0096446", "tt0940894", "tt0386047", "tt0952689", "tt1020990", "tt1105757", "tt0870980", "tt1334272", "tt18183916", "tt2199603", "tt2059288", "tt6044124", "tt5697120", "tt6321128", "tt6342284", "tt7412898", "tt7773358", "tt8564384", "tt23626160", "tt27658815", "tt32268303", "tt32659463"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "alien_predator"
+name = "Чужой / Хищник"
+scope = "all"
+tmdb_collections = [8091, 399, 115762, 135416]
+note = "survey 7"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+review = ["tt0078749", "tt0082213", "tt0082431", "tt0387469", "tt1094162", "tt8974964", "tt13126252"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "middle_earth"
+name = "Средиземье"
+scope = "all"
+tmdb_collections = [119, 121938]
+note = "survey 10, вкл. Война Рохирримов, Кольца власти"
+# 2026-10-23 владелец: мультфильмы 1978 и 1980 — не надо
+hide = ["tt0077869", "tt0079802", "tt2563662", "tt14358016"]  # + советские «Бильбо» 1985 и «Хранители» 1991 — «исключить»
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+review = ["tt10852750", "tt1467334", "tt9810254", "tt12121178", "tt0441925", "tt0323108", "tt0432028", "tt21836008", "tt3361792"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "godzilla"
+name = "Годзилла / Монстрверс"
+scope = "all"
+tmdb_collections = [535313, 1474814]
+note = "survey 11, вкл. японские"
+# 2026-10-23 владелец: «скрыть старое до 2000, остальное спрашивать» (японские Годзиллы 1954–1999, старые Кинг-Конги)
+hide_films_before = 2000
+hide_series_before = 2000
+hide_animated_films_before = 2000
+# 2026-10-23 владелец: «японские Годзиллы до «Минус один» и «Минус ноль» скрыть» (японские работы < 2023)
+hide = ["tt0047034", "tt0048127", "tt0049782", "tt0050251", "tt0051512", "tt0055198", "tt0056709", "tt0057215", "tt0058379", "tt0058544", "tt0058698", "tt0059205", "tt0059346", "tt0060440", "tt0060464", "tt0061856", "tt0061868", "tt0063172", "tt0064373", "tt0065776", "tt0067148", "tt0068371", "tt0069625", "tt0070122", "tt0071565", "tt0073373", "tt0087344", "tt0097444", "tt0101962", "tt0104352", "tt0107027", "tt0109916", "tt0113187", "tt0117089", "tt0133104", "tt0157898", "tt0188640", "tt0189764", "tt0197521", "tt0255198", "tt0279112", "tt0293728", "tt0314111", "tt0366526", "tt0399102", "tt13229934", "tt13364334", "tt3345858", "tt3629390", "tt3741700", "tt4262980", "tt5462936", "tt5979874", "tt8015080", "tt8478602", "tt9015178"]
+# 2026-10-23 владелец: «мультики по Годзилле исключи»
+hide_animation = true
+review = ["tt0016039", "tt0164686", "tt0440913", "tt0045546", "tt0053388", "tt9247554", "tt0054938", "tt0064667", "tt0075113", "tt5567368", "tt0117709", "tt0119567", "tt0479064", "tt0478188", "tt0844678", "tt0953981", "tt9556198", "tt3913616", "tt6216718", "tt9035000", "tt10737918"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "league_of_legends"
+name = "League of Legends (Рунтерра)"
+scope = "all"
+tmdb_collections = []
+note = "владелец: Аркейн и другие экранизации игры"
+
+[[franchise]]
+key = "tmdb_2602"
+name = "Крик"
+scope = "all"
+tmdb_collections = [2602]
+survey = 12
+review = ["tt0230535", "tt0352830", "tt1785550", "tt1792617"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_87359"
+name = "Миссия невыполнима"
+scope = "all"
+tmdb_collections = [87359]
+# 2026-10-23 владелец: «Миссия невыполнима интересны только с Томом Крузом», сериалы скрыть — всё прочее скрыть (в БД остаётся)
+keep_only = ["tt0117060", "tt0120755", "tt0317919", "tt1229238", "tt2381249", "tt4912910", "tt9603212", "tt9603208"]
+survey = 13
+review = ["tt2199547"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_645"
+name = "Джеймс Бонд"
+scope = "all"
+tmdb_collections = [645]
+# 2026-10-23 владелец: «и Казино 1954» — скрыть
+hide = ["tt0310853"]
+survey = 14
+# 2026-10-23 владелец: «Охотники за привидениями», «Джуманджи», «Бонд-младший» — мультсериалы не интересны
+hide_animation = true
+review = ["tt0210322", "tt0237349", "tt0438106", "tt0377334", "tt0061452", "tt0412661", "tt2647420"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_8650"
+name = "Трансформеры"
+scope = "all"
+tmdb_collections = [8650]
+survey = 15
+# 2026-10-23 владелец: «не надо мультики по Трансформерам, скрой их» (кроме уже просмотренных)
+hide_animation = true
+confirm = ["tt0127916", "tt2917816", "tt0115108", "tt0145639", "tt0189315", "tt3002566", "tt5831646", "tt7856082", "tt9789660", "tt14298658", "tt44940424"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0214354", "tt0139769", "tt0096629", "tt0182581"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_328"
+name = "Парк Юрского периода"
+scope = "all"
+tmdb_collections = [328]
+survey = 16
+# 2026-10-23 владелец: «Юрский период мультсериалы не интересно» — скрыть
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_173710"
+name = "Планета обезьян (Перезапуск)"
+scope = "all"
+from_year = 2011
+tmdb_collections = [173710]
+survey = 17
+note = "с 2011 года (перезапуск), классику не собирать"
+
+[[franchise]]
+key = "tmdb_680435"
+name = "Код Гиас: Восставший Лелуш"
+scope = "all"
+tmdb_collections = [680435, 212160]   # 212160 «Отступник Акито» (5 фильмов; у элемента Wikidata нет IMDb/TMDB id) — аудит 2026-10-25
+survey = 18
+note = "аниме — собирать точечно, хотя категорию «Аниме» не собираем"
+
+[[franchise]]
+key = "tmdb_2344"
+name = "Матрица"
+scope = "all"
+tmdb_collections = [2344]
+survey = 19
+# 2026-10-23: «Маркс: Перезагрузка» — не «Матрица» (немецкий док-мульт), скрыть
+hide = ["tt1884351"]
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+review = ["tt0295432", "tt0332240", "tt0395147", "tt0820928"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_126125"
+name = "Неудержимые"
+scope = "all"
+tmdb_collections = [126125]
+survey = 20
+review = ["tt2584880"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_228446"
+name = "Астрал"
+scope = "all"
+tmdb_collections = [228446]
+survey = 21
+
+[[franchise]]
+key = "tmdb_495527"
+name = "Джуманджи"
+scope = "all"
+tmdb_collections = [495527]
+survey = 22
+# 2026-10-23 владелец: «Охотники за привидениями», «Джуманджи», «Бонд-младший» — мультсериалы не интересны
+hide_animation = true
+
+[[franchise]]
+key = "tmdb_9743"
+name = "Ганнибал Лектор"
+scope = "all"
+tmdb_collections = [9743]
+survey = 23
+# 2026-10-23 владелец: «Ганнибал сериал исключи»
+hide = ["tt2243973", "tt0091474"]
+review = ["tt0111190", "tt1836877"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_2326"
+name = "Другой мир"
+scope = "all"
+tmdb_collections = [2326]
+survey = 24
+
+[[franchise]]
+key = "tmdb_9518"
+name = "Перевозчик"
+scope = "all"
+tmdb_collections = [9518]
+survey = 25
+# 2026-10-23 владелец: «Перевозчик сериал исключить»
+hide = ["tt1885102"]
+review = ["tt0369339"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_656"
+name = "Пила"
+scope = "all"
+tmdb_collections = [656]
+survey = 26
+review = ["tt0878145", "tt1248289"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_2794"
+name = "Хроники Риддика"
+scope = "all"
+tmdb_collections = [2794]
+survey = 27
+
+[[franchise]]
+key = "tmdb_91361"
+name = "Хэллоуин + Хэллоуин"
+scope = "all"
+tmdb_collections = [91361, 126209]
+# 2026-10-23 владелец: «убери Хэллоуины до нулевых»
+hide_films_before = 2000
+survey = 28
+note = "оригинальная серия + версия Роба Зомби (survey 58)"
+review = ["tt0469093", "tt1307455", "tt2084041"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_90863"
+name = "Час пик"
+scope = "all"
+tmdb_collections = [90863]
+survey = 29
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt4085584"]
+
+[[franchise]]
+key = "tmdb_87096"
+name = "Аватар"
+scope = "all"
+tmdb_collections = [87096]
+survey = 30
+review = ["tt1733302", "tt2588498"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_726871"
+name = "Дюна"
+scope = "all"
+tmdb_collections = [726871]
+survey = 31
+# 2026-10-23 владелец: старые фильмы до 2000 не нужны
+hide_films_before = 2000
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0142032", "tt0287839"]
+review = ["tt1935156"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_8945"
+name = "Безумный Макс"
+scope = "all"
+tmdb_collections = [8945]
+survey = 32
+# 2026-10-23 владелец: старые фильмы до 2000 не нужны
+hide_films_before = 2000
+review = ["tt2011110", "tt4089910", "tt9198364"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_14890"
+name = "Плохие парни"
+scope = "all"
+tmdb_collections = [14890]
+survey = 33
+confirm = ["tt7555294"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+hide = ["tt7555294"]   # владелец 2026-10-27 про «Лучшие в Лос-Анджелесе»: «Не надо их сериал отслеживать»
+
+[[franchise]]
+key = "tmdb_1100788"
+name = "Улыбка"
+scope = "all"
+tmdb_collections = [1100788]
+survey = 34
+
+[[franchise]]
+key = "tmdb_9485"
+name = "Форсаж"
+scope = "all"
+tmdb_collections = [9485]
+survey = 35
+# 2026-10-23 владелец: детские мульт-ответвления франшиз (LEGO, «Лагерь Мелового периода», «Шпионские гонки»…) — Яне, его не спрашивать
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+review = ["tt0046969", "tt0167735", "tt2933474", "tt14948432"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_135468"
+name = "G.I. Joe: Бросок кобры"
+scope = "all"
+tmdb_collections = [135468]
+# 2026-10-23 владелец: «G.I. Joe интересно только фильмы» — сериалы и мультфильмы скрыть
+hide_animation = true
+hide_all_series = true
+survey = 36
+confirm = ["tt0231626", "tt0337762", "tt0115183", "tt1217571", "tt0478074", "tt1259299"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt1535550", "tt7053920"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_422837"
+name = "Бегущий по лезвию"
+scope = "all"
+tmdb_collections = [422837]
+survey = 37
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-23 владелец: «не надо Солдата»
+hide = ["tt0120157"]
+review = ["tt0289929", "tt0159920"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_519457"
+name = "Босс-молокосос"
+scope = "all"
+tmdb_collections = [519457]
+survey = 38
+hide = ["tt7741824"]   # владелец 2026-10-27 про мультсериал «Снова в деле»: «Не интересен этот сериал»
+hide_all_series = true   # владелец 2026-10-27: «Всё сериалы франшищы в топку»
+confirm = ["tt7741824", "tt19361940"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0351283", "tt0479952", "tt1001526", "tt1277953"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1431054"
+name = "Вайолет Эвергарден"
+scope = "all"
+tmdb_collections = [1431054]
+survey = 39
+note = "аниме — собирать точечно"
+
+[[franchise]]
+key = "tmdb_135179"
+name = "Город грехов"
+scope = "all"
+tmdb_collections = [135179]
+survey = 40
+
+[[franchise]]
+key = "tmdb_404609"
+name = "Джон Уик"
+scope = "all"
+tmdb_collections = [404609]
+survey = 41
+review = ["tt36751759"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_929336"
+name = "Загадочное убийство"
+scope = "all"
+tmdb_collections = [929336]
+survey = 42
+
+[[franchise]]
+key = "tmdb_769423"
+name = "Клаустрофобы"
+scope = "all"
+tmdb_collections = [769423]
+survey = 44
+review = ["tt3387648", "tt5726086"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_165369"
+name = "Коллекционер"
+scope = "all"
+tmdb_collections = [165369]
+survey = 45
+
+[[franchise]]
+key = "tmdb_137696"
+name = "Корпорация монстров"
+scope = "all"
+tmdb_collections = [137696]
+survey = 46
+
+[[franchise]]
+key = "tmdb_848690"
+name = "Легенды «Смертельной битвы» + Мортал Комбат (Перезапуск)"
+scope = "all"
+tmdb_collections = [848690, 931431]
+survey = 47
+note = "анимация MK Legends + игровые фильмы MK (survey 79)"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+confirm = ["tt0122355", "tt0288642"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt7711762", "tt11916218"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_325470"
+name = "Лего Фильм"
+scope = "all"
+tmdb_collections = [325470]
+survey = 48
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+review = ["tt31064841"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_742536"
+name = "Мег"
+scope = "all"
+tmdb_collections = [742536]
+survey = 49
+
+[[franchise]]
+key = "tmdb_748919"
+name = "Не дыши"
+scope = "all"
+tmdb_collections = [748919]
+survey = 50
+
+[[franchise]]
+key = "tmdb_179919"
+name = "Перси Джексон"
+scope = "all"
+tmdb_collections = [179919]
+survey = 51
+hide = ["tt12324366"]   # владелец 2026-10-27 про сериал «Перси Джексон и Олимпийцы»: «Не интересен»
+confirm = ["tt12324366"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "tmdb_589755"
+name = "Последний богатырь"
+scope = "all"
+tmdb_collections = [589755]
+survey = 52
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt28143089", "tt37601032"]   # + «Колобок» (2026): владелец 2026-10-27 «Именно этот из франшизы не интересен»
+confirm = ["tt37601032"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "tmdb_1974"
+name = "Проклятие"
+scope = "all"
+tmdb_collections = [1974]
+survey = 53
+# 2026-10-23 владелец: «Проклятие японские до 2020» — скрыть
+hide_country = {JP = 2020}
+confirm = ["tt0330500", "tt0330501", "tt0364385", "tt0367913", "tt1422674", "tt1422675", "tt3572132", "tt4458368", "tt5309954", "tt12313914", "tt3612126"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0330312", "tt0362120", "tt2993556"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_256322"
+name = "Судная ночь"
+scope = "all"
+tmdb_collections = [256322]
+survey = 54
+confirm = ["tt6110648"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt4191580", "tt10994688"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_608101"
+name = "Телохранитель киллера"
+scope = "all"
+tmdb_collections = [608101]
+survey = 55
+review = ["tt38127069", "tt1530983", "tt11671006", "tt15940132"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_528"
+name = "Терминатор"
+scope = "all"
+tmdb_collections = [528]
+survey = 56
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+review = ["tt0095483", "tt0098156", "tt0098321", "tt1350512", "tt2697450"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_363369"
+name = "Тихоокеанский рубеж"
+scope = "all"
+tmdb_collections = [363369]
+survey = 57
+
+[[franchise]]
+key = "tmdb_1565"
+name = "28 дней"
+scope = "all"
+tmdb_collections = [1565]
+survey = 59
+
+[[franchise]]
+key = "tmdb_1679129"
+name = "Longlegs Collection"
+scope = "all"
+tmdb_collections = [1679129]
+survey = 60
+
+[[franchise]]
+key = "tmdb_1531466"
+name = "Орудия"
+scope = "all"
+tmdb_collections = [1531466]
+survey = 61
+
+[[franchise]]
+key = "tmdb_8864"
+name = "Пункт назначения"
+scope = "all"
+tmdb_collections = [8864]
+survey = 62
+
+[[franchise]]
+key = "tmdb_720879"
+name = "Соник в Кино"
+scope = "all"
+tmdb_collections = [720879]
+survey = 63
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+# 2026-10-24 владелец: «Соник бум не интересен», «Соник Прайм не интересен»
+hide = ["tt3232262", "tt13961348"]
+confirm = ["tt0230804", "tt1380954"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt3513500"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1738564"
+name = "KPop Demon Hunters Collection"
+scope = "all"
+tmdb_collections = [1738564]
+survey = 64
+
+[[franchise]]
+key = "tmdb_1262937"
+name = "Sisu Collection"
+scope = "all"
+tmdb_collections = [1262937]
+survey = 65
+
+[[franchise]]
+key = "tmdb_1180834"
+name = "Troll (2022) Collection"
+scope = "all"
+tmdb_collections = [1180834]
+survey = 66
+
+[[franchise]]
+key = "tmdb_1078456"
+name = "Violent Night Collection"
+scope = "all"
+tmdb_collections = [1078456]
+survey = 67
+
+[[franchise]]
+key = "tmdb_1239686"
+name = "Woody Woodpecker Collection"
+scope = "all"
+tmdb_collections = [1239686]
+survey = 68
+review = ["tt0096438",   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+          "tt0146967", "tt0153922", "tt0151893", "tt0149583", "tt0035812", "tt0149790", "tt0149815", "tt0152458",
+          "tt0151387", "tt0038413", "tt0040958", "tt0151002", "tt0150193", "tt0184175", "tt0281474", "tt9410706"]
+# ↑ 2026-10-25 владелец (опрос, один медиа — один вопрос): «Вуди до нулевых весь не интересен» — короткометражки Ланца 1940–1954
+#   и шоу 1957 не следить; «Новое шоу Дятла Вуди» (1999) сезоны 1–3 и веб-сериал 2018 сезоны 1–4 — «Не следить» по каждому
+
+[[franchise]]
+key = "tmdb_950289"
+name = "X Коллекция"
+scope = "all"
+tmdb_collections = [950289]
+survey = 69
+
+[[franchise]]
+key = "tmdb_945475"
+name = "Битлджюс"
+scope = "all"
+tmdb_collections = [945475]
+survey = 70
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: «старый Битлджус смотреть не буду, скрыть»
+hide = ["tt0094721"]
+
+[[franchise]]
+key = "tmdb_1102372"
+name = "Вышка"
+scope = "all"
+tmdb_collections = [1102372]
+survey = 71
+
+[[franchise]]
+key = "tmdb_86066"
+name = "Гадкий я + Миньоны"
+scope = "all"
+tmdb_collections = [86066, 544669]
+survey = 72
+note = "Гадкий я + Миньоны (survey 78)"
+
+[[franchise]]
+key = "tmdb_1069584"
+name = "Гладиатор"
+scope = "all"
+tmdb_collections = [1069584]
+survey = 73
+review = ["tt0326015", "tt0345817", "tt0345818", "tt0439129"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1084247"
+name = "Зверополис"
+scope = "all"
+tmdb_collections = [1084247]
+survey = 74
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+review = ["tt28035641"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_382685"
+name = "Иллюзия обмана"
+scope = "all"
+tmdb_collections = [382685]
+survey = 75
+review = ["tt6445394"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1119879"
+name = "Ледяной драйв"
+scope = "all"
+tmdb_collections = [1119879]
+survey = 76
+
+[[franchise]]
+key = "tmdb_1071588"
+name = "М3ГАН"
+scope = "all"
+tmdb_collections = [1071588]
+survey = 77
+
+[[franchise]]
+key = "tmdb_1129084"
+name = "Никто"
+scope = "all"
+tmdb_collections = [1129084]
+survey = 80
+
+[[franchise]]
+key = "tmdb_1449595"
+name = "Нэчжа"
+scope = "all"
+tmdb_collections = [1449595]
+survey = 81
+confirm = ["tt11177804"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0201183", "tt6866732", "tt5481184", "tt6449300", "tt13269670", "tt6979756", "tt10498680", "tt32843325"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_2980"
+name = "Охотники за привидениями"
+scope = "all"
+tmdb_collections = [2980]
+survey = 82
+# 2026-10-23 владелец: «Охотники за привидениями», «Джуманджи», «Бонд-младший» — мультсериалы не интересны
+hide_animation = true
+review = ["tt0072505", "tt0094939", "tt0255132", "tt1839660", "tt4976984", "tt1446678"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_8580"
+name = "Парень-каратист"
+scope = "all"
+tmdb_collections = [8580]
+survey = 83
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: старые «Парни-каратисты» (1984–1994) — исключить; знает «Каратэ-пацан» (2010) с Джеки Чаном
+hide_films_before = 2000
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt7221388"]
+
+[[franchise]]
+key = "tmdb_1126392"
+name = "Платформа"
+scope = "all"
+tmdb_collections = [1126392]
+survey = 84
+
+[[franchise]]
+key = "tmdb_1240438"
+name = "Пять ночей с Фредди"
+scope = "all"
+tmdb_collections = [1240438]
+survey = 85
+review = ["tt0062543", "tt8114980"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_870339"
+name = "Расплата"
+scope = "all"
+tmdb_collections = [870339]
+survey = 86
+
+[[franchise]]
+key = "tmdb_64748"
+name = "Сайлент Хилл"
+scope = "all"
+tmdb_collections = [64748]
+survey = 87
+
+[[franchise]]
+key = "tmdb_1434561"
+name = "Супер Марио"
+scope = "all"
+tmdb_collections = [1434561]
+survey = 88
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+confirm = ["tt0469611", "tt3336822", "tt0149447"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0152668", "tt0152669", "tt7029396"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_468222"
+name = "Суперсемейка"
+scope = "all"
+tmdb_collections = [468222]
+survey = 89
+
+[[franchise]]
+key = "tmdb_521226"
+name = "Тихое место"
+scope = "all"
+tmdb_collections = [521226]
+survey = 90
+
+[[franchise]]
+key = "tmdb_63043"
+name = "Трон"
+scope = "all"
+tmdb_collections = [63043]
+survey = 91
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+review = ["tt2134126"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_727761"
+name = "Ужасающий Коллекция"
+scope = "all"
+tmdb_collections = [727761]
+survey = 92
+# 2026-10-24: «Фигня» (Bupkis, 2023, Пит Дэвидсон) — не «Ужасающий», ошибка состава
+hide = ["tt19853604"]
+
+[[franchise]]
+key = "tmdb_945803"
+name = "刺殺小說家（系列）"
+scope = "all"
+tmdb_collections = [945803]
+survey = 93
+
+# ---- круг 2 (2026-10-23): франшизы скачанного-но-не-просмотренного и популярные непросмотренные с новинками ----
+
+[[franchise]]
+key = "tmdb_4246"
+name = "Очень страшное кино"
+scope = "all"
+tmdb_collections = [4246]
+survey = "r2-94"
+
+[[franchise]]
+key = "tmdb_37139"
+name = "Голый пистолет"
+scope = "all"
+tmdb_collections = [37139]
+survey = "r2-95"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0083466"]
+
+[[franchise]]
+key = "tmdb_77816"
+name = "Кунг-фу Панда"
+scope = "all"
+tmdb_collections = [77816]
+survey = "r2-96"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_934765"
+name = "Мятежная Луна"
+scope = "all"
+tmdb_collections = [934765]
+survey = "r2-97"
+
+[[franchise]]
+key = "tmdb_1421776"
+name = "熊猫计划（系列）"
+scope = "none"
+tmdb_collections = [1421776]
+survey = "r2-98"
+
+[[franchise]]
+key = "tmdb_1440784"
+name = "Пчеловод"
+scope = "all"
+tmdb_collections = [1440784]
+survey = "r2-99"
+
+[[franchise]]
+key = "tmdb_1197140"
+name = "Чёрный телефон"
+scope = "all"
+tmdb_collections = [1197140]
+survey = "r2-100"
+review = ["tt22640398"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1439129"
+name = "퇴마록 시리즈"
+scope = "all"
+tmdb_collections = [1439129]
+survey = "r2-101"
+
+[[franchise]]
+key = "tmdb_1311628"
+name = "100% Wolf Collection"
+scope = "all"
+tmdb_collections = [1311628]
+survey = "r2-102"
+confirm = ["tt13814356"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+# владелец 2026-10-27 в опросе «что видел»: «Не интересно» → скрыто tt13814356
+hide = ["tt13814356"]
+
+[[franchise]]
+key = "tmdb_1510620"
+name = "Гарфилд в Кино"
+scope = "all"
+tmdb_collections = [1510620]
+survey = "r2-103"
+confirm = ["tt12084604"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt1867086"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1022790"
+name = "Головоломка"
+scope = "all"
+tmdb_collections = [1022790]
+survey = "r2-104"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_1458864"
+name = "Как приручить дракона"
+scope = "all"
+tmdb_collections = [1458864]
+survey = "r2-105"
+# 2026-10-23 владелец: «мультсериалы не интересны по Дракону» — скрыть сериалы
+hide_all_series = true
+# 2026-10-23: ТВ-фильмы детского «Драконы: Спасатели» — как мультсериалы Дракона (не интересно)
+hide = ["tt11875456", "tt12599350", "tt13353508"]
+
+[[franchise]]
+key = "tmdb_1504372"
+name = "Лило и Стич"
+scope = "all"
+tmdb_collections = [1504372]
+survey = "r2-106"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+confirm = ["tt43621069"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt38077943"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_722971"
+name = "Достать ножи"
+scope = "all"
+tmdb_collections = [722971]
+survey = "r2-107"
+
+[[franchise]]
+key = "tmdb_1802110"
+name = "Obsession Collection"
+scope = "all"
+tmdb_collections = [1802110]
+survey = "r2-108"
+
+[[franchise]]
+key = "tmdb_1633433"
+name = "F1 Collection"
+scope = "all"
+tmdb_collections = [1633433]
+survey = "r2-109"
+
+[[franchise]]
+key = "tmdb_968080"
+name = "Злая"
+scope = "none"
+tmdb_collections = [968080]
+survey = "r2-110"
+
+[[franchise]]
+key = "tmdb_1370345"
+name = "Дикий робот"
+scope = "all"
+tmdb_collections = [1370345]
+survey = "r2-111"
+
+[[franchise]]
+key = "tmdb_1611146"
+name = "The Housemaid Collection"
+scope = "all"
+tmdb_collections = [1611146]
+survey = "r2-112"
+
+[[franchise]]
+key = "tmdb_1062948"
+name = "Смерч"
+scope = "all"
+tmdb_collections = [1062948]
+survey = "r2-113"
+
+[[franchise]]
+key = "tmdb_1687197"
+name = "Майкл"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1687197]
+survey = "r2-114"
+
+[[franchise]]
+key = "tmdb_1290597"
+name = "Road House (Remake) Collection"
+scope = "none"
+tmdb_collections = [1290597]
+survey = "r2-115"
+
+[[franchise]]
+key = "tmdb_1461530"
+name = "Minecraft в кино"
+scope = "all"
+tmdb_collections = [1461530]
+survey = "r2-116"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+review = ["tt2087878"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1241984"
+name = "Моана"
+scope = "all"
+tmdb_collections = [1241984]
+survey = "r2-117"
+review = ["tt5848272", "tt28035641"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1263259"
+name = "Счастливчик Гилмор"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1263259]
+survey = "r2-118"
+
+[[franchise]]
+key = "tmdb_1707178"
+name = "Военная машина"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1707178]
+survey = "r2-119"
+review = ["tt15940132"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1314623"
+name = "Дьявол носит Prada"
+scope = "all"
+tmdb_collections = [1314623]
+survey = "r2-120"
+review = ["tt1623738"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_10194"
+name = "История игрушек"
+scope = "all"
+tmdb_collections = [10194]
+survey = "r2-121"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+review = ["tt0032138", "tt0080684", "tt0086190", "tt0111161", "tt1204342", "tt1216475"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_85861"
+name = "Полицейский из Беверли-Хиллз"
+scope = "none"
+tmdb_collections = [85861]
+survey = "r2-122"
+
+[[franchise]]
+key = "tmdb_762512"
+name = "Король Лев — вся франшиза (классика и перезапуск)"
+scope = "all"
+tmdb_collections = [762512, 94032]   # + классика 1994–2004 (2026-10-25: «франшизы Король Лев»)
+survey = "r2-123"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+# 2026-10-24 владелец: «Хранитель Лев» — «Лев не интересен»; tt4938602 «Хранитель Лев: Герои саванны» — пилот того же
+# сериала (ревью 2026-10-28)
+hide = ["tt3793630", "tt4938602"]
+review = ["tt2374051", "tt1159961", "tt28035641", "tt28306749"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1267164"
+name = "Я иду искать"
+scope = "all"
+tmdb_collections = [1267164]
+survey = "r2-124"
+
+[[franchise]]
+key = "tmdb_1310970"
+name = "కల్కి సినిమాటిక్ యూనివర్స్"
+scope = "none"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1310970]
+survey = "r2-125"
+# 2026-10-24 владелец: «не помню, чтобы я их вообще просил» — не следить
+
+[[franchise]]
+key = "tmdb_10919"
+name = "Омен"
+scope = "all"
+tmdb_collections = [10919]
+survey = "r2-126"
+# 2026-10-24 владелец: «не нужны Омены до 2006»
+hide_films_before = 2006
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt4337944"]
+review = ["tt8976498"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_3601"
+name = "Я знаю, что вы сделали прошлым летом"
+scope = "all"
+tmdb_collections = [3601]
+survey = "r2-127"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt10937180"]
+review = ["tt0175142", "tt0348662"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_840465"
+name = "Гренландия"
+scope = "all"
+tmdb_collections = [840465]
+survey = "r2-128"
+
+[[franchise]]
+key = "tmdb_847029"
+name = "Бессмертная гвардия"
+scope = "all"
+tmdb_collections = [847029]
+survey = "r2-129"
+
+[[franchise]]
+key = "tmdb_933989"
+name = "Охота на воров Коллекция"
+scope = "all"
+tmdb_collections = [933989]
+survey = "r2-130"
+
+[[franchise]]
+key = "tmdb_1125292"
+name = "Чумовая Пятница"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1125292]
+survey = "r2-131"
+
+[[franchise]]
+key = "tmdb_1679123"
+name = "Heart Eyes - Colección"
+scope = "all"
+tmdb_collections = [1679123]
+survey = "r2-132"
+
+[[franchise]]
+key = "tmdb_1630649"
+name = "Sous la Seine - Saga"
+scope = "all"
+tmdb_collections = [1630649]
+survey = "r2-133"
+
+[[franchise]]
+key = "tmdb_488924"
+name = "Приключения Паддингтона"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [488924]
+survey = "r2-134"
+
+[[franchise]]
+key = "tmdb_8936"
+name = "Бриджит Джонс"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [8936]
+survey = "r2-135"
+
+[[franchise]]
+key = "tmdb_1802417"
+name = "Upgraded Collection"
+scope = "all"
+tmdb_collections = [1802417]
+survey = "r2-136"
+
+[[franchise]]
+key = "tmdb_975201"
+name = "Простая просьба"
+scope = "all"
+tmdb_collections = [975201]
+survey = "r2-137"
+
+[[franchise]]
+key = "tmdb_1321891"
+name = "In a Violent Nature Collection"
+scope = "all"
+tmdb_collections = [1321891]
+survey = "r2-138"
+
+[[franchise]]
+key = "tmdb_1231053"
+name = "Плохие парни (Коллекция мультфильмов)"
+scope = "all"
+tmdb_collections = [1231053]
+survey = "r2-139"
+confirm = ["tt31392119"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+# владелец 2026-10-27 в опросе «что видел»: «Не интересно.» → скрыто tt31392119
+hide = ["tt31392119"]
+
+[[franchise]]
+key = "tmdb_1172926"
+name = "Незнакомцы"
+scope = "all"
+tmdb_collections = [1172926]
+survey = "r2-140"
+
+[[franchise]]
+key = "tmdb_1136366"
+name = "Avatar Aang: The Last Airbender Collection"
+scope = "none"
+tmdb_collections = [1136366]
+survey = "r2-141"
+
+[[franchise]]
+key = "tmdb_1507701"
+name = "Apocalipsis Z - Colección"
+scope = "none"
+tmdb_collections = [1507701]
+survey = "r2-142"
+# 2026-10-24 владелец: «не следить»
+
+[[franchise]]
+key = "tmdb_1187990"
+name = "దేవర Collection"
+scope = "none"
+tmdb_collections = [1187990]
+survey = "r2-143"
+# 2026-10-24 владелец: «не помню, чтобы я их вообще просил» — не следить
+
+[[franchise]]
+key = "tmdb_264338"
+name = "Ребенок Розмари"
+scope = "all"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [264338]
+survey = "r2-144"
+
+[[franchise]]
+key = "tmdb_1370659"
+name = "Border Collection"
+scope = "none"
+from_year = 2024   # «с 2024 и дальше»: старое не собирать, всё новое — наверх
+tmdb_collections = [1370659]
+survey = "r2-145"
+# 2026-10-24 владелец: «не следить»
+
+[[franchise]]
+key = "tmdb_1492780"
+name = "One of Them Days Collection"
+scope = "all"
+tmdb_collections = [1492780]
+survey = "r2-146"
+
+[[franchise]]
+key = "tmdb_1156666"
+name = "Вина | Коллекция + Коллекция фильмов \"Вина\""
+scope = "all"
+tmdb_collections = [1156666, 1477387]
+survey = "r2-147"
+
+[[franchise]]
+key = "tmdb_925006"
+name = "Аббатство Даунтон"
+scope = "all"
+tmdb_collections = [925006]
+survey = "r2-148"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt1606375"]
+review = ["tt3484656"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1354706"
+name = "Practical Magic Collection"
+scope = "all"
+tmdb_collections = [1354706]
+survey = "r2-149"
+
+
+# ---- названы владельцем напрямую ----
+
+[[franchise]]
+key = "sherlock_holmes"
+name = "Шерлок Холмс — все экранизации"
+scope = "all"
+tmdb_collections = [829314]
+note = "владелец: «Шерлок весь интересен, все года, все вариации» — BBC Шерлок, Гай Ричи, Элементарно, Ливанов, Мистер Холмс, Энола Холмс…"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: старые экранизации до 2000 — скрыть («советское цветное я видел» — отмечено)
+hide_films_before = 2000
+# 2026-10-24 владелец: ТВ-фильмы 2000–2007 скрыть; «после 2000 хочу отвечать всё вручную» — остальное после 2000 спрашивать
+hide = ["tt0337593", "tt0322622", "tt0429032", "tt0264695", "tt0310851", "tt0270645", "tt0281173", "tt0892743"]
+# 2026-10-24: то же правило владельца «старые экранизации до 2000 — скрыть» для сериалов (советские цветные — видел)
+hide_series_before = 2000
+confirm = ["tt0035318", "tt0037303", "tt0038259", "tt0038494", "tt0039017", "tt0088108", "tt0095330", "tt0102416", "tt0104688"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0076770", "tt1114698", "tt0377981", "tt2027255"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "little_mermaid"
+name = "Русалочка (Disney)"
+scope = "all"
+tmdb_collections = []
+note = "владелец: «Русалочка вся интересна» — 1989, продолжения, мультсериал, фильм 2023"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+review = ["tt0479064", "tt28306749"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "enchanted"
+name = "Зачарованная"
+scope = "all"
+tmdb_collections = [531799]
+note = "владелец: «и зачарованная» — 2007 и Расколдованная 2022"
+
+[[franchise]]
+key = "101_dalmatians"
+name = "101 далматинец + Круэлла"
+scope = "all"
+tmdb_collections = []
+note = "владелец: «101 далматинец интересен и Круэлла» — мультфильмы, фильмы 1996/2000, сериалы, Круэлла 2021 и продолжение"
+
+# ---- круг 4 + купленное (2026-10-23): старая таблица владельца и коллекции купленных фильмов; все ответы «Все годы» ----
+# 2026-10-24 владелец: «61 года скрыть»
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0055254", "tt0144700", "tt7019028"]
+
+[[franchise]]
+key = "tmdb_14563"
+name = "Звонок (США)"
+scope = "all"
+tmdb_collections = [14563]
+survey = "r4-1"
+# 2026-10-23 владелец: «Звонок японский исключить», «и сериалы по Звонку японские исключить»
+hide_country = {JP = 9999}
+
+[[franchise]]
+key = "tmdb_391860"
+name = "Kingsman"
+scope = "all"
+tmdb_collections = [391860]
+survey = "r4-2"
+review = ["tt1486217"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_86027"
+name = "Аладдин (Disney) + фильм 2019"
+scope = "all"
+tmdb_collections = [86027]
+survey = "r4-3"
+# 2026-10-23 владелец: «сериал 2013 про Алису исключи»
+hide = ["tt2802008"]
+# 2026-10-23 владелец: «Аладдин — мультики 3 я видел, сериал не интересно»
+hide_all_series = true
+review = ["tt0033152", "tt0300195", "tt0329374", "tt1159961", "tt1843230", "tt2136138", "tt5848272", "tt28477869", "tt20202136", "tt28306749", "tt37748279", "tt43689138"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_52749"
+name = "Эффект бабочки"
+scope = "all"
+tmdb_collections = [52749]
+survey = "r4-4"
+review = ["tt1598174"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_64751"
+name = "Адреналин"
+scope = "all"
+tmdb_collections = [64751]
+survey = "r4-5"
+
+[[franchise]]
+key = "cloverfield"
+name = "Кловерфилд (вселенная, коллекции TMDB нет)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-6"
+
+[[franchise]]
+key = "evil_dead"
+name = "Зловещие мертвецы (вся вселенная: фильмы, сериал)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-7"
+# 2026-10-23 владелец: старые фильмы до 2000 не нужны
+hide_films_before = 2000
+confirm = ["tt0092991"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0076216", "tt0489235", "tt2140671", "tt2659416", "tt6403680", "tt8762206", "tt3323896"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_809185"
+name = "Армия мертвецов"
+scope = "all"
+tmdb_collections = [809185]
+survey = "r4-8"
+watch = "владелец 2026-10-23: следить за анимационным сериалом Army of the Dead: Lost Vegas (Netflix) — ждать раздачу на rutor и rutracker"
+review = ["tt0077402", "tt0489018"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_124949"
+name = "Всемогущий"
+scope = "all"
+tmdb_collections = [124949]
+survey = "r4-9"
+review = ["tt0476550", "tt1150946", "tt1858396", "tt5242220"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_945984"
+name = "Я — легенда"
+scope = "all"
+tmdb_collections = [945984]
+survey = "r4-10"
+
+[[franchise]]
+key = "tmdb_731067"
+name = "Птичий короб"
+scope = "all"
+tmdb_collections = [731067]
+survey = "r4-11"
+
+[[franchise]]
+key = "tmdb_718551"
+name = "Побег из курятника"
+scope = "all"
+tmdb_collections = [718551]
+survey = "r4-12"
+
+[[franchise]]
+key = "tmdb_1601866"
+name = "Три идиота"
+scope = "all"
+tmdb_collections = [1601866]
+survey = "r4-13"
+review = ["tt2180477"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "eastrail_177"
+name = "Неуязвимый / Сплит / Стекло (трилогия Шьямалана)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-14"
+
+[[franchise]]
+key = "the_gentlemen"
+name = "Джентльмены (фильм 2019 + сериал 2024)"
+scope = "all"
+tmdb_collections = []
+survey = "r4-15"
+
+[[franchise]]
+key = "tmdb_386382"
+name = "Холодное сердце"
+scope = "all"
+tmdb_collections = [386382]
+survey = "r4-16"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+confirm = ["tt15475608"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt10196382", "tt28035641"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_2150"
+name = "Шрек + Кот в сапогах"
+scope = "all"
+tmdb_collections = [2150, 94602]
+survey = "r4-17"
+# 2026-10-23 владелец: «мультсериалы не интересны по Шреку» — скрыть сериалы
+hide_all_series = true
+confirm = ["tt43619974"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "tmdb_43072"
+name = "Маска"
+scope = "all"
+tmdb_collections = [43072]
+survey = "r4-18"
+confirm = ["tt0112064"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "ask"
+
+[[franchise]]
+key = "tmdb_722961"
+name = "Космический джем"
+scope = "all"
+tmdb_collections = [722961]
+survey = "r4-19"
+review = ["tt2771780"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_295"
+name = "Пираты Карибского моря"
+scope = "all"
+tmdb_collections = [295]
+survey = "r4-20"
+review = ["tt38132627", "tt0477457"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_1733"
+name = "Мумия (+2017, Царь скорпионов)"
+scope = "all"
+tmdb_collections = [1733]
+survey = "r4-21"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+# 2026-10-24 владелец: «до 70 скрыть Мумию»
+hide_films_before = 1970
+# 2026-10-24 владелец: «убрать Мумию 71»
+hide = ["tt0068290"]
+review = ["tt0047795"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_2806"
+name = "Американский пирог (+ Presents)"
+scope = "all"
+tmdb_collections = [2806]
+survey = "r4-22"
+
+[[franchise]]
+key = "tmdb_8354"
+name = "Ледниковый период (+ Скрат, Бак)"
+scope = "all"
+tmdb_collections = [8354]
+survey = "r4-23"
+confirm = ["tt1338677"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0451079", "tt1320261", "tt1436562", "tt1615918", "tt2452042"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tmdb_9888"
+name = "Один дома (+ телефильмы, Дома без никого)"
+scope = "all"
+tmdb_collections = [9888]
+survey = "r4-24"
+review = ["tt0099348", "tt0099422", "tt1255873", "tt3756224", "tt7269184", "tt9842312"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_14740"
+name = "Мадагаскар (+ Пингвины, сериалы)"
+scope = "all"
+tmdb_collections = [14740]
+survey = "r4-25"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt0892700", "tt11714912", "tt3807022", "tt6865906"]
+
+[[franchise]]
+key = "tmdb_86055"
+name = "Люди в чёрном (+ Интернэшнл, мультсериал)"
+scope = "all"
+tmdb_collections = [86055]
+survey = "r4-26"
+note = "владелец 2026-10-23: «Люди в чёрном добавить франшизу, это не Marvel» — фильмы 1997–2019 и мультсериал; дубль men_in_black слит сюда 2026-10-25"
+review = ["tt0156789", "tt2248480"]   # 2026-10-25 агент: «Men in White» (1998) — пародийный телефильм; + 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "hide"
+
+[[franchise]]
+key = "tmdb_87014"
+name = "Кошки против собак"
+scope = "all"
+tmdb_collections = [87014]
+survey = "r4-27"
+
+[[franchise]]
+key = "tmdb_133352"
+name = "Обитель зла — вся вселенная (фильмы, сериалы, анимация)"
+scope = "all"
+tmdb_collections = [133352]
+survey = "r4-28"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+review = ["tt32874249", "tt21990960"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_137697"
+name = "В поисках Немо"
+scope = "all"
+tmdb_collections = [137697]
+survey = "r4-29"
+
+[[franchise]]
+key = "tmdb_185103"
+name = "Монстры на каникулах"
+scope = "all"
+tmdb_collections = [185103]
+survey = "r4-30"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+
+[[franchise]]
+key = "tmdb_229932"
+name = "Рио"
+scope = "all"
+tmdb_collections = [229932]
+survey = "r4-31"
+
+[[franchise]]
+key = "tmdb_427084"
+name = "Тайная жизнь домашних животных"
+scope = "all"
+tmdb_collections = [427084]
+survey = "r4-32"
+review = ["tt0902999", "tt1323594", "tt1482459", "tt1690953", "tt7510222"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_464577"
+name = "Семейка Крудс"
+scope = "all"
+tmdb_collections = [464577]
+survey = "r4-33"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "films_only"
+confirm = ["tt15341442"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "tmdb_530064"
+name = "Сияние / Доктор Сон (+ Отель Сияние)"
+scope = "all"
+tmdb_collections = [530064]
+survey = "r4-34"
+review = ["tt2085910", "tt1396484", "tt1677720", "tt7349950", "tt0118460"]   # tt0118460 мини-сериал «Сияние» 1997 — владелец 2026-10-25: «Не следить»; остальные — 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "tmdb_531315"
+name = "Angry Birds в кино (+ мультсериалы)"
+scope = "all"
+tmdb_collections = [531315]
+survey = "r4-35"
+# 2026-10-24: владелец, развилка «сериалы/мультсериалы франшизы вообще интересны?» — не отмечено → скрыть
+hide = ["tt12027896", "tt3012598", "tt3674118", "tt4168666", "tt6613034", "tt27977716"]
+
+[[franchise]]
+key = "tmdb_531331"
+name = "Малефисента"
+scope = "all"
+tmdb_collections = [531331]
+survey = "r4-36"
+
+[[franchise]]
+key = "tmdb_634390"
+name = "Doom (экранизации игры)"
+scope = "all"
+tmdb_collections = [634390]
+survey = "r4-37"
+
+[[franchise]]
+key = "tmdb_737031"
+name = "Хитмэн (+ сериал)"
+scope = "all"
+tmdb_collections = [737031]
+survey = "r4-38"
+
+[[franchise]]
+key = "tmdb_830781"
+name = "Кладбище домашних животных (1989/1992 + ремейк)"
+scope = "all"
+tmdb_collections = [830781]
+survey = "r4-39"
+
+[[franchise]]
+key = "tmdb_1458846"
+name = "Однажды в… Голливуде (+ Приключения Клиффа Бута 2026)"
+scope = "all"
+tmdb_collections = [1458846]
+survey = "r4-40"
+
+[[franchise]]
+key = "tmdb_125570"
+name = "300 спартанцев (+ сериал)"
+scope = "all"
+tmdb_collections = [125570]
+survey = "r4-41"
+review = ["tt0055719", "tt0892737", "tt1073498"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "south_park"
+name = "Южный парк"
+scope = "all"
+tmdb_collections = []
+note = "Южный парк — вся вселенная (сериал, фильмы, спецвыпуски) — назван владельцем (2026-10-23)"
+review = ["tt0032551", "tt0075860", "tt0110725", "tt2836254"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+confirm = ["tt30505159"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "the_boys"
+name = "Пацаны (+ Дьявольские, Поколение V)"
+scope = "all"
+tmdb_collections = []
+note = "Пацаны — вся вселенная: «Пацаны / The Boys» в списке сериалов владельца (config/watchlist.toml) → «Всё из моих списков — следить» (владелец, 2026-10-25). Импринт, не DC (триаж франшиз 2026-10-25)"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "ask_owner"
+
+[[franchise]]
+key = "rick_and_morty"
+name = "Рик и Морти"
+scope = "all"
+tmdb_collections = []
+note = "Рик и Морти — вся вселенная — назван владельцем (есть в Plex) (2026-10-23)"
+# 2026-10-24 владелец (развилка «аниме вообще интересно?»): «Рик и Морти: Аниме» (2024) — нет
+hide = ["tt28466465"]
+
+[[franchise]]
+key = "pokemon"
+name = "Покемоны"
+scope = "all"
+tmdb_collections = []
+note = "Покемоны — вся вселенная (сериалы, фильмы, Детектив Пикачу) — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+review = ["tt1831736"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "death_note"
+name = "Тетрадь смерти"
+scope = "all"
+tmdb_collections = []
+note = "Тетрадь смерти — вся вселенная — назван владельцем (видел) (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "psycho_pass"
+name = "Психопаспорт"
+scope = "all"
+tmdb_collections = [1564492, 559564]   # фильмы; 559564 «Грешники системы» Case.1–3 — аудит 2026-10-25
+note = "Психопаспорт — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "gantz"
+name = "Ганц (Gantz)"
+scope = "all"
+tmdb_collections = []
+note = "Ганц (Gantz) — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "naruto"
+name = "Наруто + Боруто"
+scope = "all"
+tmdb_collections = []
+note = "Наруто + Боруто — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+# 2026-10-24 владелец: из фильмов видел только «Боруто» (2015) и «Последний» (2014, Наруто на Луне); прошлые фильмы не интересны
+hide = ["tt0476680", "tt0791188", "tt1071815", "tt0988982", "tt1160524", "tt1481363", "tt1703048", "tt1999167", "tt2290828"]
+confirm = ["tt2290828", "tt3717532", "tt4618398"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "bleach"
+name = "Блич"
+scope = "all"
+tmdb_collections = []
+note = "Блич — вся вселенная — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+# 2026-10-24 владелец: «фильмы не буду по Блич смотреть»
+hide = ["tt1105263", "tt1148261", "tt1339302", "tt1785394"]
+
+[[franchise]]
+key = "one_piece"
+name = "Ван-Пис"
+scope = "all"
+tmdb_collections = []
+note = "Ван-Пис — вся вселенная (аниме, фильмы, сериал Netflix) — назван владельцем (2026-10-23)"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+# ---- экранизации игр владельца (R36, 2026-10-23): правило владельца — экранизации его игр всегда «Все годы», без опроса ----
+
+[[franchise]]
+key = "assassins_creed"
+name = "Assassin's Creed (+ Captain Laserhawk)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "bloodborne"
+name = "Bloodborne"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dead_space"
+name = "Dead Space"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "death_stranding"
+name = "Death Stranding"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "devil_may_cry"
+name = "Devil May Cry"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# 2026-10-24 владелец: аниме Devil May Cry 2007 — не интересно (Netflix 2025 — в «хочу», не трогать)
+hide = ["tt1048049"]
+
+[[franchise]]
+key = "ghost_of_tsushima"
+name = "Ghost of Tsushima"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "god_of_war"
+name = "God of War"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "half_life_portal"
+name = "Half-Life / Portal (Valve)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# 2026-10-24: фанатские веб-сериалы (правило: фан-работы не поднимать)
+hide = ["tt16390594", "tt13004192"]
+review = ["wd:Q135985544"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "halo"
+name = "Halo"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-24)
+animation = "ask"
+# 2026-10-24 владелец: «Красные против Синих» — «ничего из этого не хочу»
+hide = ["tt0401747"]
+
+[[franchise]]
+key = "life_is_strange"
+name = "Life Is Strange"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "mass_effect"
+name = "Mass Effect"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "max_payne"
+name = "Max Payne"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt0115380"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "metal_gear"
+name = "Metal Gear"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt1543283", "tt6475714"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "postal"
+name = "Postal"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "tekken"
+name = "Tekken"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "the_witcher"
+name = "Ведьмак (The Witcher) — вся вселенная Сапковского"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+
+[[franchise]]
+key = "tomb_raider"
+name = "Tomb Raider"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-23)
+animation = "ask_owner"
+# 2026-10-24 владелец: «Переосмысление: Расхитительница гробниц» 2007 — мультсериал не интересен
+hide = ["tt1124308"]
+review = ["tt0387693", "tt2279344"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "twisted_metal"
+name = "Twisted Metal"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "alan_wake"
+name = "Alan Wake (+ Bright Falls)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+# ---- экранизации игр владельца, круг 2 (R36/R62, 2026-10-24): группы game_adaptations с подтверждёнными экранизациями,
+# у которых не было членов ни в одной франшизе; правило владельца — «Все годы» без опроса; anime = true — экранизации-аниме ----
+
+[[franchise]]
+key = "alone_in_the_dark"
+name = "Alone in the Dark"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "among_us"
+name = "Among Us"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["wd:Q141757627"]   # 2026-10-25 агент: «Among Us Logic» — фанатский веб-сериал
+
+[[franchise]]
+key = "ark"
+name = "ARK: Survival Evolved"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# владелец 2026-10-27 в опросе «что видел»: «Не интересно» → скрыто tt13629530
+hide = ["tt13629530"]
+
+[[franchise]]
+key = "battlefield"
+name = "Battlefield"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt2354667"]   # 2026-10-25 агент: «Battlefield Friends» — фанатский анимационный веб-сериал
+
+[[franchise]]
+key = "bayonetta"
+name = "Bayonetta"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "borderlands"
+name = "Borderlands"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "castlevania"
+name = "Castlevania"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt0488982"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+# владелец 2026-10-27 в опросе «что видел»: «Не интересно» → скрыто tt0096554
+hide = ["tt0096554"]
+
+[[franchise]]
+key = "company_of_heroes"
+name = "Company of Heroes"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# владелец 2026-10-27 в опросе «что видел»: «Не интересно» → скрыто tt2555426
+hide = ["tt2555426"]
+
+[[franchise]]
+key = "final_fantasy"
+name = "Final Fantasy (вкл. Compilation of FFVII, Fabula Nova Crystallis)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "cuphead"
+name = "Cuphead"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "cyberpunk"
+name = "Cyberpunk (2077, Edgerunners)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "dead_by_daylight"
+name = "Dead by Daylight"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dead_or_alive"
+name = "Dead or Alive"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt0221111", "tt0285005", "tt0301167"]   # 2026-10-27: «Живым или мёртвым» 1–3 (Такаси Миикэ, якудза) — тёзки, не экранизация игры; не поднимать
+hide = ["tt0221111", "tt0285005", "tt0301167", "tt0398913"]     # те же тёзки — не спрашивать в «что видел» (состав пересчитает films.franchise)
+# владелец 2026-10-27 в опросе «что видел»: «Не интересно» → скрыто tt0398913
+
+[[franchise]]
+key = "dragon_age"
+name = "Dragon Age"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "dragon_ball"
+name = "Dragon Ball — вся вселенная"
+scope = "none"   # владелец 2026-10-25: «Я не интересуюсь Dragon Ball … Его скрыть» (правило «игры владельца — все годы» тут отменено им самим)
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
+review = ["tt1608208", "tt0122050", "wd:Q115940570", "tt0081852", "tt10838374", "tt1189033", "tt0157222"]   # 2026-10-25 агент: нелицензионные фильмы (Корея 1990, Тайвань 1991), валенсийский дубляж, «Доктор Сламп» — другая франшиза Ториямы
+
+[[franchise]]
+key = "dragons_dogma"
+name = "Dragon's Dogma"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "drakengard_nier"
+name = "Drakengard / NieR"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "fallout"
+name = "Fallout"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt2056910", "tt5713794"]   # 2026-10-25 агент: «Fallout: Nuka Break» — фанатский веб-сериал; + 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "far_cry"
+name = "Far Cry"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "ask_owner"
+
+[[franchise]]
+key = "fatal_frame"
+name = "Fatal Frame (Project Zero)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "gears_of_war"
+name = "Gears of War"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "hatsune_miku"
+name = "Hatsune Miku (Project DIVA / Project SEKAI)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "mini_ninjas"
+name = "Mini Ninjas"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+# владелец 2026-10-27 в опросе «что видел»: «Мини нинзя не интересно» → скрыто tt4576386
+hide = ["tt4576386"]
+
+[[franchise]]
+key = "need_for_speed"
+name = "Need for Speed"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "persona"
+name = "Persona (Shin Megami Tensei)"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
+review = ["tt0284043", "tt0266106", "tt0929419", "tt0108914", "tt0425637", "tt0882978", "tt1514753", "tt7587604"]   # 2026-10-25 агент: экранизации «Троецарствия» / Dynasty Warriors попали из game_adaptations по ошибке — к Persona не относятся
+
+[[franchise]]
+key = "prince_of_persia"
+name = "Prince of Persia"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "quake"
+name = "Quake"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt37751900", "tt26900526", "tt39186479", "tt37752254"]   # 2026-10-25 агент: машинима «Diary of a Camper» и фан-фильм TF2 «Emesis Blue»; + 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "ratchet_clank"
+name = "Ratchet & Clank"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "shenmue"
+name = "Shenmue"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = true  # владелец 2026-10-25: аниме — собирать
+
+[[franchise]]
+key = "street_fighter"
+name = "Street Fighter"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
+review = ["tt1156102", "tt1696187"]   # 2026-10-25 агент: пародия «The Later Years» (CollegeHumor), фан-короткометражка «Legacy» (2010)
+confirm = ["tt3514862", "tt4247856"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "streets_of_rage"
+name = "Streets of Rage"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "team_fortress"
+name = "Team Fortress"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt26900526", "tt35625327", "wd:Q60302060"]   # 2026-10-25 агент: фан-фильмы TF2 (Emesis Blue, Spy"s Disguise, Player"s Portrait); Meet the … и Expiration Date — официальные ролики Valve
+confirm = ["tt2302723"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "the_exit_8"
+name = "The Exit 8"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "king_of_fighters"
+name = "The King of Fighters"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+anime = false  # владелец 2026-10-25: аниме по этой франшизе не собирать
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "hide"
+
+[[franchise]]
+key = "the_last_of_us"
+name = "The Last of Us"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "mortuary_assistant"
+name = "The Mortuary Assistant"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "the_sims"
+name = "The Sims"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt14706102", "tt4653654"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "uncharted"
+name = "Uncharted"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+review = ["tt8707436"]   # 2026-10-25 агент: «Uncharted Live Action Fan Film» (2018)
+
+[[franchise]]
+key = "until_dawn"
+name = "Until Dawn"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "watch_dogs"
+name = "Watch Dogs"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "white_day"
+name = "White Day"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "yakuza"
+name = "Yakuza / Like a Dragon"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+
+[[franchise]]
+key = "monster_hunter"
+name = "Monster Hunter"
+scope = "all"
+tmdb_collections = []
+source = "games"   # состав — films.sources.games (game_adaptations) + films.franchise
+hide = ["tt6763304"]   # владелец 2026-10-27 про аниме-сериал «Истории охотников за монстрами»: «Не интересен»
+
+[[franchise]]
+key = "hunger_games"
+name = "Голодные игры — вся франшиза"
+scope = "all"
+tmdb_collections = [131635]
+note = "владелец 2026-10-23: «Голодные игры (фильм) — следить за франшизой» (вкл. приквелы: Баллада о змеях и певчих птицах, Восход жатвы)"
+
+[[franchise]]
+key = "star_trek"
+name = "Звёздный путь (Star Trek) — вся вселенная"
+scope = "all"
+note = "владелец 2026-10-23 в ❤️-опросе: «вселенная стартрека нужна» — фильмы, сериалы, мультсериалы; состав — Wikidata/Википедия/Memory Alpha"
+review = ["tt0467491", "tt0458122", "tt2074442", "tt2732442", "tt0021884", "tt0024894", "tt0031202", "tt0035896", "tt0043208", "tt0043292", "tt0043456", "tt0046268", "tt0046303", "tt0250868", "tt0048554", "tt0049096", "tt0049730", "tt0050147", "tt0052522", "tt0053580", "tt0063522", "tt0066769", "tt0070047", "tt0100582", "tt0180143", "tt0180144", "tt0127859", "tt0127860", "tt0177789", "tt0362321", "tt0865345", "tt0296753", "tt1097016", "tt1254340", "tt2779140", "tt0835378", "tt1489257", "tt2104992", "tt1598174", "tt1977920", "tt2226344", "tt3019264", "tt3572740", "tt5691552", "tt13485500", "tt7979580"]   # 2026-10-25 агент: фанатские сериалы (Hidden Frontier, New Voyages, Odyssey, Continues); + 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+confirm = ["tt9184820"]   # «Нижние палубы» — канон Paramount+, флаг parody ошибочен
+# мультики франшизы: развилка 2026-10-27 — «интересны мне», затем в опросе «что видел»: «Откуда так много звёздного пути …
+# Давай хотя бы мультики все его исключим. Я так много не готов а сериалам уберем приоритет за франшизу», «прошлое сообщение
+# ко всей франшизе относилось» → мультики скрыты, бонус франшизы в сортировке снят со всей франшизы, в опросе не спрашивать;
+# «Стар трек Яне не интересен» → [responsible.yana] exclude_franchises
+animation = "hide"
+priority = false
+survey_skip = true
+# владелец 2026-10-27 (развилка сериалов): 1966, «Следующее поколение», «Дальний космос 9», «Вояджер» — «Из этих никакие»; «2001 не интересный» (Энтерпрайз);
+# после рейтинга и статуса интересны «Пикар», «Странные новые миры», «Дискавери», «Короткометражки», не отмечена «Академия Звёздного флота»
+hide = ["tt0060028", "tt0092455", "tt0106145", "tt0112178", "tt0244365", "tt8622160", "tt0069637"]
+# владелец 2026-10-27 в опросе «что видел»: «73 и 74 не интересны» → скрыто tt0069637
+
+[[franchise]]
+key = "spider_verse"
+name = "Человек-паук: Вселенные (Spider-Verse)"
+scope = "all"
+tmdb_collections = [573436]   # 2026-10-25 триаж: без якоря resolve 20:48 не нашёл ни одного члена и пометил трилогию stale (review)
+# игровые «Человек-паук» (1977–2026) приходят из навбокса Википедии «Spider-Man in film»: это Marvel (там свои правила скрытия), не Spider-Verse
+review = ["tt0075671", "tt0077328", "tt0078308", "tt1841843", "tt0145487", "tt0316654", "tt0413300", "tt0948470", "tt1872181", "tt2250912", "tt6320628", "tt10872600", "tt22084616"]   # 2026-10-25 триаж франшиз (агент)
+note = "владелец 2026-10-23: «Паук через вселенные крутой, оставить и следить отдельно» — анимационная трилогия Sony + спин-оффы (Spider-Punk, Spider-Women); из «Marvel — всё» скрыт как анимация вне MCU"
+
+[[franchise]]
+key = "buffyverse"
+name = "Баффи — вселенная (Buffyverse)"
+scope = "all"
+note = "«Баффи — истребительница вампиров» (1997–2003), «Ангел» (1999–2004), фильм 1992, новый «Баффи» (Hulu). Владелец 2026-10-23: «Баффи и Ангела по вселенной я видел. Франшизу в отслеживание добавь»"
+confirm = ["tt1322280"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt2147584"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "highlander"
+name = "Горец"
+scope = "all"
+note = "фильмы 1986–2007, «Горец» (1992–1998), «Ворон», мультсериал, перезапуск с Генри Кавиллом. Владелец 2026-10-23: «Горец 92–98 я видел, за франшизой хочу следить»"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "ask_owner"
+hide = ["tt0147773"]   # владелец 2026-10-27 про мультсериал «Горец» (1994): «Это не интересно»
+
+[[franchise]]
+key = "stargate"
+name = "Звёздные врата — вселенная"
+scope = "all"
+note = "фильм 1994, SG-1, «Атлантида», «Вселенная», «Бесконечность» (мульт), «Начало», фильмы «Ковчег истины» и «Континуум», новый сериал Amazon. Владелец 2026-10-23: «Атлантиду, фильм и полнометражный мультик видел; хочу следить за вселенной»"
+review = ["tt0367090", "tt0419759", "tt0446593", "tt0796314", "tt0861734", "tt1080033"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "ask_owner"
+# владелец 2026-10-27 (развилка сериалов): «1997 не интересен» (ЗВ-1); «Вселенную» сначала не отметил, затем, узнав, что
+# «Начало» — не после «Атлантиды»: «Хочу и вселенную глянуть и всё новое» → «Вселенная» и «Начало» — в «хочу» (config/watchlist.toml)
+hide = ["tt0118480"]
+
+[[franchise]]
+key = "lost"
+name = "Остаться в живых (Lost)"
+scope = "all"
+note = "владелец 2026-10-23: «Lost видел весь, следить за вселенной»"
+
+[[franchise]]
+key = "are_you_afraid"
+name = "Боишься ли ты темноты?"
+scope = "all"
+note = "владелец 2026-10-23: оригинал 1990–2000 видел, «следить за новыми» (перезапуск 2019–2022 и дальше)"
+
+[[franchise]]
+key = "cars"
+name = "Тачки (Pixar)"
+scope = "all"
+tmdb_collections = [87118]
+note = "владелец 2026-10-23: «Тачки я все видел, кроме сериала — его скрыть»; фильмы 1–3 отмечены"
+hide_all_series = true
+confirm = ["tt1559826", "tt2166364", "tt3755824", "tt3755844"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+review = ["tt0395479", "tt0479113", "tt4839424"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "godfather"
+name = "Крёстный отец"
+scope = "all"
+tmdb_collections = [230]
+note = "владелец 2026-10-24: «франшиза, которую я не видел, у которой просто высокий приоритет по сортировке над IMAX» — в плейлисты не класть"
+review = ["tt8330292"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "jeepers_creepers"
+name = "Джиперс Криперс"
+scope = "all"
+tmdb_collections = [94899]
+note = "владелец 2026-10-24: «Джиперс Криперс тоже отслеживать франшизу» — вся вселенная, все годы (вкл. «Возрождённый» 2022)"
+
+# ---- R57 (2026-10-25): франшизы из списков владельца. Ответы 1–5 по отдельности, затем правило владельца:
+# «Всё из моих списков — следить» → «Все годы» без вопросов. «Истребитель демонов» — не интересно (ничего не видел и не скачано).
+# tmdb_tv — сериалы франшизы (для справки и сбора состава); ответы — data/cache/franchise_answers_r5.json ----
+
+[[franchise]]
+key = "my_hero_academia"
+name = "Моя геройская академия (My Hero Academia)"
+scope = "all"
+tmdb_collections = [1189668]
+tmdb_tv = [65930]
+note = "сериалы «хочу»; «Не видел ничего, хочу посмотреть» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "stranger_things"
+name = "Очень странные дела (Stranger Things)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [66732]
+note = "сериалы «хочу»; «Хочу, но ничего не видел» (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "attack_on_titan"
+name = "Атака титанов (Attack on Titan)"
+scope = "all"
+tmdb_collections = [370411, 383987]
+tmdb_tv = [1429]
+note = "сериалы «хочу»; «Хочу, но ничего не видел» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "sword_art_online"
+name = "Мастера меча онлайн (Sword Art Online)"
+scope = "all"
+tmdb_collections = [893713]
+tmdb_tv = [45782, 78204]
+note = "видел S1–S4, GGO S1, «Порядковый ранг»; «Все годы» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+review = ["tt5848846"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "seven_deadly_sins"
+name = "Семь смертных грехов (The Seven Deadly Sins)"
+scope = "all"
+tmdb_collections = [703485]
+tmdb_tv = [62104]
+note = "сериалы «хочу»; правило «всё из моих списков — следить» (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+confirm = ["tt20228550"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): канон, флаг сомнения ошибочен (официальная работа правообладателя)
+
+[[franchise]]
+key = "alice_burton"
+name = "Алиса в стране чудес (Тим Бёртон)"
+scope = "none"   # владелец 2026-10-27: 🔵 «возможно» франшизу не заводит — «Для возможно не должен» (было «all» по правилу 25.10)
+tmdb_collections = [261307]
+tmdb_tv = []
+note = "большой список 🔵; правило «всё из моих списков — следить» (2026-10-25)"
+survey = "r5"
+review = ["tt0043274", "tt0088473", "tt2802008", "tt14786700"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "chainsaw_man"
+name = "Человек-бензопила (Chainsaw Man)"
+scope = "all"
+tmdb_collections = [1544712]
+tmdb_tv = [114410]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "frieren"
+name = "Фрирен, провожающая в последний путь"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [209867]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "mcmullen"
+name = "Братья / Семья МакМаллен"
+scope = "none"   # владелец 2026-10-27: «Список Димы это список который он не видел. Он никак не влияет на франшизы» (было «all» из списка Димы)
+tmdb_collections = [1548025]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "monster_urasawa"
+name = "Монстр (Наоки Урасава)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [30981]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "national_treasure"
+name = "Сокровище нации (National Treasure)"
+scope = "none"   # владелец 2026-10-27: 🔵 «возможно» франшизу не заводит — «Для возможно не должен» (было «all» по правилу 25.10)
+tmdb_collections = [52984]
+tmdb_tv = [137437]
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+review = ["tt11187484"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "re_zero"
+name = "Re:ZERO – Жизнь с нуля в альтернативном мире"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [65942]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "shaman_king"
+name = "Король шаманов (Shaman King)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [104699, 232865, 40143]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)
+
+[[franchise]]
+key = "family_plan"
+name = "Семейный план (The Family Plan)"
+scope = "none"   # владелец 2026-10-27: «Список Димы это список который он не видел. Он никак не влияет на франшизы» (было «all» из списка Димы)
+tmdb_collections = [1363124]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "haunting_flanagan"
+name = "Призрак дома на холме / Призраки усадьбы Блай (Майк Флэнаган)"
+scope = "all"
+tmdb_collections = []
+tmdb_tv = [72844, 109958]
+note = "сериалы «хочу»; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "last_witch_hunter"
+name = "Последний охотник на ведьм"
+scope = "none"   # владелец 2026-10-27: 🔵 «возможно» франшизу не заводит — «Для возможно не должен» (было «all» по правилу 25.10)
+tmdb_collections = [1543569]
+tmdb_tv = []
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "world_war_z"
+name = "Война миров Z"
+scope = "none"   # владелец 2026-10-27: 🔵 «возможно» франшизу не заводит — «Для возможно не должен» (было «all» по правилу 25.10)
+tmdb_collections = [1674208]
+tmdb_tv = []
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "iron_sky"
+name = "Железное небо (Iron Sky)"
+scope = "all"   # 🔵-франшиза, но первый фильм владелец видел (опрос 2026-10-27) — слежение остаётся
+tmdb_collections = [312977]
+tmdb_tv = []
+note = "большой список 🔵; правило (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "madea"
+name = "Мэдея (Тайлер Перри)"
+scope = "none"   # владелец 2026-10-27: «Список Димы это список который он не видел. Он никак не влияет на франшизы» (было «all» из списка Димы)
+tmdb_collections = [534673, 501909]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+# мультики франшизы — ответ владельца на вопрос-развилку (2026-10-27)
+animation = "hide"
+hide = ["tt1319598"]   # владелец 2026-10-27: сериал «Meet the Browns» — «Не интересен»
+
+[[franchise]]
+key = "veteran_kr"
+name = "Мститель / Ветеран (Рю Сын-ван, Корея)"
+scope = "none"   # владелец 2026-10-27: «Список Димы это список который он не видел. Он никак не влияет на франшизы» (было «all» из списка Димы)
+tmdb_collections = [1089303]
+tmdb_tv = []
+note = "комедии Димы; правило (2026-10-25)"
+survey = "r5"
+review = ["tt9596638"]   # 2026-10-25 триаж франшиз (агент; data/cache/franchise_review_decisions.json): не поднимать: пародии, документалки, фан-фильмы, тёзки, чужие вселенные
+
+[[franchise]]
+key = "demon_slayer"
+name = "Истребитель демонов (Demon Slayer)"
+scope = "none"
+tmdb_collections = [925155]
+tmdb_tv = [85937]
+note = "сериалы «хочу»; «Если ничего не видел и не скачано, то не интересно» — не видел, не скачано (2026-10-25)"
+survey = "r5"
+
+[[franchise]]
+key = "higurashi"
+name = "Когда плачут цикады (Higurashi)"
+scope = "all"
+tmdb_collections = [856206]
+tmdb_tv = [25760, 100988, 75475, 327185]
+note = "«Я видел все цикады» (2026-10-25) — всё отмечено; «Следить за всем, что я видел» → Все годы (новый аниме-сериал анонсирован)"
+survey = "r5"
+anime = true   # R44: аниме брать только из этих франшиз (rutor cat 10, rutracker)

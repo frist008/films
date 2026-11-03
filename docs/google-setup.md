@@ -1,0 +1,66 @@
+# Google: таблица, OAuth, секреты
+
+Все перечисленные аккаунты принадлежат владельцу (<owner.name>). Любой, кто продолжает проект, — это он сам
+или Claude по его поручению, поэтому доступ к `<google.cloud>` есть у всех участников.
+
+## Кто где
+
+| Что | Аккаунт | Почему |
+|---|---|---|
+| Сама таблица Google Sheets (владелец файла) | **<google.main>** | основной аккаунт владельца |
+| Проект Google Cloud `films-db` (Sheets/Drive API + OAuth-клиент) | **<google.cloud>** («Gandalf») | у <google.main> исчерпан лимит проектов GCP (проекты в ожидании удаления занимают лимит 30 дней), см. ниже |
+| Секреты проекта (ключи, OAuth-клиент, токены) | **заметки Google Keep аккаунта <google.cloud>** | в git секреты не хранятся никогда |
+
+OAuth-клиент из проекта на <google.cloud> авторизует **<google.main>** (вход и согласие — под <google.main>), поэтому таблица
+создаётся и живёт в Drive <google.main>. Чей проект в GCP — значения не имеет.
+
+## Секреты
+
+В git (открытый репозиторий) **никогда** не попадают: `.env`, `secrets/`, токены, пароли, ключи.
+Хранилище секретов — заметка Google Keep «films — секреты» в аккаунте **<google.cloud>**.
+
+| Секрет | Где на машине | Откуда взять |
+|---|---|---|
+| `TMDB_API_KEY` | `.env` | заметка Keep; первоисточник — themoviedb.org → Настройки → API (аккаунт TMDB <plex.user>, вход через Google <google.main>) |
+| OAuth-клиент Google (JSON) | `secrets/google_oauth_client.json` | заметка Keep; первоисточник — console.cloud.google.com (<google.cloud>) → films-db → APIs & Services → Credentials |
+| OAuth-токен <google.main> | `secrets/google_token.json` | создаётся сам при первом запуске скрипта таблицы (вход <google.main> в браузере); можно не хранить |
+| Plex-токен | не хранится | читается из реестра Windows на машине с Plex |
+
+Claude не вписывает ключи/токены в веб-формы и не может прочитать их со страниц (Chrome их блокирует) —
+значения в Keep Claude не вписывает (ограничение Claude на ключи в веб-формах); Claude создаёт шаблон заметки и кладёт значения в `.env`/`secrets/`,
+когда владелец даёт их в чате или файле.
+
+## Новая машина / другой Claude-аккаунт
+
+1. `git clone` репозитория, `pip install -r requirements.txt`; для проверки русской речи в трейлерах YouTube —
+   `winget install DenoLand.Deno` и `pip install -U "yt-dlp[default]"` (решатель JS-проверок YouTube для yt-dlp; без него
+   часть роликов не скачивается — владелец, 2026-10-25: «Да, поставить Deno»; подробно — скил trailer-check).
+2. Открыть заметку Keep «films — секреты» (<google.cloud>) → создать `.env` по `.env.example`, `secrets/google_oauth_client.json`
+   и `config/private.toml` (шаблон — `config/private.example.toml`; без него код не знает аккаунтов и ID списков владельца).
+3. База: `python -X utf8 -m films.backup restore data/films.db` — восстановить из текстовой копии `db/` (схема + все таблицы,
+   кроме кэшей сторонних сайтов). Кэши заполняются заново: `python -X utf8 -m films ratings all` (датасеты IMDb + RT),
+   `python -X utf8 -m films enrich` (TMDB), `python -X utf8 -m films rutor …` (страницы раздач → разбор). Пустую базу без копии — `python -X utf8 -m films init-db`.
+4. Plex-токен — из реестра Windows машины с Plex (в файлы не пишется); Jellyfin — копия `jellyfin.db` (`films link jellyfin`).
+5. Chrome залогинен под владельцем (Google, YouTube, rutracker); первые JS-вызовы на сайте показывают окно разрешения расширения.
+6. Читать CLAUDE.md, скил owner-rules и PLAN.md (раздел «При следующем обновлении базы»), дальше — по скилам.
+
+## История (2026-10-23)
+
+- У <google.main> 16 проектов в GCP, лимит исчерпан. Владелец был только в 5 (Cocktails in One, Action Record RCU UA,
+  Quest Helper Go, N4K Game Collection, Sky Children of the Light Map).
+- 8 чужих спам-проектов (My First Project, admob, My google, Bongtar Channel, Google adsen, Elimuhub, Facebook,
+  My Project 36780) были видны через открытую группу `google-admob-ads-sdk@googlegroups.com`, которую спамеры
+  добавили в свои проекты. Владелец вышел из группы — проекты исчезают из списка.
+- CarSoup 3, CarSoup android (владелец владелец-чужой аккаунт) и RandeVu (владелец-чужой аккаунт): <google.main> там
+  «Редактор»; ни GCP, ни Firebase не позволяют редактору выйти самому — только владелец может убрать.
+- N4K Game Collection и Sky Children of the Light Map удалены владельцем (в ожидании удаления 30 дней, можно восстановить).
+- Новый проект на <google.main> всё равно не создаётся (удаляемые занимают лимит) → проект `films-db` на <google.cloud>.
+
+## Публикация OAuth-приложения (privacy policy)
+
+Страница политики конфиденциальности — GitHub Pages репозитория (Settings → Pages → `main`, `/docs`): `https://<логин GitHub>.github.io/films/privacy` (главная — `…/films/`). Включено 2026-10-25. **2026-10-26 (Claude в Chrome, аккаунт <google.cloud>):** Google Auth Platform → Branding — главная
+`https://<логин GitHub>.github.io/films/`, privacy `…/films/privacy`, разрешённый домен `<логин GitHub>.github.io` → Save;
+Audience → «Publish app» → «Push to production» → статус **In production**. Без проверки Google (не нужна для своего
+аккаунта: при входе — экран «unverified app», «Продолжить»). Токен, выданный после публикации, больше не сбрасывается раз
+в 7 дней; токен, полученный ещё в режиме Testing, доживает свой срок — следующий вход OAuth уже выдаст постоянный.
+Search Console нужен только для проверки приложения Google (verification) — не делалось, не требуется.

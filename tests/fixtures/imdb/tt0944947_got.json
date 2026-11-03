@@ -1,0 +1,2226 @@
+{
+ "tconst": "tt0944947",
+ "status": "ok",
+ "node": {
+  "id": "tt0944947",
+  "titleText": {
+   "text": "Game of Thrones"
+  },
+  "titleType": {
+   "id": "tvSeries",
+   "text": "TV Series"
+  },
+  "filmingLocations": {
+   "total": 63,
+   "edges": [
+    {
+     "node": {
+      "text": "Split, Split-Dalmatia County, Croatia"
+     }
+    },
+    {
+     "node": {
+      "text": "Vrsno, Sibenik, Croatia"
+     }
+    },
+    {
+     "node": {
+      "text": "Ouarzazate, Morocco"
+     }
+    },
+    {
+     "node": {
+      "text": "Dubrovnik, Croatia"
+     }
+    },
+    {
+     "node": {
+      "text": "Magheramorne Quarry, Larne, County Antrim, Northern Ireland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "Marrakech, Morocco"
+     }
+    },
+    {
+     "node": {
+      "text": "Harland and Wolff Paint Hall, Titanic-Quarter, Belfast, County Antrim, Northern Ireland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "Seville, Andalucia, Spain"
+     }
+    },
+    {
+     "node": {
+      "text": "Gerona, Catalonia, Spain"
+     }
+    },
+    {
+     "node": {
+      "text": "Iceland"
+     }
+    },
+    {
+     "node": {
+      "text": "Castle Ward, Strangford, County Down, Northern Ireland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "Real Alcázar, Seville, Andalucia, Spain"
+     }
+    },
+    {
+     "node": {
+      "text": "Atlas Corporation Studios, Ouarzazate, Morocco"
+     }
+    },
+    {
+     "node": {
+      "text": "Klis Fortress, Klis, Croatia"
+     }
+    },
+    {
+     "node": {
+      "text": "Mdina, Malta"
+     }
+    },
+    {
+     "node": {
+      "text": "Valletta, Malta"
+     }
+    },
+    {
+     "node": {
+      "text": "Shane's Castle, County Antrim, Northern Ireland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "El Chorrillo, Pechina, Almeria, Andalucia, Spain"
+     }
+    },
+    {
+     "node": {
+      "text": "Belfast, County Antrim, Northern Ireland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "Doune Castle, Doune, Stirling, Scotland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "Volcano, Skaftafell National Park, Iceland"
+     }
+    },
+    {
+     "node": {
+      "text": "Dwejra, Gozo Island, Malta"
+     }
+    },
+    {
+     "node": {
+      "text": "Tollymore Forest Park, Bryansford, County Down, Northern Ireland, UK"
+     }
+    },
+    {
+     "node": {
+      "text": "Castle of Zafra, Guadalajara, Castilla-La Mancha, Spain"
+     }
+    },
+    {
+     "node": {
+      "text": "Ramparts, Essaouira, Morocco"
+     }
+    }
+   ]
+  },
+  "distributors": {
+   "total": 85,
+   "edges": [
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0103727",
+       "companyText": {
+        "text": "British Sky Broadcasting (BSkyB)"
+       }
+      },
+      "countries": [
+       {
+        "id": "IE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Sky Atlantic"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0103727",
+       "companyText": {
+        "text": "British Sky Broadcasting (BSkyB)"
+       }
+      },
+      "countries": [
+       {
+        "id": "GB"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Sky Atlantic"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0071913",
+       "companyText": {
+        "text": "Canal+ España"
+       }
+      },
+      "countries": [
+       {
+        "id": "ES"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0152308",
+       "companyText": {
+        "text": "Canal+"
+       }
+      },
+      "countries": [
+       {
+        "id": "DK"
+       },
+       {
+        "id": "XNU"
+       },
+       {
+        "id": "FI"
+       },
+       {
+        "id": "NO"
+       },
+       {
+        "id": "SE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Pay-TV"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0355970",
+       "companyText": {
+        "text": "FOXlife"
+       }
+      },
+      "countries": [
+       {
+        "id": "EE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0355970",
+       "companyText": {
+        "text": "FOXlife"
+       }
+      },
+      "countries": [
+       {
+        "id": "LV"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0355970",
+       "companyText": {
+        "text": "FOXlife"
+       }
+      },
+      "countries": [
+       {
+        "id": "LT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0289307",
+       "companyText": {
+        "text": "HBO Central Europe"
+       }
+      },
+      "countries": [
+       {
+        "id": "XNU"
+       },
+       {
+        "id": "XNU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Central and Eastern Europe"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0101990",
+       "companyText": {
+        "text": "HBO Hungary"
+       }
+      },
+      "countries": [
+       {
+        "id": "HU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0112024",
+       "companyText": {
+        "text": "HBO Latin America"
+       }
+      },
+      "countries": [
+       {
+        "id": "AR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0112024",
+       "companyText": {
+        "text": "HBO Latin America"
+       }
+      },
+      "countries": [
+       {
+        "id": "BR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0113668",
+       "companyText": {
+        "text": "HBO Polska"
+       }
+      },
+      "countries": [
+       {
+        "id": "PL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "PT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "CA"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "English-speaking region"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "CZ"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "RO"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0448736",
+       "companyText": {
+        "text": "M-Net Series"
+       }
+      },
+      "countries": [
+       {
+        "id": "ZA"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0296731",
+       "companyText": {
+        "text": "Nova Cinema"
+       }
+      },
+      "countries": [
+       {
+        "id": "GR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Nova Cinema 1"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0257823",
+       "companyText": {
+        "text": "Orange Cinéma Séries (OCS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "FR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0363506",
+       "companyText": {
+        "text": "Orbit Showtime Network (OSN)"
+       }
+      },
+      "countries": [
+       {
+        "id": "XNU"
+       },
+       {
+        "id": "XNU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Arab World"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0307460",
+       "companyText": {
+        "text": "Prime"
+       }
+      },
+      "countries": [
+       {
+        "id": "BE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Prime Series"
+       },
+       {
+        "text": "Pay-TV"
+       },
+       {
+        "text": "limited"
+       },
+       {
+        "text": "Flemish speaking region"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0011677",
+       "companyText": {
+        "text": "Radio Télévision Belge Francophone (RTBF)"
+       }
+      },
+      "countries": [
+       {
+        "id": "BE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "French-speaking region"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0011881",
+       "companyText": {
+        "text": "Showtime Australia"
+       }
+      },
+      "countries": [
+       {
+        "id": "AU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Showcase"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0254125",
+       "companyText": {
+        "text": "Sky Cinema"
+       }
+      },
+      "countries": [
+       {
+        "id": "IT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Sky Cinema 1"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0002427",
+       "companyText": {
+        "text": "Super Ecran"
+       }
+      },
+      "countries": [
+       {
+        "id": "CA"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Québec"
+       },
+       {
+        "text": "French-speaking region"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0282285",
+       "companyText": {
+        "text": "Syfy"
+       }
+      },
+      "countries": [
+       {
+        "id": "PT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0257711",
+       "companyText": {
+        "text": "TNT Serie"
+       }
+      },
+      "countries": [
+       {
+        "id": "AT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Pay-TV"
+       },
+       {
+        "text": "limited"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0257711",
+       "companyText": {
+        "text": "TNT Serie"
+       }
+      },
+      "countries": [
+       {
+        "id": "DE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Pay-TV"
+       },
+       {
+        "text": "limited"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0140096",
+       "companyText": {
+        "text": "Yes"
+       }
+      },
+      "countries": [
+       {
+        "id": "IL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "yes Action"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0661114",
+       "companyText": {
+        "text": "C More"
+       }
+      },
+      "countries": [
+       {
+        "id": "FI"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 1"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 1"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "limited"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0062012",
+       "companyText": {
+        "text": "RTL2"
+       }
+      },
+      "countries": [
+       {
+        "id": "DE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0337749",
+       "companyText": {
+        "text": "RTL4"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 1"
+       },
+       {
+        "text": "started September 2nd"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 1"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 1"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0013526",
+       "companyText": {
+        "text": "Yleisradio (YLE)"
+       }
+      },
+      "countries": [
+       {
+        "id": "FI"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 2"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 2"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0231870",
+       "companyText": {
+        "text": "RTL5"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 2"
+       },
+       {
+        "text": "started June 23rd"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0219499",
+       "companyText": {
+        "text": "Star Channel"
+       }
+      },
+      "countries": [
+       {
+        "id": "JP"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0087314",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "JP"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0087314",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "JP"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Blu-ray"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 2"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 2"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 3"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 3"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 3"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 4"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 4"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 4"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0306346",
+       "companyText": {
+        "text": "HBO Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 5"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0979727",
+       "companyText": {
+        "text": "24TV"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0815936",
+       "companyText": {
+        "text": "Amediateka"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0203432",
+       "companyText": {
+        "text": "CNBC-e"
+       }
+      },
+      "countries": [
+       {
+        "id": "TR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0367880",
+       "companyText": {
+        "text": "DiziMax"
+       }
+      },
+      "countries": [
+       {
+        "id": "TR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0680232",
+       "companyText": {
+        "text": "HBO España"
+       }
+      },
+      "countries": [
+       {
+        "id": "ES"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0112024",
+       "companyText": {
+        "text": "HBO Latin America"
+       }
+      },
+      "countries": [
+       {
+        "id": "VE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0754095",
+       "companyText": {
+        "text": "HBO Max"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0754095",
+       "companyText": {
+        "text": "HBO Max"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0754095",
+       "companyText": {
+        "text": "HBO Max"
+       }
+      },
+      "countries": [
+       {
+        "id": "GB"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0805321",
+       "companyText": {
+        "text": "IVI"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0808044",
+       "companyText": {
+        "text": "Jio Cinema"
+       }
+      },
+      "countries": [
+       {
+        "id": "IN"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co1113006",
+       "companyText": {
+        "text": "JioHotstar"
+       }
+      },
+      "countries": [
+       {
+        "id": "IN"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0922641",
+       "companyText": {
+        "text": "KINO1TV"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0976451",
+       "companyText": {
+        "text": "NTV-PLUS Online TV"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0809794",
+       "companyText": {
+        "text": "OKKO"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0015806",
+       "companyText": {
+        "text": "Schweizer Fernsehen (SF)"
+       }
+      },
+      "countries": [
+       {
+        "id": "CH"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "SF2"
+       },
+       {
+        "text": "German-speaking region"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0363411",
+       "companyText": {
+        "text": "SoHo"
+       }
+      },
+      "countries": [
+       {
+        "id": "NZ"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0029092",
+       "companyText": {
+        "text": "Stöð 2"
+       }
+      },
+      "countries": [
+       {
+        "id": "IS"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0667174",
+       "companyText": {
+        "text": "TMN GO"
+       }
+      },
+      "countries": [
+       {
+        "id": "CA"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "video-on-demand"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0486090",
+       "companyText": {
+        "text": "Tricolor"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0079204",
+       "companyText": {
+        "text": "Télévision Suisse-Romande (TSR)"
+       }
+      },
+      "countries": [
+       {
+        "id": "CH"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TSR1"
+       },
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0794865",
+       "companyText": {
+        "text": "WINK"
+       }
+      },
+      "countries": [
+       {
+        "id": "RU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0705983",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "GB"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Ultra HD Blu-ray"
+       },
+       {
+        "text": "season 8"
+       },
+       {
+        "text": "limited edition steelbook"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0720464",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "complete series"
+       },
+       {
+        "text": "limited edition"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0720464",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 8"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0720464",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 8"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co1017479",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "FI"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co1017479",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "FI"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 3"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0189793",
+       "companyText": {
+        "text": "Warner Home Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "season 4"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0630561",
+       "companyText": {
+        "text": "Ziggo Movies & Series XL"
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "technicalSpecifications": {
+   "colorations": {
+    "total": 1,
+    "items": [
+     {
+      "text": "Color",
+      "attributes": []
+     }
+    ]
+   },
+   "cameras": {
+    "total": 6,
+    "items": [
+     {
+      "camera": "Arri Alexa Mini, Cooke S4/i and Hawk V-Series Lenses",
+      "attributes": [
+       {
+        "text": "season 8"
+       }
+      ]
+     },
+     {
+      "camera": "Arri Alexa SXT Plus, Cooke S4/i, Hawk V-Series and Angenieux Optimo Lenses",
+      "attributes": [
+       {
+        "text": "season 8"
+       }
+      ]
+     },
+     {
+      "camera": "Arri Alexa Studio, Cooke S4 and Angenieux Optimo Lenses",
+      "attributes": [
+       {
+        "text": "Season 3 & 4"
+       }
+      ]
+     },
+     {
+      "camera": "Arri Alexa XT, Cooke S4 and Angenieux Optimo Lenses",
+      "attributes": [
+       {
+        "text": "Season 5 & 6"
+       }
+      ]
+     },
+     {
+      "camera": "Arri Alexa, Cooke S4 and Angenieux Optimo Lenses",
+      "attributes": [
+       {
+        "text": "Season 1 -2"
+       }
+      ]
+     },
+     {
+      "camera": "Red Epic Dragon",
+      "attributes": []
+     }
+    ]
+   },
+   "negativeFormats": {
+    "total": 1,
+    "items": [
+     {
+      "negativeFormat": "Digital",
+      "attributes": []
+     }
+    ]
+   },
+   "printedFormats": {
+    "total": 3,
+    "items": [
+     {
+      "printedFormat": "Digital",
+      "attributes": [
+       {
+        "text": "HDTV"
+       }
+      ]
+     },
+     {
+      "printedFormat": "Dolby Vision",
+      "attributes": [
+       {
+        "text": "UHD Blu-ray and HBO Max release"
+       }
+      ]
+     },
+     {
+      "printedFormat": "UHDTV",
+      "attributes": [
+       {
+        "text": "UHD Blu-ray and HBO Max release"
+       }
+      ]
+     }
+    ]
+   },
+   "processes": {
+    "total": 9,
+    "items": [
+     {
+      "process": "Codex",
+      "attributes": [
+       {
+        "text": "season2-"
+       }
+      ]
+     },
+     {
+      "process": "Digital Intermediate",
+      "attributes": [
+       {
+        "text": "4K"
+       },
+       {
+        "text": "Seasons 5-8"
+       }
+      ]
+     },
+     {
+      "process": "Digital Intermediate (2K)",
+      "attributes": [
+       {
+        "text": "master format"
+       }
+      ]
+     },
+     {
+      "process": "Dolby Vision",
+      "attributes": []
+     },
+     {
+      "process": "HDCAM SR",
+      "attributes": [
+       {
+        "text": "season 1"
+       }
+      ]
+     },
+     {
+      "process": "HDR10",
+      "attributes": []
+     },
+     {
+      "process": "Hawk Scope",
+      "attributes": [
+       {
+        "text": "anamorphic"
+       },
+       {
+        "text": "season 8"
+       },
+       {
+        "text": "source format"
+       },
+       {
+        "text": "some scenes"
+       }
+      ]
+     },
+     {
+      "process": "ProRes",
+      "attributes": [
+       {
+        "text": "season 2-"
+       }
+      ]
+     },
+     {
+      "process": "Redcode RAW",
+      "attributes": [
+       {
+        "text": "some shots"
+       },
+       {
+        "text": "Season 5-"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ }
+}

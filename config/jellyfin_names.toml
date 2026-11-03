@@ -1,0 +1,63 @@
+# Russian names for Jellyfin items the DB has no Russian title for (owner, 2026-11-01: «убедиться что в джелефине все
+# названия фильмов на русском языке … Тоже самое для сезонов сериалов … Название серий не трогай»; «Их не может не быть
+# нигде, ищи»). Key: the item's current name in Jellyfin; value: the Russian name and where it comes from.
+
+[names."Надрыв"]
+name = "Крики"
+why = "владелец, 2026-11-02: «какой надрыв если это Крики» — SAKEBI (2006, Киёси Куросава, tt0843302), TMDB ru «Надрыв»"
+
+[names."IT.Welcome.to.Derry.S01E01.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E01"
+why = "владелец, 2026-11-02: «Имя и постер» — серия в библиотеке фильмов, имя как у других серий там («Наклз S01E01 — …»); TMDB ru «Оно: Добро пожаловать в Дерри»"
+
+[names."Luna"]
+name = "Луна"
+why = "файл Luna.2023…ELEKTRI4KA — корейский фильм «Луна» (2023, в прокате РФ с 28.09.2023; ru.wikipedia «Луна (фильм, 2023)»); Jellyfin опознал его как короткометражку tt34583524"
+
+[names."Общий сбор: Создание «Женщины-Халка: Адвоката»"]
+name = "Женщина-Халк: Завершение"
+why = "файл «Женщина халк Завершение_1.mp4» (110 мин) — склейка серий «Женщины-Халк: Адвоката» с фанатской озвучкой (кадры 2026-11-02), не фильм о съёмках, как опознал Jellyfin (tt22852968); 2026-11-01 я ошибочно назвал его «Общий сбор: Создание …»"
+
+[names."Berserk TV-2"]
+name = "Берсерк (2016)"
+why = "папка Berserk (2016) — аниме 2016 года; русские сайты — «Берсерк (2016)»"
+
+[names."Berserk TV-3"]
+name = "Берсерк (2017)"
+why = "[AniDub]_Berserk_TV-3 — продолжение 2017 года; русские сайты — «Берсерк (2017)», «Берсерк 2 сезон»"
+
+[names."Terminator Zero"]
+name = "Терминатор Зеро"
+why = "TMDB ru пишет латиницей; раздачи — «Терминатор Зеро / Terminator Zero»"
+
+[names."Odho.theloe"]
+name = "Одно целое"
+why = "файл Odho.theloe.2025 без id; «Одно целое» (2025, tt31184028) — тот же фильм в Jellyfin-просмотрах"
+[names."IT.Welcome.to.Derry.S01E02.The.Thing.in.the.Dark.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E02"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+
+[names."IT.Welcome.to.Derry.S01E03.Now.You.See.It.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E03"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+
+[names."IT.Welcome.to.Derry.S01E04.The.Great.Swirling.Apparatus.of.Our.Planets.Function..HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E04"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+
+[names."IT.Welcome.to.Derry.S01E05.29.Neibolt.Street.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E05"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+
+[names."IT.Welcome.to.Derry.S01E06.In.the.Name.of.the.Father.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E06"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+
+[names."IT.Welcome.to.Derry.S01E07.The.Black.Spot.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E07"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+
+[names."IT.Welcome.to.Derry.S01E08.Winter.Fire.HMAX.DV.HDR.WEB-DL.2160p.by.AKTEP"]
+name = "Оно: Добро пожаловать в Дерри S01E08"
+why = "владелец, 2026-11-02: «Имя и постер» для серий 2–8, как у 1-й"
+

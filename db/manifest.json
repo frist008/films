@@ -1,0 +1,86 @@
+{
+ "chunks": {
+  "collections": [
+   10
+  ],
+  "credits": [
+   1
+  ],
+  "disk_files": [
+   1354
+  ],
+  "events": [
+   1
+  ],
+  "excluded_releases": [
+   1
+  ],
+  "franchise_members": [
+   1
+  ],
+  "game_adaptations": [
+   1
+  ],
+  "games": [
+   1
+  ],
+  "jellyfin_items": [
+   1
+  ],
+  "jellyfin_played": [
+   1
+  ],
+  "match_issues": [
+   266
+  ],
+  "people": [
+   1
+  ],
+  "person_crew": [
+   1
+  ],
+  "plex_history": [
+   3
+  ],
+  "plex_items": [
+   1
+  ],
+  "qbt_torrents": [
+   1
+  ],
+  "release_titles": [
+   1
+  ],
+  "releases": [
+   1,
+   62013,
+   90404
+  ],
+  "responsibility": [
+   3
+  ],
+  "runs": [
+   1
+  ],
+  "store_items": [
+   1
+  ],
+  "store_status": [],
+  "sync_state": [
+   1
+  ],
+  "titles": [
+   1
+  ],
+  "user_marks": [
+   2140
+  ],
+  "watched": [
+   3848
+  ]
+ },
+ "deleted": {
+  "releases": []
+ },
+ "user_version": 25
+}

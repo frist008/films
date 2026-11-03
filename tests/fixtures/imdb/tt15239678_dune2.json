@@ -1,0 +1,1140 @@
+{
+ "tconst": "tt15239678",
+ "status": "ok",
+ "node": {
+  "id": "tt15239678",
+  "titleText": {
+   "text": "Dune: Part Two"
+  },
+  "titleType": {
+   "id": "movie",
+   "text": "Movie"
+  },
+  "filmingLocations": {
+   "total": 6,
+   "edges": [
+    {
+     "node": {
+      "text": "Wadi Rum, Jordan"
+     }
+    },
+    {
+     "node": {
+      "text": "Memoriale Brion, Altivole, Treviso, Veneto, Italy"
+     }
+    },
+    {
+     "node": {
+      "text": "Abu Dhabi, United Arab Emirates"
+     }
+    },
+    {
+     "node": {
+      "text": "Budapest, Hungary"
+     }
+    },
+    {
+     "node": {
+      "text": "Namibia"
+     }
+    },
+    {
+     "node": {
+      "text": "Wadi Araba, Jordan"
+     }
+    }
+   ]
+  },
+  "distributors": {
+   "total": 46,
+   "edges": [
+    {
+     "node": {
+      "company": {
+       "id": "co0002663",
+       "companyText": {
+        "text": "Warner Bros."
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0816712",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "GB"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0134706",
+       "companyText": {
+        "text": "Warner Bros."
+       }
+      },
+      "countries": [
+       {
+        "id": "CA"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0530363",
+       "companyText": {
+        "text": "Cinemundo"
+       }
+      },
+      "countries": [
+       {
+        "id": "PT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0156851",
+       "companyText": {
+        "text": "InterCom"
+       }
+      },
+      "countries": [
+       {
+        "id": "HU"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0370614",
+       "companyText": {
+        "text": "Tanweer Alliances"
+       }
+      },
+      "countries": [
+       {
+        "id": "GR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0519888",
+       "companyText": {
+        "text": "Warner Bros. Pictures Germany"
+       }
+      },
+      "countries": [
+       {
+        "id": "DE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0158349",
+       "companyText": {
+        "text": "Warner Bros. Pictures Mexico"
+       }
+      },
+      "countries": [
+       {
+        "id": "MX"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0456097",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "AT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0239855",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "CH"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0962874",
+       "companyText": {
+        "text": "Warner Bros."
+       }
+      },
+      "countries": [
+       {
+        "id": "FR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0256390",
+       "companyText": {
+        "text": "Warner Bros."
+       }
+      },
+      "countries": [
+       {
+        "id": "IT"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0826866",
+       "companyText": {
+        "text": "Warner Bros."
+       }
+      },
+      "countries": [
+       {
+        "id": "NL"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0002663",
+       "companyText": {
+        "text": "Warner Bros."
+       }
+      },
+      "countries": [
+       {
+        "id": "SE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0547081",
+       "companyText": {
+        "text": "HKC Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "PK"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0350936",
+       "companyText": {
+        "text": "Legendary East"
+       }
+      },
+      "countries": [
+       {
+        "id": "CN"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0913397",
+       "companyText": {
+        "text": "TME Films"
+       }
+      },
+      "countries": [
+       {
+        "id": "TR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0498895",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "AR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0350543",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "BR"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0362429",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "MY"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0770152",
+       "companyText": {
+        "text": "Warner Bros. Singapore"
+       }
+      },
+      "countries": [
+       {
+        "id": "SG"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "theatrical"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0476953",
+       "companyText": {
+        "text": "Amazon Prime Video"
+       }
+      },
+      "countries": [
+       {
+        "id": "XWW"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0546168",
+       "companyText": {
+        "text": "Apple TV+"
+       }
+      },
+      "countries": [
+       {
+        "id": "XWW"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0008693",
+       "companyText": {
+        "text": "Home Box Office (HBO)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0095413",
+       "companyText": {
+        "text": "Max"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0144901",
+       "companyText": {
+        "text": "Netflix"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0074433",
+       "companyText": {
+        "text": "Pay Per View"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0854530",
+       "companyText": {
+        "text": "Studio Distribution Services (SDS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0854530",
+       "companyText": {
+        "text": "Studio Distribution Services (SDS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through"
+       },
+       {
+        "text": "Dune 2-Film Collection"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0854530",
+       "companyText": {
+        "text": "Studio Distribution Services (SDS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0854530",
+       "companyText": {
+        "text": "Studio Distribution Services (SDS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through"
+       },
+       {
+        "text": "Dune 2-Film Collection"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0854530",
+       "companyText": {
+        "text": "Studio Distribution Services (SDS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Ultra HD Blu-ray"
+       },
+       {
+        "text": "through"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0854530",
+       "companyText": {
+        "text": "Studio Distribution Services (SDS)"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Ultra HD Blu-ray"
+       },
+       {
+        "text": "through"
+       },
+       {
+        "text": "Dune 2-Film Collection"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0302997",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "DE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0302997",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "DE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0302997",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "DE"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Ultra HD Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0200179",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through Studio Distribution Services"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0200179",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through Studio Distribution Services"
+       },
+       {
+        "text": "Dune 2-Film Collection"
+       },
+       {
+        "text": "Blu-ray"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0200179",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through Studio Distribution Services"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0200179",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "through Studio Distribution Services"
+       },
+       {
+        "text": "Dune 2-Film Collection"
+       },
+       {
+        "text": "DVD"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0200179",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Ultra HD Blu-ray"
+       },
+       {
+        "text": "through Studio Distribution Services"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0200179",
+       "companyText": {
+        "text": "Warner Bros. Home Entertainment"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "Ultra HD Blu-ray"
+       },
+       {
+        "text": "through Studio Distribution Services"
+       },
+       {
+        "text": "Dune 2-Film Collection"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0782945",
+       "companyText": {
+        "text": "Warner Bros. Pictures"
+       }
+      },
+      "countries": [
+       {
+        "id": "ES"
+       }
+      ],
+      "attributes": []
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0754095",
+       "companyText": {
+        "text": "HBO Max"
+       }
+      },
+      "countries": [
+       {
+        "id": "XWW"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0144901",
+       "companyText": {
+        "text": "Netflix"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "VOD"
+       },
+       {
+        "text": "video"
+       }
+      ]
+     }
+    },
+    {
+     "node": {
+      "company": {
+       "id": "co0009512",
+       "companyText": {
+        "text": "TNT"
+       }
+      },
+      "countries": [
+       {
+        "id": "US"
+       }
+      ],
+      "attributes": [
+       {
+        "text": "TV"
+       }
+      ]
+     }
+    }
+   ]
+  },
+  "technicalSpecifications": {
+   "colorations": {
+    "total": 2,
+    "items": [
+     {
+      "text": "Color",
+      "attributes": []
+     },
+     {
+      "text": "Black and White",
+      "attributes": [
+       {
+        "text": "Infrared"
+       }
+      ]
+     }
+    ]
+   },
+   "cameras": {
+    "total": 2,
+    "items": [
+     {
+      "camera": "Arri Alexa 65, Petzval Heroes Look, T.One, Arri Prime DNA, Moviecam, IronGlass Helios, Jupiter, Mir, Optica Elite, and Zero Optik Rokkor Lenses",
+      "attributes": []
+     },
+     {
+      "camera": "Arri Alexa Mini LF, Petzval Heroes Look, T.One, Arri Prime DNA, Moviecam, IronGlass Helios, Jupiter, Mir, Optica Elite, and Zero Optik Rokkor Lenses",
+      "attributes": []
+     }
+    ]
+   },
+   "negativeFormats": {
+    "total": 1,
+    "items": [
+     {
+      "negativeFormat": "Codex",
+      "attributes": []
+     }
+    ]
+   },
+   "printedFormats": {
+    "total": 2,
+    "items": [
+     {
+      "printedFormat": "70 mm",
+      "attributes": [
+       {
+        "text": "also horizontal"
+       },
+       {
+        "text": "also IMAX DMR blow-up"
+       },
+       {
+        "text": "Kodak Vision 2383"
+       }
+      ]
+     },
+     {
+      "printedFormat": "DCP Digital Cinema Package",
+      "attributes": []
+     }
+    ]
+   },
+   "processes": {
+    "total": 3,
+    "items": [
+     {
+      "process": "ARRIRAW",
+      "attributes": [
+       {
+        "text": "6.5K"
+       },
+       {
+        "text": "4.5K"
+       },
+       {
+        "text": "source format"
+       }
+      ]
+     },
+     {
+      "process": "Digital Intermediate",
+      "attributes": [
+       {
+        "text": "4K"
+       },
+       {
+        "text": "master format"
+       }
+      ]
+     },
+     {
+      "process": "Dolby Vision",
+      "attributes": []
+     }
+    ]
+   }
+  }
+ }
+}
