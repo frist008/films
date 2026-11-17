@@ -1,0 +1,3502 @@
+{
+ "2": {
+  "query": "2",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«2 _6…_10» (library «Щит», 2024-06-22…07-27) continue «Agent.Carter.S02E01…E05» watched 2024-05-04…06-09 in the same library, file dates 2024-01-12/13 right after S02E04/E05; Agent Carter S2 has 10 episodes. «2 1», «2 2» (library «Миротворец 2») fall under the same Plex name but are another folder — asked separately (data/cache/survey_queue/downloads_ambiguous_left.json); they do not change S2 = 10/10",
+  "tmdb_tv": 61550,
+  "title": "Агент Картер",
+  "original_title": "Marvel's Agent Carter",
+  "first_year": 2015,
+  "candidates": [],
+  "season": 2
+ },
+ "2 3": {
+  "query": "2 3",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "only results with unrelated names",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 127907,
+    "title": "Маккартни 3, 2, 1",
+    "original_title": "McCartney 3, 2, 1",
+    "year": 2021
+   },
+   {
+    "tmdb_id": 3131,
+    "title": "3-2-1 Contact",
+    "original_title": "3-2-1 Contact",
+    "year": 1980
+   },
+   {
+    "tmdb_id": 2088,
+    "title": "Three Up, Two Down",
+    "original_title": "Three Up, Two Down",
+    "year": 1985
+   },
+   {
+    "tmdb_id": 6261,
+    "title": "3-2-1 Penguins!",
+    "original_title": "3-2-1 Penguins!",
+    "year": 2000
+   }
+  ]
+ },
+ "2 4": {
+  "query": "2 4",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "only results with unrelated names",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 60622,
+    "title": "Фарго",
+    "original_title": "Fargo",
+    "year": 2014
+   },
+   {
+    "tmdb_id": 64196,
+    "title": "Повелитель",
+    "original_title": "オーバーロード",
+    "year": 2015
+   },
+   {
+    "tmdb_id": 40424,
+    "title": "Инициал «Ди»",
+    "original_title": "頭文字D",
+    "year": 1998
+   },
+   {
+    "tmdb_id": 31572,
+    "title": "Люпен III",
+    "original_title": "ルパン三世",
+    "year": 1971
+   }
+  ]
+ },
+ "3": {
+  "query": "3",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "NOT «3%» (Brazilian series, the old TMDB match): «3 1…3» (2024-08-03…10, library «Миротворец 2») sit between «2 4 3» and «4 10» (= Higurashi Gou) — which Higurashi part is asked (downloads_ambiguous_left.json)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "pending_owner": true
+ },
+ "4": {
+  "query": "4",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«4 10…24» (library «Миротворец 2», 2024-08-17…10-12, ~24 min apart) end at 24 = Higurashi Gou (24 eps); «5 1» follows «4 24» 24 minutes later; the folder came with the Higurashi 2006 files (same file date 2023-01-08), Gou E01 was watched 2024-06-08",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": [],
+  "season": 1
+ },
+ "5": {
+  "query": "5",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«5 1…15» (2024-10-12…2025-01-18) right after «4 24» = Higurashi Sotsu, exactly 15 episodes (TMDB 100988 S2)",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": [],
+  "season": 2
+ },
+ "6 the Conjuring": {
+  "query": "6 the Conjuring",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "a film, not a series: «6 the Conjuring 2» (2023-12-02 22:07 UTC) in the Conjuring marathon (Аннабель 11-25, Заклятие 11-26) = The Conjuring 2 (2016); the real watch date for R87 (watched has only our 2026-10-23 mark)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 259693,
+  "imdb": "tt3065204",
+  "watched_at": "2023-12-02 22:07:19"
+ },
+ "Agatha All Along": {
+  "query": "Agatha All Along",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 138501,
+  "title": "Это всё Агата",
+  "original_title": "Agatha All Along",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Agent Carter": {
+  "query": "Agent Carter",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61550,
+  "title": "Агент Картер",
+  "original_title": "Marvel's Agent Carter",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Agents of S H I E L D": {
+  "query": "Agents of S H I E L D",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Arcane": {
+  "query": "Arcane",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 94605,
+  "title": "Аркейн",
+  "original_title": "Arcane",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Arcane S02 1080p": {
+  "query": "Arcane",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 94605,
+  "title": "Аркейн",
+  "original_title": "Arcane",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Arcane Season 01": {
+  "query": "Arcane",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 94605,
+  "title": "Аркейн",
+  "original_title": "Arcane",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Assassination Classroom": {
+  "query": "Assassination Classroom",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62110,
+  "title": "Класс убийц",
+  "original_title": "暗殺教室",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Berserk TV-3": {
+  "query": "Berserk",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "TV-3 = the third Berserk TV series = Берсерк (2016) season 2 (see data/disk_map.json)",
+  "tmdb_tv": 66053,
+  "title": "Берсерк",
+  "original_title": "ベルセルク",
+  "first_year": 2016,
+  "candidates": [],
+  "season": 2
+ },
+ "Big Order": {
+  "query": "Big Order",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 65439,
+  "title": "Приказ, изменивший мир",
+  "original_title": "ビッグオーダー",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Bleach": {
+  "query": "Bleach",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 30984,
+  "title": "Блич",
+  "original_title": "BLEACH",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Bleach - Sennen Kessen-hen": {
+  "query": "Bleach - Sennen Kessen-hen",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "Bleach: Thousand-Year Blood War (2022) is season 2 of TMDB Блич (50 episodes); the other candidate 336301 has no year/episodes",
+  "tmdb_tv": 30984,
+  "title": "Блич",
+  "original_title": "BLEACH",
+  "first_year": 2004,
+  "candidates": [],
+  "season": 2
+ },
+ "Bleach Sennen Kessen-hen - Ketsubetsu-tan": {
+  "query": "Bleach Sennen Kessen-hen - Ketsubetsu-tan",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Ketsubetsu-tan» = the 2nd cour (2023) of Thousand-Year Blood War = TMDB Блич season 2",
+  "tmdb_tv": 30984,
+  "title": "Блич",
+  "original_title": "BLEACH",
+  "first_year": 2004,
+  "candidates": [],
+  "season": 2
+ },
+ "Boruto - Naruto Next Generations": {
+  "query": "Boruto - Naruto Next Generations",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 70881,
+  "title": "Боруто: Новое поколение Наруто",
+  "original_title": "BORUTO-ボルト- NARUTO NEXT GENERATIONS",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Boruto Naruto Next Generations": {
+  "query": "Boruto Naruto Next Generations",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 70881,
+  "title": "Боруто: Новое поколение Наруто",
+  "original_title": "BORUTO-ボルト- NARUTO NEXT GENERATIONS",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Chihayafuru 3": {
+  "query": "Chihayafuru 3",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 45247,
+  "title": "Яркая Тихая",
+  "original_title": "ちはやふる",
+  "first_year": 2011,
+  "candidates": []
+ },
+ "CoD": {
+  "query": "CoD",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "not a film or series: «CoD 1» (2023-09-06, Personal Media agent, no TMDB work) — Call of Duty footage; the owner names such game clips «CoD N» in his own video-editing material (local folder, not published)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "not_film": true
+ },
+ "Code Geass": {
+  "query": "Code Geass",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31724,
+  "title": "Код Гиас: Восставший Лелуш",
+  "original_title": "コードギアス 反逆のルルーシュ",
+  "first_year": 2006,
+  "candidates": []
+ },
+ "Code Geass Roze of the Recapture": {
+  "query": "Code Geass Roze of the Recapture",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 255107,
+  "title": "Код Гиас: Вернувшийся Розе",
+  "original_title": "コードギアス 奪還のロゼ",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Creature Commandos": {
+  "query": "Creature Commandos",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "files «Creature.Commandos.S01E01…E07» watched 2026-05-30 in library «Миротворец 2» (DC); S1 of the 2024 DC series has exactly 7 episodes; the 2014 namesake is a 3-episode fan project",
+  "tmdb_tv": 219543,
+  "title": "Монстры-коммандос",
+  "original_title": "Creature Commandos",
+  "first_year": 2024,
+  "candidates": [],
+  "season": 1
+ },
+ "Daredevil": {
+  "query": "Daredevil",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61889,
+  "title": "Сорвиголова",
+  "original_title": "Marvel's Daredevil",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Daredevil Born Again": {
+  "query": "Daredevil Born Again",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 202555,
+  "title": "Сорвиголова: Рождённый заново",
+  "original_title": "Daredevil: Born Again",
+  "first_year": 2025,
+  "candidates": []
+ },
+ "Daredevil Born Again S01 2160p": {
+  "query": "Daredevil Born Again",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 202555,
+  "title": "Сорвиголова: Рождённый заново",
+  "original_title": "Daredevil: Born Again",
+  "first_year": 2025,
+  "candidates": []
+ },
+ "Death Note": {
+  "query": "Death Note",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "every history row carries the episode ids of the 2006 anime (imdb tt0885243… / tvdb 311257…, 37 episodes); the 2026-10-23 11:45:55 UTC rows are our own mark of the owner's words «видел всё» (PLAN-done 2026-10-23), plex.tv also has real views of E3, E5, E7, E18 in 2024",
+  "tmdb_tv": 13916,
+  "title": "Тетрадь смерти",
+  "original_title": "DEATH NOTE",
+  "first_year": 2006,
+  "candidates": [],
+  "season": 1
+ },
+ "Fairy Tail": {
+  "query": "Fairy Tail",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 46261,
+  "title": "Хвост Феи",
+  "original_title": "FAIRY TAIL",
+  "first_year": 2009,
+  "candidates": []
+ },
+ "Fairy Tail TV-3": {
+  "query": "Fairy Tail",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 46261,
+  "title": "Хвост Феи",
+  "original_title": "FAIRY TAIL",
+  "first_year": 2009,
+  "candidates": []
+ },
+ "Halo 2024": {
+  "query": "Halo",
+  "year_hint": 2024,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 52814,
+  "title": "Halo",
+  "original_title": "Halo",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Halo Season 01": {
+  "query": "Halo",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Halo. Season 01. Episode 01…09. By Wild_Cat» watched 2025-07…10, then «Halo.2024.S02E01…» the same day as E09; Halo (2022) S1 has exactly 9 episodes",
+  "tmdb_tv": 52814,
+  "title": "Halo",
+  "original_title": "Halo",
+  "first_year": 2022,
+  "candidates": [],
+  "season": 1
+ },
+ "Higurashi no Naku Koro ni": {
+  "query": "Higurashi no Naku Koro ni",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "was wrongly matched to the 2016 live action (75475): the only file is «[AniFilm] Higurashi no Naku Koro ni (2020) - 01» = Gou E01",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": [],
+  "season": 1
+ },
+ "Higurashi no Naku Koro ni [": {
+  "query": "Higurashi no Naku Koro ni [",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "was wrongly matched to the 2016 live action (75475, 6 eps): «[KORSARS]_Higurashi…[S01E01…E09]_[StudioBand]» (anime dub group) include E7–E9 → the 2006 anime S1 (26 eps)",
+  "tmdb_tv": 25760,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に",
+  "first_year": 2006,
+  "candidates": [],
+  "season": 1
+ },
+ "Houkago no Breath": {
+  "query": "Houkago no Breath",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 232214,
+  "title": "放課後のブレス",
+  "original_title": "放課後のブレス",
+  "first_year": 2023,
+  "candidates": []
+ },
+ "How To Sell Drugs Online Fast 2019": {
+  "query": "How To Sell Drugs Online Fast",
+  "year_hint": 2019,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88236,
+  "title": "Не пытайтесь это повторить",
+  "original_title": "How to Sell Drugs Online (Fast)",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "How to Sell Drugs Online Fast": {
+  "query": "How to Sell Drugs Online Fast",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88236,
+  "title": "Не пытайтесь это повторить",
+  "original_title": "How to Sell Drugs Online (Fast)",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "I Am Groot": {
+  "query": "I Am Groot",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 232125,
+  "title": "Я есть Грут",
+  "original_title": "I Am Groot",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "INVINCIBLE (2021)": {
+  "query": "INVINCIBLE",
+  "year_hint": 2021,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 95557,
+  "title": "НЕПОБЕДИМЫЙ",
+  "original_title": "INVINCIBLE",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Ice Age Scrat Tales": {
+  "query": "Ice Age Scrat Tales",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 158307,
+  "title": "Ледниковый Период: Истории Скрата",
+  "original_title": "Ice Age: Scrat Tales",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Inhumans": {
+  "query": "Inhumans",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 68716,
+  "title": "Сверхлюди",
+  "original_title": "Marvel's Inhumans",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Invincible": {
+  "query": "Invincible",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Invincible 1» watched 2026-09-19 in library «БезСани» (E:/Films/Without Sasha 2/Invincible (2021) [tmdbid-95557], which still holds S01E05–08 and S02); S1E2–4 were then watched in Jellyfin 2026-10-19 → this is S01E01",
+  "tmdb_tv": 95557,
+  "title": "НЕПОБЕДИМЫЙ",
+  "original_title": "INVINCIBLE",
+  "first_year": 2021,
+  "candidates": [],
+  "season": 1
+ },
+ "Iron Fist": {
+  "query": "Iron Fist",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62127,
+  "title": "Железный кулак",
+  "original_title": "Marvel's Iron Fist",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Iron Fist S02 2018 2160p": {
+  "query": "Iron Fist",
+  "year_hint": 2018,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62127,
+  "title": "Железный кулак",
+  "original_title": "Marvel's Iron Fist",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Ironheart": {
+  "query": "Ironheart",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 114471,
+  "title": "Железное сердце",
+  "original_title": "Ironheart",
+  "first_year": 2025,
+  "candidates": []
+ },
+ "Jessica Jones": {
+  "query": "Jessica Jones",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Jigoku Shoujo - Yoi no Togi": {
+  "query": "Jigoku Shoujo - Yoi no Togi",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 8974,
+  "title": "Адская девочка",
+  "original_title": "地獄少女",
+  "first_year": 2005,
+  "candidates": []
+ },
+ "Legendi Halo 1 Serij Iz": {
+  "query": "Legendi Halo 1 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 1 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 2 Serij Iz": {
+  "query": "Legendi Halo 2 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 2 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 3 Serij Iz": {
+  "query": "Legendi Halo 3 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 3 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 4 Serij Iz": {
+  "query": "Legendi Halo 4 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 4 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 5 Serij Iz": {
+  "query": "Legendi Halo 5 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 5 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 6 Serij Iz": {
+  "query": "Legendi Halo 6 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 6 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 7 Serij Iz": {
+  "query": "Legendi Halo 7 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 7 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Legendi Halo 8 Serij Iz": {
+  "query": "Legendi Halo 8 Serij Iz",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "transliterated «Легенды Halo 8 серия из 8» = Halo Legends (2010), one season of 8 episodes",
+  "tmdb_tv": 60879,
+  "title": "Легенды Halo",
+  "original_title": "Halo Legends",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Log Horizon [": {
+  "query": "Log Horizon [",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60846,
+  "title": "Код доступа горизонт",
+  "original_title": "ログ・ホライズン",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Love Death and Robots": {
+  "query": "Love Death and Robots",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 86831,
+  "title": "Любовь, смерть и роботы",
+  "original_title": "Love, Death & Robots",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Love Death and Robots S04 1080p": {
+  "query": "Love Death and Robots",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 86831,
+  "title": "Любовь, смерть и роботы",
+  "original_title": "Love, Death & Robots",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Love, Death & Robots 3": {
+  "query": "Love, Death & Robots 3",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "trailing number 3 = season",
+  "season": 3,
+  "tmdb_tv": 86831,
+  "title": "Любовь, смерть и роботы",
+  "original_title": "Love, Death & Robots",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Magical Index 2008 1080": {
+  "query": "Magical Index 1080",
+  "year_hint": 2008,
+  "status": "manual",
+  "reason": "A Certain Magical Index 2008 = TMDB 30980 season 1 (S2 aired 2010)",
+  "tmdb_tv": 30980,
+  "title": "Некий Магический Индекс",
+  "original_title": "とある魔術の禁書目録",
+  "first_year": 2008,
+  "candidates": [],
+  "season": 1
+ },
+ "Magical Index 2010 1080": {
+  "query": "Magical Index 1080",
+  "year_hint": 2010,
+  "status": "manual",
+  "reason": "A Certain Magical Index 2010 = TMDB 30980 season 2 (Index II)",
+  "tmdb_tv": 30980,
+  "title": "Некий Магический Индекс",
+  "original_title": "とある魔術の禁書目録",
+  "first_year": 2008,
+  "candidates": [],
+  "season": 2
+ },
+ "Mahou Shoujo Site": {
+  "query": "Mahou Shoujo Site",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 77702,
+  "title": "Сайт волшебниц",
+  "original_title": "魔法少女サイト",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Mahou Shoujo Site ( 1080p )": {
+  "query": "Mahou Shoujo Site",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 77702,
+  "title": "Сайт волшебниц",
+  "original_title": "魔法少女サイト",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Marvel Zombies": {
+  "query": "Marvel Zombies",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 138505,
+  "title": "Зомби Marvel",
+  "original_title": "Marvel Zombies",
+  "first_year": 2025,
+  "candidates": []
+ },
+ "Marvels Iron Fist": {
+  "query": "Marvel's Iron Fist",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62127,
+  "title": "Железный кулак",
+  "original_title": "Marvel's Iron Fist",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Marvels Jessica Jones": {
+  "query": "Marvel's Jessica Jones",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Marvels Jessica Jones S03 2019 2160p": {
+  "query": "Marvel's Jessica Jones",
+  "year_hint": 2019,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Marvels Luke Cage": {
+  "query": "Marvel's Luke Cage",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62126,
+  "title": "Люк Кейдж",
+  "original_title": "Marvel's Luke Cage",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Marvels Luke Cage S02 1080p": {
+  "query": "Marvel's Luke Cage",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62126,
+  "title": "Люк Кейдж",
+  "original_title": "Marvel's Luke Cage",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Marvels The Punisher": {
+  "query": "Marvel's The Punisher",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 67178,
+  "title": "Каратель",
+  "original_title": "Marvel's The Punisher",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Marvels The Punisher S02 2160p by DVT": {
+  "query": "Marvel's The Punisher",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 67178,
+  "title": "Каратель",
+  "original_title": "Marvel's The Punisher",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Moon Knight": {
+  "query": "Moon Knight",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92749,
+  "title": "Лунный рыцарь",
+  "original_title": "Moon Knight",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Ms Marvel": {
+  "query": "Ms Marvel",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92782,
+  "title": "Мисс Марвел",
+  "original_title": "Ms. Marvel",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Obi Wan": {
+  "query": "Obi Wan",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Obi Wan 1…6» = Оби-Ван Кеноби (2022), the only candidate; one season of 6 episodes",
+  "tmdb_tv": 92830,
+  "title": "Оби-Ван Кеноби",
+  "original_title": "Obi-Wan Kenobi",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Obi Wan Kenobi": {
+  "query": "Obi Wan Kenobi",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92830,
+  "title": "Оби-Ван Кеноби",
+  "original_title": "Obi-Wan Kenobi",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Obi-Wan Kenobi": {
+  "query": "Obi-Wan Kenobi",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92830,
+  "title": "Оби-Ван Кеноби",
+  "original_title": "Obi-Wan Kenobi",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "One Piece": {
+  "query": "One Piece",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "history = «One_Piece_[575]…[692]_[Animedia/Nazel]» = the anime with absolute numbering (season by history_season); the Netflix live-action files under the same Plex show name are linked by data/disk_map.json (111110 S1)",
+  "tmdb_tv": 37854,
+  "title": "Ван-Пис",
+  "original_title": "ワンピース",
+  "first_year": 1999,
+  "candidates": []
+ },
+ "One Piece S01 2160p": {
+  "query": "One Piece",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "a 2160p «S01» release can only be the Netflix live action (2023); the anime S1 is from 1999",
+  "tmdb_tv": 111110,
+  "title": "ONE PIECE. БОЛЬШОЙ КУШ",
+  "original_title": "ONE PIECE",
+  "first_year": 2023,
+  "candidates": [],
+  "season": 1
+ },
+ "One Punch Man Season 3": {
+  "query": "One Punch Man",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 63926,
+  "title": "Ванпанчмен",
+  "original_title": "ワンパンマン",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "One piece": {
+  "query": "One piece",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "the anime: every file under this Plex show name is «One_piece_[NNN]_[Nazel]_[AniMedia.TV]» (absolute numbering)",
+  "tmdb_tv": 37854,
+  "title": "Ван-Пис",
+  "original_title": "ワンピース",
+  "first_year": 1999,
+  "candidates": []
+ },
+ "One-piece": {
+  "query": "One-piece",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "the anime: the folder holds only «One_Piece_[NNN]_[Nazel]_[AniMedia.TV]» files (absolute numbering)",
+  "tmdb_tv": 37854,
+  "title": "Ван-Пис",
+  "original_title": "ワンピース",
+  "first_year": 1999,
+  "candidates": []
+ },
+ "Oshi no Ko": {
+  "query": "Oshi no Ko",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "Plex show name of «[Tsundere-Raws] Oshi no Ko - 01…11» = the anime (ep 01 = 82 min, files 2023-06…07)",
+  "tmdb_tv": 203737,
+  "title": "Звёздное дитя",
+  "original_title": "【推しの子】",
+  "first_year": 2023,
+  "candidates": [],
+  "season": 1
+ },
+ "OverLord": {
+  "query": "OverLord",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "Plex show name of «OverLord.03…13.HDTV.1080.Dub» (E:/Overlord) = anime S1, see «Overlord»",
+  "tmdb_tv": 64196,
+  "title": "Повелитель",
+  "original_title": "オーバーロード",
+  "first_year": 2015,
+  "candidates": [],
+  "season": 1
+ },
+ "Overlord": {
+  "query": "Overlord",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "folder E:/Overlord = «OverLord.03…13.HDTV.1080.Dub» = anime S1 (file title tag «Повелитель - Глава третья. Битва за деревню Карне»); the single 2021-10-07 view called «Overlord» is the 2018 war film (imdb tt4530422), a movie row",
+  "tmdb_tv": 64196,
+  "title": "Повелитель",
+  "original_title": "オーバーロード",
+  "first_year": 2015,
+  "candidates": [],
+  "season": 1
+ },
+ "Pacific Rim The Black": {
+  "query": "Pacific Rim The Black",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 112162,
+  "title": "Тихоокеанский рубеж: Тёмная зона",
+  "original_title": "Pacific Rim: The Black",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Parasyte The Grey": {
+  "query": "Parasyte The Grey",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 208825,
+  "title": "Паразит: серые",
+  "original_title": "기생수: 더 그레이",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Parasyte The Grey (S01) (2024) 2160p P8 Ukr Kor": {
+  "query": "Parasyte The Grey",
+  "year_hint": 2024,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 208825,
+  "title": "Паразит: серые",
+  "original_title": "기생수: 더 그레이",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Peacemaker 2022": {
+  "query": "Peacemaker",
+  "year_hint": 2022,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 110492,
+  "title": "Миротворец",
+  "original_title": "Peacemaker",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Peacemaker 2022 S02 1080p -RGzsRutracker": {
+  "query": "Peacemaker",
+  "year_hint": 2022,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 110492,
+  "title": "Миротворец",
+  "original_title": "Peacemaker",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Platinum End [": {
+  "query": "Platinum End [",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 114892,
+  "title": "Платиновый предел",
+  "original_title": "プラチナエンド",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Pokemon": {
+  "query": "Pokemon",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60572,
+  "title": "Покемон",
+  "original_title": "ポケットモンスター",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Pokemon Season 23": {
+  "query": "Pokemon",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60572,
+  "title": "Покемон",
+  "original_title": "ポケットモンスター",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Pokemon Secrets of the Jungle": {
+  "query": "Pokemon Secrets of the Jungle",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "a film, not a series: «Pokemon Secrets of the Jungle 01» = Покемон-фильм: Секреты джунглей (2020); watched 2023-10-01 (2026-10-25)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 662708,
+  "imdb": "tt11819890"
+ },
+ "Pokemon Ultimate Journeys S25 1080p": {
+  "query": "Pokemon Ultimate Journeys",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "Pokémon Ultimate Journeys = season 25 of TMDB Покемон (1997) (see data/disk_map.json)",
+  "tmdb_tv": 60572,
+  "title": "Покемон",
+  "original_title": "ポケットモンスター",
+  "first_year": 1997,
+  "candidates": [],
+  "season": 25
+ },
+ "Psycho-Pass": {
+  "query": "Psycho-Pass",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Psycho-Pass 2019 2": {
+  "query": "Psycho-Pass 2",
+  "year_hint": 2019,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Psycho-Pass 3": {
+  "query": "Psycho-Pass 3",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Psycho-Pass 3 - First Inspector": {
+  "query": "Psycho-Pass 3 - First Inspector",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "no TMDB results for any title",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": []
+ },
+ "Psycho-Pass 3 2020": {
+  "query": "Psycho-Pass 3",
+  "year_hint": 2020,
+  "status": "matched",
+  "reason": "trailing number 3 = season (aired 2019)",
+  "season": 3,
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Psycho-Pass Sinners of the System": {
+  "query": "Psycho-Pass Sinners of the System",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "no TMDB results for any title",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": []
+ },
+ "Psycho-pass": {
+  "query": "Psycho-pass",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 43865,
+  "title": "Психопаспорт",
+  "original_title": "PSYCHO-PASS サイコパス",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Resident Evil Infinite Darkness": {
+  "query": "Resident Evil Infinite Darkness",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 110642,
+  "title": "Обитель зла: Бесконечная тьма",
+  "original_title": "バイオハザード: インフィニット ダークネス",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Rick and Morty": {
+  "query": "Rick and Morty",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60625,
+  "title": "Рик и Морти",
+  "original_title": "Rick and Morty",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Rick and Morty S08": {
+  "query": "Rick and Morty",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60625,
+  "title": "Рик и Морти",
+  "original_title": "Rick and Morty",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "S01E01.Pilot.1080p.Encoder-Ygrek00": {
+  "query": "S01E01.Pilot",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E01 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E02.0.8.4.1080p.Encoder-Ygrek00": {
+  "query": "S01E02.0.8.4",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E02 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E03.The Asset.1080p.Encoder-Ygrek00": {
+  "query": "S01E03.The Asset",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E03 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E04.Eye-Spy.1080p.Encoder-Ygrek00": {
+  "query": "S01E04.Eye-Spy",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E04 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E05.Girl in the Flower Dress.1080p.Encoder-Ygrek00": {
+  "query": "S01E05.Girl in the Flower Dress",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E05 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E06.FZZT.1080p.Encoder-Ygrek00": {
+  "query": "S01E06.FZZT",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E06 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E07.The Hub.1080p.Encoder-Ygrek00": {
+  "query": "S01E07.The Hub",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E07 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E08.The Well.1080p.Encoder-Ygrek00": {
+  "query": "S01E08.The Well",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E08 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E09.Repairs.1080p.Encoder-Ygrek00": {
+  "query": "S01E09.Repairs",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E09 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E10.The Bridge.1080p.Encoder-Ygrek00": {
+  "query": "S01E10.The Bridge",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E10 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E11.The.Magical.Place.1080p.Encoder-Ygrek00": {
+  "query": "S01E11.The.Magical.Place",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E11 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E12.Seeds.1080p.Encoder-Ygrek00": {
+  "query": "S01E12.Seeds",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E12 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E13.T.R.A.C.K.S..1080p.Encoder-Ygrek00": {
+  "query": "S01E13.T.R.A.C.K.S",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E13 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E14.T.A.H.I.T.I..1080p.Encoder-Ygrek00": {
+  "query": "S01E14.T.A.H.I.T.I",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E14 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E15.Yes.Men.1080p.Encoder-Ygrek00": {
+  "query": "S01E15.Yes.Men",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E15 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E16.End.of.the.Beginning.1080p.Encoder-Ygrek00": {
+  "query": "S01E16.End.of.the.Beginning",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E16 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E17.Turn,.Turn,.Turn.1080p.Encoder-Ygrek00": {
+  "query": "S01E17.Turn,.Turn,.Turn",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E17 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E18.Providence.1080p.Encoder-Ygrek00": {
+  "query": "S01E18.Providence",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E18 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E21.Ragtag.1080p.Encoder-Ygrek00": {
+  "query": "S01E21.Ragtag",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E21 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E22.Beginning.of.the.End.1080p.Encoder-Ygrek00": {
+  "query": "S01E22.Beginning.of.the.End",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S01E22 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S01E23": {
+  "query": "S01E23",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "a short film, not an episode: watched 2024-03-30 19 min after AoS S01E22 (S1 has 22 eps), library «Щит», file dated 2023-12-02 like the Marvel One-Shots (Thor's Hammer, Consultant, Item 47, All Hail the King watched 2023-12-03); the only One-Shot of that set not in history is «Agent Carter» (2013, 15 min), watched just before the Agent Carter series",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 211387,
+  "imdb": "tt3067038",
+  "watched_at": "2024-03-30 14:02:30"
+ },
+ "S02E01.Shadows.1080p.Encoder-Ygrek00": {
+  "query": "S02E01.Shadows",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E01 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E02.Heavy.Is.the.Head.1080p.Encoder-Ygrek00": {
+  "query": "S02E02.Heavy.Is.the.Head",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E02 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E03.Making.Friends.and.Influencing.People.1080p.Encoder-Ygrek00": {
+  "query": "S02E03.Making.Friends.and.Influencing.People",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E03 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E04.Face.My.Enemy.1080p.Encoder-Ygrek00": {
+  "query": "S02E04.Face.My.Enemy",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E04 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E05.A.Hen.in.the.Wolfhouse.1080p.Encoder-Ygrek00": {
+  "query": "S02E05.A.Hen.in.the.Wolfhouse",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E05 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E06.A.Fractured.House.1080p.Encoder-Ygrek00": {
+  "query": "S02E06.A.Fractured.House",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E06 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E07.The.Writing.on.the.Wall.1080p.Encoder-Ygrek00": {
+  "query": "S02E07.The.Writing.on.the.Wall",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E07 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E08.The.Things.We.Bury.1080p.Encoder-Ygrek00.mkv": {
+  "query": "S02E08.The.Things.We.Bury",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E08 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E09.Ye.Who.Enter.Here.1080p.Encoder-Ygrek00": {
+  "query": "S02E09.Ye.Who.Enter.Here",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E09 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E10.What.They.Become.1080p.Encoder-Ygrek00": {
+  "query": "S02E10.What.They.Become",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E10 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E11.Aftershocks.1080p.Encoder-Ygrek00": {
+  "query": "S02E11.Aftershocks",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E11 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E12.Who.You.Really.Are.1080p.Encoder-Ygrek00": {
+  "query": "S02E12.Who.You.Really.Are",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E12 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E13.One.of.Us.1080p.Encoder-Ygrek00": {
+  "query": "S02E13.One.of.Us",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E13 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E14.Love.in.the.Time.of.Hydra.1080p.Encoder-Ygrek00": {
+  "query": "S02E14.Love.in.the.Time.of.Hydra",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E14 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E15.One.Door.Closes.1080p.Encoder-Ygrek00": {
+  "query": "S02E15.One.Door.Closes",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E15 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E16.Afterlife.1080p.Encoder-Ygrek00": {
+  "query": "S02E16.Afterlife",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E16 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E17.Melinda.1080p.Encoder-Ygrek00": {
+  "query": "S02E17.Melinda",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E17 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E18.Frenemy.of.My.Enemy.1080p.Encoder-Ygrek00": {
+  "query": "S02E18.Frenemy.of.My.Enemy",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E18 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E19.The.Dirty.Half.Dozen.1080p.Encoder-Ygrek00": {
+  "query": "S02E19.The.Dirty.Half.Dozen",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E19 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E20.Scars.1080p.Encoder-Ygrek00": {
+  "query": "S02E20.Scars",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E20 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E21.S.O.S. Part.1.1080p.Encoder-Ygrek00": {
+  "query": "S02E21.S.O.S. Part.1",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E21 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "S02E22.S.O.S. Part.2.1080p.Encoder-Ygrek00": {
+  "query": "S02E22.S.O.S. Part.2",
+  "year_hint": null,
+  "status": "episode_names",
+  "reason": "episode title = TMDB 1403 S02E22 (42 such names agree)",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": null,
+  "candidates": []
+ },
+ "Secret Level": {
+  "query": "Secret Level",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 261579,
+  "title": "Секретный Уровень",
+  "original_title": "Secret Level",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Seikon no Qwaser": {
+  "query": "Seikon no Qwaser",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "The Qwaser of Stigmata (聖痕のクェイサー, 2010; TMDB knows only the Japanese name): «Seikon.no.Qwaser_e01…24» = S1 (24 episodes); S2 files carry «II»",
+  "tmdb_tv": 338325,
+  "title": "聖痕のクェイサー",
+  "original_title": "聖痕のクェイサー",
+  "first_year": 2010,
+  "candidates": [],
+  "season": 1
+ },
+ "Seikon no Qwaser II BD": {
+  "query": "Seikon no Qwaser",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "The Qwaser of Stigmata II = TMDB 聖痕のクェイサー season 2 (2011, 12 episodes)",
+  "tmdb_tv": 338325,
+  "title": "聖痕のクェイサー",
+  "original_title": "聖痕のクェイサー",
+  "first_year": 2010,
+  "candidates": [],
+  "season": 2
+ },
+ "She-Hulk": {
+  "query": "She-Hulk",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92783,
+  "title": "She-Hulk: Attorney at Law",
+  "original_title": "She-Hulk: Attorney at Law",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "South Park": {
+  "query": "South Park",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2190,
+  "title": "Южный Парк",
+  "original_title": "South Park",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "South Park The End of Obesity 2160p AMZN WEB-DL H": {
+  "query": "South Park The End of Obesity",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "a film, not a series: South Park: The End of Obesity (2024 special); watched 2024-09-04 (2026-10-25)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "kind": "movie",
+  "tmdb_movie": 1290938,
+  "imdb": "tt32375562"
+ },
+ "Spider-Man": {
+  "query": "Spider-Man",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "folder E:/Spider-Man: history «Spider-Man 1…4» (2025-12-31…2026-01-04) + files 5…10 (27–30 min, file dates 2025-02…03) already linked to 138503 S1 by data/disk_map.json; 10 episodes = S1; the 1994 series has 21-min episodes",
+  "tmdb_tv": 138503,
+  "title": "Ваш дружелюбный сосед Человек-Паук",
+  "original_title": "Your Friendly Neighborhood Spider-Man",
+  "first_year": 2025,
+  "candidates": [],
+  "season": 1
+ },
+ "Stas & DIma": {
+  "query": "Stas & DIma",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "no TMDB results for any title",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": []
+ },
+ "Sword Art Online Alternative - Gun Gale Online II": {
+  "query": "Sword Art Online Alternative - Gun Gale Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78204,
+  "title": "Мастера меча онлайн: Альтернативная призрачная пуля",
+  "original_title": "ソードアート・オンライン オルタナティブ ガンゲイル・オンライン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Sword Art Online Alternative - Gun Gale Online II - [ 1080p]": {
+  "query": "Sword Art Online Alternative - Gun Gale Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78204,
+  "title": "Мастера меча онлайн: Альтернативная призрачная пуля",
+  "original_title": "ソードアート・オンライン オルタナティブ ガンゲイル・オンライン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Tekken - Bloodline": {
+  "query": "Tekken - Bloodline",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 195530,
+  "title": "Tekken: узы крови",
+  "original_title": "Tekken: Bloodline",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Terminator Zero": {
+  "query": "Terminator Zero",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 239287,
+  "title": "Terminator Zero",
+  "original_title": "Terminator Zero",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Terminator Zero [TV-1] [2024] [ ] [1080p] [ + + ]": {
+  "query": "Terminator Zero",
+  "year_hint": 2024,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 239287,
+  "title": "Terminator Zero",
+  "original_title": "Terminator Zero",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "The Continental": {
+  "query": "The Continental",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 72710,
+  "title": "Континенталь: По Вселенной Джона Уика",
+  "original_title": "The Continental: From the World of John Wick",
+  "first_year": 2023,
+  "candidates": []
+ },
+ "The Defenders": {
+  "query": "The Defenders",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "files «The.Defenders.S01E08.WEB-DL.1080p.Rus.Eng.HDCLUB» = Marvel's The Defenders (2017, 8 episodes, 1746 TMDB votes); the 2010 legal drama has 18 episodes and 37 votes",
+  "tmdb_tv": 62285,
+  "title": "Защитники",
+  "original_title": "Marvel's The Defenders",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "The Last of Us": {
+  "query": "The Last of Us",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 100088,
+  "title": "Одни из нас",
+  "original_title": "The Last of Us",
+  "first_year": 2023,
+  "candidates": []
+ },
+ "The Lord of the Rings": {
+  "query": "The Lord of the Rings",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«The.Lord.of.the.Rings 8» marked watched 2026-05-10 02:03, 35 min after «…Rings.of.Power.S02E08» was played; a second copy (library «Без Кости Без Сани», file dated 2024-10-17 = S2E8 release) → S2E8",
+  "tmdb_tv": 84773,
+  "title": "Властелин колец: Кольца Власти",
+  "original_title": "The Lord of the Rings: The Rings of Power",
+  "first_year": 2022,
+  "candidates": [],
+  "season": 2
+ },
+ "The Lord of the Rings The Rings of Power": {
+  "query": "The Lord of the Rings The Rings of Power",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 84773,
+  "title": "Властелин колец: Кольца Власти",
+  "original_title": "The Lord of the Rings: The Rings of Power",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "The Penguin": {
+  "query": "The Penguin",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 194764,
+  "title": "Пингвин",
+  "original_title": "The Penguin",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "The Witcher": {
+  "query": "The Witcher",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "folder E:/The Witcher holds «The.Witcher.S02E01.a.Grain.of.Truth … S02E08.Family» NF 2160p — the episode titles of The Witcher (2019) season 2",
+  "tmdb_tv": 71912,
+  "title": "Ведьмак",
+  "original_title": "The Witcher",
+  "first_year": 2019,
+  "candidates": [],
+  "season": 2
+ },
+ "The Witcher Blood Origin": {
+  "query": "The Witcher Blood Origin",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 106541,
+  "title": "Ведьмак: происхождение",
+  "original_title": "The Witcher: Blood Origin",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "To Aru Majutsu no Index TV": {
+  "query": "To Aru Majutsu no Index TV",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "To Aru Majutsu no Index (first TV series, 2008) = TMDB Некий Магический Индекс season 1",
+  "tmdb_tv": 30980,
+  "title": "Некий Магический Индекс",
+  "original_title": "とある魔術の禁書目録",
+  "first_year": 2008,
+  "candidates": [],
+  "season": 1
+ },
+ "Toaru Majutsu no Index II": {
+  "query": "Toaru Majutsu no Index",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 30980,
+  "title": "Некий Магический Индекс",
+  "original_title": "とある魔術の禁書目録",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "Tomb Raider - The Legend of Lara Croft": {
+  "query": "Tomb Raider - The Legend of Lara Croft",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 117830,
+  "title": "Tomb Raider: легенда Лары Крофт",
+  "original_title": "Tomb Raider: The Legend of Lara Croft",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "WandaVision": {
+  "query": "WandaVision",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 85271,
+  "title": "ВандаВижн",
+  "original_title": "WandaVision",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "What If": {
+  "query": "What If",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«What If 8», «What If 9» (2024-06-22, library «Сериалы») finish «Что если...? 1…7» (2024-02…05, file dated 2023-12-26 = during S2's daily release); S1 was watched in 2021 («What if 1 Капитан Картер…» … «9 Наблюдатель…»)",
+  "tmdb_tv": 91363,
+  "title": "Что, Если...?",
+  "original_title": "What If...?",
+  "first_year": 2021,
+  "candidates": [],
+  "season": 2
+ },
+ "World of Warcraft": {
+  "query": "World of Warcraft",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "not a film or series: World of Warcraft game video (library «ДляРамала ДляСани», marked 2025-12-27); the same library/family has «Wow Midnight 1» and the WoW Midnight cinematics («Анимированный синематик World of Warcraft Midnight» 1…6, 2026-04-09)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "not_film": true
+ },
+ "Wow Midnight": {
+  "query": "Wow Midnight",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "not a film or series: «Wow Midnight 1» (2026-01-31) = a World of Warcraft: Midnight video (cinematics of the expansion were watched as YouTube files in 2026-03/04)",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [],
+  "not_film": true
+ },
+ "X-Men 97": {
+  "query": "X-Men 97",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 138502,
+  "title": "Люди Икс '97",
+  "original_title": "X-Men '97",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "X-Men 97 S02 1080p D Flarrow Films": {
+  "query": "X-Men 97",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 138502,
+  "title": "Люди Икс '97",
+  "original_title": "X-Men '97",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "[ ]_Berserk_TV-3_[720p]_[JAM_Trina_D]": {
+  "query": "Berserk TV-3",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "TV-3 = the third Berserk TV series = Берсерк (2016) season 2 (see data/disk_map.json)",
+  "tmdb_tv": 66053,
+  "title": "Берсерк",
+  "original_title": "ベルセルク",
+  "first_year": 2016,
+  "candidates": [],
+  "season": 2
+ },
+ "[AniPlague] One Punch Man S03 1080p": {
+  "query": "One Punch Man",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 63926,
+  "title": "Ванпанчмен",
+  "original_title": "ワンパンマン",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "[Tsundere-Raws] Oshi no Ko [ 2160p ]": {
+  "query": "Oshi no Ko",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "folder of «[Tsundere-Raws] Oshi no Ko - 01…11 [WEB-DL 2160p]»: episode 01 runs 82 min (the anime's feature-length opener), files dated 2023-06…07 — the anime, not the 2024 live action (8 episodes, Nov 2024)",
+  "tmdb_tv": 203737,
+  "title": "Звёздное дитя",
+  "original_title": "【推しの子】",
+  "first_year": 2023,
+  "candidates": [],
+  "season": 1
+ },
+ "[VLDeshka] Tomb Raider - The Legend of Lara Croft [ 1080p]": {
+  "query": "Tomb Raider - The Legend of Lara Croft",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 117830,
+  "title": "Tomb Raider: легенда Лары Крофт",
+  "original_title": "Tomb Raider: The Legend of Lara Croft",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Агенты Щ. И. Т": {
+  "query": "Агенты Щ. И. Т",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Джентельмены": {
+  "query": "Джентельмены",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "misspelt «Джентльмены» (Guy Ritchie, 2024): «Джентельмены 1…8» = 8 episodes of S1; S2 aired 2026-09-03, after these watches (2026-07)",
+  "tmdb_tv": 236235,
+  "title": "Джентльмены",
+  "original_title": "The Gentlemen",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Джессика Джонс": {
+  "query": "Джессика Джонс",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Женщина Халк": {
+  "query": "Женщина Халк",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Женщина Халк 9» = She-Hulk: Attorney at Law (2022), the only candidate; one season of 9 episodes",
+  "tmdb_tv": 92783,
+  "title": "She-Hulk: Attorney at Law",
+  "original_title": "She-Hulk: Attorney at Law",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Женщина халк Завершение": {
+  "query": "Женщина халк Завершение",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "no TMDB results for any title",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": []
+ },
+ "Класс убийц": {
+  "query": "Класс убийц",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62110,
+  "title": "Класс убийц",
+  "original_title": "暗殺教室",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Локи": {
+  "query": "Локи",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 84958,
+  "title": "Loki",
+  "original_title": "Loki",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Миротворец": {
+  "query": "Миротворец",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Миротворец 1…8» watched 2023-03…2024-07; S2 premiered 2025-08 → season 1 (8 episodes)",
+  "tmdb_tv": 110492,
+  "title": "Миротворец",
+  "original_title": "Peacemaker",
+  "first_year": 2022,
+  "candidates": [],
+  "season": 1
+ },
+ "Покемон Эволюция": {
+  "query": "Покемон Эволюция",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 132636,
+  "title": "Покемон: Эволюция",
+  "original_title": "Pokémon Evolutions",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Приказ свыше": {
+  "query": "Приказ свыше",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 65439,
+  "title": "Приказ, изменивший мир",
+  "original_title": "ビッグオーダー",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Секретное вторжение": {
+  "query": "Секретное вторжение",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 114472,
+  "title": "Секретное вторжение",
+  "original_title": "Secret Invasion",
+  "first_year": 2023,
+  "candidates": []
+ },
+ "Соколиный Глаз": {
+  "query": "Соколиный Глаз",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88329,
+  "title": "Соколиный Глаз",
+  "original_title": "Hawkeye",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Соколиный глаз": {
+  "query": "Соколиный глаз",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88329,
+  "title": "Соколиный Глаз",
+  "original_title": "Hawkeye",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Сорвиголова": {
+  "query": "Сорвиголова",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61889,
+  "title": "Сорвиголова",
+  "original_title": "Marvel's Daredevil",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Сорвиголова S03 2160p": {
+  "query": "Сорвиголова",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61889,
+  "title": "Сорвиголова",
+  "original_title": "Marvel's Daredevil",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Стигматы квайзеров 2 1080": {
+  "query": "Стигматы квайзеров 2 1080",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Стигматы квайзеров 2» = The Qwaser of Stigmata II = TMDB 聖痕のクェイサー season 2",
+  "tmdb_tv": 338325,
+  "title": "聖痕のクェイサー",
+  "original_title": "聖痕のクェイサー",
+  "first_year": 2010,
+  "candidates": [],
+  "season": 2
+ },
+ "Фильм": {
+  "query": "Фильм",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "only results with unrelated names",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 93219,
+    "title": "Фильмы, на которых мы выросли",
+    "original_title": "The Movies That Made Us",
+    "year": 2019
+   },
+   {
+    "tmdb_id": 101137,
+    "title": "Проклятые фильмы",
+    "original_title": "Cursed Films",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 248287,
+    "title": "СТИВ! (мартин): Документальный фильм в двух частях",
+    "original_title": "STEVE! (martin) a documentary in 2 pieces",
+    "year": 2024
+   },
+   {
+    "tmdb_id": 258256,
+    "title": "Наш фильм",
+    "original_title": "우리영화",
+    "year": 2025
+   }
+  ]
+ },
+ "Хисуинский снег": {
+  "query": "Хисуинский снег",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "misspelt «Хисуйский снег» = Pokémon: Hisuian Snow (2022), 3 episodes; «Хисуинский снег - N серия»",
+  "tmdb_tv": 199966,
+  "title": "雪ほどきし二藍",
+  "original_title": "雪ほどきし二藍",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Что если ?": {
+  "query": "Что если ?",
+  "year_hint": null,
+  "status": "manual",
+  "reason": "«Что если...? 1…7» watched 2024-02-10…05-25, file dated 2023-12-26 (S2 was released daily 22–30.12.2023), continued by «What If 8, 9»; S1 had been watched in 2021 with its Russian episode titles",
+  "tmdb_tv": 91363,
+  "title": "Что, Если...?",
+  "original_title": "What If...?",
+  "first_year": 2021,
+  "candidates": [],
+  "season": 2
+ },
+ "Шерлок": {
+  "query": "Шерлок",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 19885,
+  "title": "Шерлок",
+  "original_title": "Sherlock",
+  "first_year": 2010,
+  "candidates": []
+ },
+ "Adventures of Sonic the Hedgehog": {
+  "query": "Adventures of Sonic the Hedgehog",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 44,
+  "title": "Приключения Ёжика Соника",
+  "original_title": "Adventures of Sonic the Hedgehog",
+  "first_year": 1993,
+  "candidates": []
+ },
+ "Alien: Isolation": {
+  "query": "Alien: Isolation",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 87212,
+  "title": "Чужой: Изоляция",
+  "original_title": "Alien: Isolation - The Digital Series",
+  "first_year": 2019,
+  "candidates": []
+ },
+ "Angel": {
+  "query": "Angel",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 2426,
+  "title": "Ангел",
+  "original_title": "Angel",
+  "first_year": 1999,
+  "candidates": [
+   {
+    "tmdb_id": 2426,
+    "title": "Ангел",
+    "original_title": "Angel",
+    "year": 1999
+   },
+   {
+    "tmdb_id": 7073,
+    "title": "Angel",
+    "original_title": "Angel",
+    "year": 1960
+   },
+   {
+    "tmdb_id": 217716,
+    "title": "Angel",
+    "original_title": "Angel",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 2407,
+    "title": "Тёмный ангел",
+    "original_title": "Dark Angel",
+    "year": 2000
+   }
+  ]
+ },
+ "Are You Afraid of the Dark?": {
+  "query": "Are You Afraid of the Dark?",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 2913,
+    "title": "Боишься ли ты темноты?",
+    "original_title": "Are You Afraid of the Dark?",
+    "year": 1992
+   },
+   {
+    "tmdb_id": 93693,
+    "title": "Боишься ли ты темноты?",
+    "original_title": "Are You Afraid of the Dark?",
+    "year": 2019
+   }
+  ]
+ },
+ "Boruto: Naruto Next Generations": {
+  "query": "Boruto: Naruto Next Generations",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 70881,
+  "title": "Боруто: Новое поколение Наруто",
+  "original_title": "BORUTO-ボルト- NARUTO NEXT GENERATIONS",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Buffy the Vampire Slayer": {
+  "query": "Buffy the Vampire Slayer",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 95,
+  "title": "Баффи - истребительница вампиров",
+  "original_title": "Buffy the Vampire Slayer",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Buzz Lightyear of Star Command": {
+  "query": "Buzz Lightyear of Star Command",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 3744,
+  "title": "Приключения Базза Лайтера из Звёздной Команды",
+  "original_title": "Buzz Lightyear of Star Command",
+  "first_year": 2000,
+  "candidates": []
+ },
+ "Code Geass: Lelouch of the Rebellion": {
+  "query": "Code Geass: Lelouch of the Rebellion",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31724,
+  "title": "Код Гиас: Восставший Лелуш",
+  "original_title": "コードギアス 反逆のルルーシュ",
+  "first_year": 2006,
+  "candidates": []
+ },
+ "Death Note: New Generation": {
+  "query": "Death Note: New Generation",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78004,
+  "title": "Тетрадь смерти: Новое поколение",
+  "original_title": "デスノート NEW GENERATION",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "GANTZ": {
+  "query": "GANTZ",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 11279,
+  "title": "Ганц",
+  "original_title": "ガンツ",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Gantz": {
+  "query": "Gantz",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 11279,
+  "title": "Ганц",
+  "original_title": "ガンツ",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Halo 4: Forward Unto Dawn": {
+  "query": "Halo 4: Forward Unto Dawn",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 56295,
+  "title": "Halo 4: Идущий к рассвету",
+  "original_title": "Halo 4: Forward Unto Dawn",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Hawkeye (2021)": {
+  "query": "Hawkeye",
+  "year_hint": 2021,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88329,
+  "title": "Соколиный Глаз",
+  "original_title": "Hawkeye",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Hell Girl": {
+  "query": "Hell Girl",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 8974,
+    "title": "Адская девочка",
+    "original_title": "地獄少女",
+    "year": 2005
+   },
+   {
+    "tmdb_id": 91539,
+    "title": "地獄少女",
+    "original_title": "地獄少女",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 246495,
+    "title": "Hell Girl: Two Mirrors",
+    "original_title": "Hell Girl: Two Mirrors",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 105240,
+    "title": "地獄のガールフレンド",
+    "original_title": "地獄のガールフレンド",
+    "year": 2019
+   }
+  ]
+ },
+ "Hercules: The Legendary Journeys": {
+  "query": "Hercules: The Legendary Journeys",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4615,
+  "title": "Удивительные странствия Геракла",
+  "original_title": "Hercules: The Legendary Journeys",
+  "first_year": 1995,
+  "candidates": []
+ },
+ "Highlander: The Series": {
+  "query": "Highlander: The Series",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4414,
+  "title": "Горец",
+  "original_title": "Highlander: The Series",
+  "first_year": 1992,
+  "candidates": []
+ },
+ "Higurashi: When They Cry": {
+  "query": "Higurashi: When They Cry",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 25760,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に",
+  "first_year": 2006,
+  "candidates": []
+ },
+ "Higurashi: When They Cry - NEW": {
+  "query": "Higurashi: When They Cry - NEW",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 100988,
+  "title": "Когда плачут цикады",
+  "original_title": "ひぐらしのなく頃に 業",
+  "first_year": 2020,
+  "candidates": []
+ },
+ "Honey, I Shrunk the Kids: The TV Show": {
+  "query": "Honey, I Shrunk the Kids: The TV Show",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1797,
+  "title": "Honey, I Shrunk the Kids: The TV Show",
+  "original_title": "Honey, I Shrunk the Kids: The TV Show",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Life on Mars": {
+  "query": "Life on Mars",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 2973,
+    "title": "Жизнь на Марсе",
+    "original_title": "Life on Mars",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 3725,
+    "title": "Жизнь на Марсе",
+    "original_title": "Life on Mars",
+    "year": 2008
+   },
+   {
+    "tmdb_id": 79407,
+    "title": "Жизнь на Марсе",
+    "original_title": "라이프 온 마스",
+    "year": 2018
+   }
+  ]
+ },
+ "Lilo & Stitch: The Series": {
+  "query": "Lilo & Stitch: The Series",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2355,
+  "title": "Лило и Стич",
+  "original_title": "Lilo & Stitch: The Series",
+  "first_year": 2003,
+  "candidates": []
+ },
+ "Loki": {
+  "query": "Loki",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 84958,
+  "title": "Loki",
+  "original_title": "Loki",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "Lost": {
+  "query": "Lost",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 4607,
+  "title": "Остаться в живых",
+  "original_title": "Lost",
+  "first_year": 2004,
+  "candidates": [
+   {
+    "tmdb_id": 4607,
+    "title": "Остаться в живых",
+    "original_title": "Lost",
+    "year": 2004
+   },
+   {
+    "tmdb_id": 129318,
+    "title": "Lost",
+    "original_title": "인간실격",
+    "year": 2021
+   },
+   {
+    "tmdb_id": 313937,
+    "title": "LOST: Circle",
+    "original_title": "LOST: Circle",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 75758,
+    "title": "Затерянные в космосе",
+    "original_title": "Lost in Space",
+    "year": 2018
+   }
+  ]
+ },
+ "Marvel's Agent Carter": {
+  "query": "Marvel's Agent Carter",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61550,
+  "title": "Агент Картер",
+  "original_title": "Marvel's Agent Carter",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Marvel's Agents of S.H.I.E.L.D.": {
+  "query": "Marvel's Agents of S.H.I.E.L.D.",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 1403,
+  "title": "Агенты «Щ.И.Т.»",
+  "original_title": "Marvel's Agents of S.H.I.E.L.D.",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Marvel's Iron Fist": {
+  "query": "Marvel's Iron Fist",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62127,
+  "title": "Железный кулак",
+  "original_title": "Marvel's Iron Fist",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Marvel's Jessica Jones": {
+  "query": "Marvel's Jessica Jones",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 38472,
+  "title": "Джессика Джонс",
+  "original_title": "Marvel's Jessica Jones",
+  "first_year": 2015,
+  "candidates": []
+ },
+ "Marvel's Luke Cage": {
+  "query": "Marvel's Luke Cage",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62126,
+  "title": "Люк Кейдж",
+  "original_title": "Marvel's Luke Cage",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Marvel's The Defenders": {
+  "query": "Marvel's The Defenders",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 62285,
+  "title": "Защитники",
+  "original_title": "Marvel's The Defenders",
+  "first_year": 2017,
+  "candidates": []
+ },
+ "Mortal Kombat: Conquest": {
+  "query": "Mortal Kombat: Conquest",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 237,
+  "title": "Смертельная битва: Завоевание",
+  "original_title": "Mortal Kombat: Conquest",
+  "first_year": 1998,
+  "candidates": []
+ },
+ "Mortal Kombat: Legacy": {
+  "query": "Mortal Kombat: Legacy",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61579,
+  "title": "Смертельная битва: Наследие",
+  "original_title": "Mortal Kombat: Legacy",
+  "first_year": 2011,
+  "candidates": []
+ },
+ "Ms. Marvel": {
+  "query": "Ms. Marvel",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92782,
+  "title": "Мисс Марвел",
+  "original_title": "Ms. Marvel",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Naruto": {
+  "query": "Naruto",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 46260,
+  "title": "Наруто",
+  "original_title": "ナルト",
+  "first_year": 2002,
+  "candidates": []
+ },
+ "Naruto Shippuden": {
+  "query": "Naruto Shippuden",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31910,
+  "title": "Наруто: Ураганные хроники",
+  "original_title": "ナルト 疾風伝",
+  "first_year": 2007,
+  "candidates": []
+ },
+ "Naruto Shippūden": {
+  "query": "Naruto Shippūden",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 31910,
+  "title": "Наруто: Ураганные хроники",
+  "original_title": "ナルト 疾風伝",
+  "first_year": 2007,
+  "candidates": []
+ },
+ "Peacemaker": {
+  "query": "Peacemaker",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 110492,
+  "title": "Миротворец",
+  "original_title": "Peacemaker",
+  "first_year": 2022,
+  "candidates": [
+   {
+    "tmdb_id": 110492,
+    "title": "Миротворец",
+    "original_title": "Peacemaker",
+    "year": 2022
+   },
+   {
+    "tmdb_id": 21788,
+    "title": "Железный миротворец",
+    "original_title": "PEACE MAKER鐵",
+    "year": 2003
+   },
+   {
+    "tmdb_id": 108886,
+    "title": "Миротворец",
+    "original_title": "Rauhantekijä",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 36106,
+    "title": "The Peacemaker",
+    "original_title": "The Peacemaker",
+    "year": 2010
+   }
+  ]
+ },
+ "Pokémon": {
+  "query": "Pokémon",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 60572,
+  "title": "Покемон",
+  "original_title": "ポケットモンスター",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Pokémon Chronicles": {
+  "query": "Pokémon Chronicles",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 13230,
+  "title": "ポケットモンスター サイドストーリー",
+  "original_title": "ポケットモンスター サイドストーリー",
+  "first_year": 2002,
+  "candidates": []
+ },
+ "Pokémon Generations": {
+  "query": "Pokémon Generations",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 67882,
+  "title": "Покемон: Поколения",
+  "original_title": "ポケモンジェネレーションズ",
+  "first_year": 2016,
+  "candidates": []
+ },
+ "Pokémon: Origins": {
+  "query": "Pokémon: Origins",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 61295,
+  "title": "Покемон: Истоки",
+  "original_title": "ポケットモンスター THE ORIGIN",
+  "first_year": 2013,
+  "candidates": []
+ },
+ "Pokémon: Twilight Wings": {
+  "query": "Pokémon: Twilight Wings",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 96420,
+  "title": "Сумеречные крылья",
+  "original_title": "薄明の翼",
+  "first_year": 2020,
+  "candidates": []
+ },
+ "Quantum Leap": {
+  "query": "Quantum Leap",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "close runner-up",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 4018,
+    "title": "Квантовый скачок",
+    "original_title": "Quantum Leap",
+    "year": 1989
+   },
+   {
+    "tmdb_id": 202102,
+    "title": "Квантовый скачок",
+    "original_title": "Quantum Leap",
+    "year": 2022
+   }
+  ]
+ },
+ "Secret Invasion": {
+  "query": "Secret Invasion",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 114472,
+  "title": "Секретное вторжение",
+  "original_title": "Secret Invasion",
+  "first_year": 2023,
+  "candidates": []
+ },
+ "She-Hulk: Attorney at Law": {
+  "query": "She-Hulk: Attorney at Law",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 92783,
+  "title": "She-Hulk: Attorney at Law",
+  "original_title": "She-Hulk: Attorney at Law",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Sherlock": {
+  "query": "Sherlock",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 19885,
+  "title": "Шерлок",
+  "original_title": "Sherlock",
+  "first_year": 2010,
+  "candidates": [
+   {
+    "tmdb_id": 19885,
+    "title": "Шерлок",
+    "original_title": "Sherlock",
+    "year": 2010
+   },
+   {
+    "tmdb_id": 224755,
+    "title": "SHErlock",
+    "original_title": "女子推理社",
+    "year": 2023
+   },
+   {
+    "tmdb_id": 96245,
+    "title": "Sherlock: Untold Stories",
+    "original_title": "シャーロック アントールドストーリーズ",
+    "year": 2019
+   },
+   {
+    "tmdb_id": 220100,
+    "title": "Sherlock Jr.",
+    "original_title": "Sherlock Jr.",
+    "year": 2018
+   }
+  ]
+ },
+ "Smallville": {
+  "query": "Smallville",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4604,
+  "title": "Тайны Смолвиля",
+  "original_title": "Smallville",
+  "first_year": 2001,
+  "candidates": []
+ },
+ "Sonic X": {
+  "query": "Sonic X",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 10926,
+  "title": "Соник Икс",
+  "original_title": "ソニックX",
+  "first_year": 2003,
+  "candidates": []
+ },
+ "Sonic the Hedgehog": {
+  "query": "Sonic the Hedgehog",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-24",
+  "tmdb_tv": 2404,
+  "title": "Соник: Энергетический Камень",
+  "original_title": "Sonic the Hedgehog",
+  "first_year": 1993,
+  "candidates": [
+   {
+    "tmdb_id": 2404,
+    "title": "Соник: Энергетический Камень",
+    "original_title": "Sonic the Hedgehog",
+    "year": 1993
+   },
+   {
+    "tmdb_id": 78422,
+    "title": "Ёж Соник",
+    "original_title": "ソニック・ザ・ヘッジホッグ",
+    "year": 1996
+   },
+   {
+    "tmdb_id": 330647,
+    "title": "DC x Sonic the Hedgehog",
+    "original_title": "DC x Sonic the Hedgehog",
+    "year": 2026
+   },
+   {
+    "tmdb_id": 44,
+    "title": "Приключения Ёжика Соника",
+    "original_title": "Adventures of Sonic the Hedgehog",
+    "year": 1993
+   }
+  ]
+ },
+ "Stargate Atlantis": {
+  "query": "Stargate Atlantis",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2290,
+  "title": "Звёздные врата: Атлантида",
+  "original_title": "Stargate Atlantis",
+  "first_year": 2004,
+  "candidates": []
+ },
+ "Stargate Infinity": {
+  "query": "Stargate Infinity",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2580,
+  "title": "Звёздные врата: Бесконечность",
+  "original_title": "Stargate Infinity",
+  "first_year": 2002,
+  "candidates": []
+ },
+ "Stargate SG-1": {
+  "query": "Stargate SG-1",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4629,
+  "title": "Звёздные врата: ЗВ-1",
+  "original_title": "Stargate SG-1",
+  "first_year": 1997,
+  "candidates": []
+ },
+ "Stitch!": {
+  "query": "Stitch!",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 20757,
+  "title": "Стич!",
+  "original_title": "スティッチ!",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "Supernatural": {
+  "query": "Supernatural",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 1622,
+  "title": "Сверхъестественное",
+  "original_title": "Supernatural",
+  "first_year": 2005,
+  "candidates": [
+   {
+    "tmdb_id": 1622,
+    "title": "Сверхъестественное",
+    "original_title": "Supernatural",
+    "year": 2005
+   },
+   {
+    "tmdb_id": 13836,
+    "title": "Supernatural",
+    "original_title": "Supernatural",
+    "year": 1977
+   },
+   {
+    "tmdb_id": 261164,
+    "title": "소능력자",
+    "original_title": "소능력자",
+    "year": 2017
+   },
+   {
+    "tmdb_id": 32871,
+    "title": "Сверхъестественное: Анимация",
+    "original_title": "SUPERNATURAL：THE ANIMATION",
+    "year": 2011
+   }
+  ]
+ },
+ "Sword Art Online": {
+  "query": "Sword Art Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 45782,
+  "title": "Мастера меча онлайн",
+  "original_title": "ソードアート・オンライン",
+  "first_year": 2012,
+  "candidates": []
+ },
+ "Sword Art Online Alternative: Gun Gale Online": {
+  "query": "Sword Art Online Alternative: Gun Gale Online",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 78204,
+  "title": "Мастера меча онлайн: Альтернативная призрачная пуля",
+  "original_title": "ソードアート・オンライン オルタナティブ ガンゲイル・オンライン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "Terminator: The Sarah Connor Chronicles": {
+  "query": "Terminator: The Sarah Connor Chronicles",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 433,
+  "title": "Терминатор: Хроники Сары Коннор",
+  "original_title": "Terminator: The Sarah Connor Chronicles",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "The Falcon and The Winter Soldier": {
+  "query": "The Falcon and The Winter Soldier",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 88396,
+  "title": "Сокол и Зимний Солдат",
+  "original_title": "The Falcon and the Winter Soldier",
+  "first_year": 2021,
+  "candidates": []
+ },
+ "The Gentlemen": {
+  "query": "The Gentlemen",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 236235,
+  "title": "Джентльмены",
+  "original_title": "The Gentlemen",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "The Hexer": {
+  "query": "The Hexer",
+  "year_hint": null,
+  "status": "not_found",
+  "reason": "only results with unrelated names",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 64915,
+    "title": "Tími nornarinnar",
+    "original_title": "Tími nornarinnar",
+    "year": 2011
+   }
+  ]
+ },
+ "The Interns": {
+  "query": "The Interns",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 32651,
+  "title": "Интерны",
+  "original_title": "Интерны",
+  "first_year": 2010,
+  "candidates": [
+   {
+    "tmdb_id": 32651,
+    "title": "Интерны",
+    "original_title": "Интерны",
+    "year": 2010
+   },
+   {
+    "tmdb_id": 7403,
+    "title": "The Interns",
+    "original_title": "The Interns",
+    "year": 1970
+   },
+   {
+    "tmdb_id": 112513,
+    "title": "The Interns",
+    "original_title": "The Interns",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 219335,
+    "title": "หมอ มือ ใหม่",
+    "original_title": "หมอ มือ ใหม่",
+    "year": 2023
+   }
+  ]
+ },
+ "The Little Mermaid": {
+  "query": "The Little Mermaid",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 2675,
+  "title": "Русалочка",
+  "original_title": "The Little Mermaid",
+  "first_year": 1992,
+  "candidates": []
+ },
+ "The Lord of the Rings: The Rings of Power": {
+  "query": "The Lord of the Rings: The Rings of Power",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 84773,
+  "title": "Властелин колец: Кольца Власти",
+  "original_title": "The Lord of the Rings: The Rings of Power",
+  "first_year": 2022,
+  "candidates": []
+ },
+ "Timon & Pumbaa": {
+  "query": "Timon & Pumbaa",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4429,
+  "title": "Тимон и Пумба",
+  "original_title": "Timon and Pumbaa",
+  "first_year": 1995,
+  "candidates": []
+ },
+ "Uni": {
+  "query": "Uni",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "close runner-ups have no TMDB votes at all",
+  "tmdb_tv": 46087,
+  "title": "Uni",
+  "original_title": "Универ",
+  "first_year": 2008,
+  "candidates": []
+ },
+ "Uni. A New Dorm": {
+  "query": "Uni. A New Dorm",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 45966,
+  "title": "Универ. Новая Общага",
+  "original_title": "Универ. Новая Общага",
+  "first_year": 2011,
+  "candidates": []
+ },
+ "Violet Evergarden": {
+  "query": "Violet Evergarden",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 75214,
+  "title": "Вайолет Эвергарден",
+  "original_title": "ヴァイオレット・エヴァーガーデン",
+  "first_year": 2018,
+  "candidates": []
+ },
+ "What If…?": {
+  "query": "What If…?",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-23",
+  "tmdb_tv": 91363,
+  "title": "Что, Если...?",
+  "original_title": "What If...?",
+  "first_year": 2021,
+  "candidates": [
+   {
+    "tmdb_id": 91363,
+    "title": "Что, Если...?",
+    "original_title": "What If...?",
+    "year": 2021
+   },
+   {
+    "tmdb_id": 81940,
+    "title": "Что/если",
+    "original_title": "WHAT / IF",
+    "year": 2019
+   },
+   {
+    "tmdb_id": 50116,
+    "title": "Wat als?",
+    "original_title": "Wat als?",
+    "year": 2011
+   },
+   {
+    "tmdb_id": 286433,
+    "title": "三命",
+    "original_title": "三命",
+    "year": 2025
+   }
+  ]
+ },
+ "When They Cry - Higurashi": {
+  "query": "When They Cry - Higurashi",
+  "year_hint": null,
+  "status": "ambiguous",
+  "reason": "low score",
+  "tmdb_tv": null,
+  "title": null,
+  "original_title": null,
+  "first_year": null,
+  "candidates": [
+   {
+    "tmdb_id": 25760,
+    "title": "Когда плачут цикады",
+    "original_title": "ひぐらしのなく頃に",
+    "year": 2006
+   },
+   {
+    "tmdb_id": 100988,
+    "title": "Когда плачут цикады",
+    "original_title": "ひぐらしのなく頃に 業",
+    "year": 2020
+   },
+   {
+    "tmdb_id": 75475,
+    "title": "ひぐらしのなく頃に",
+    "original_title": "ひぐらしのなく頃に",
+    "year": 2016
+   },
+   {
+    "tmdb_id": 327185,
+    "title": "Higurashi no Naku Koro ni (Shinsaku TV Animation)",
+    "original_title": "Higurashi no Naku Koro ni (Shinsaku TV Animation)",
+    "year": null
+   }
+  ]
+ },
+ "Xena: Warrior Princess": {
+  "query": "Xena: Warrior Princess",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4616,
+  "title": "Зена - королева воинов",
+  "original_title": "Xena: Warrior Princess",
+  "first_year": 1995,
+  "candidates": []
+ },
+ "Code Geass: Rozé of the Recapture": {
+  "query": "Code Geass: Rozé of the Recapture",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 255107,
+  "title": "Код Гиас: Вернувшийся Розе",
+  "original_title": "コードギアス 奪還のロゼ",
+  "first_year": 2024,
+  "candidates": []
+ },
+ "Highlander: The Raven": {
+  "query": "Highlander: The Raven",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 4377,
+  "title": "Горец: Ворон",
+  "original_title": "Highlander: The Raven",
+  "first_year": 1998,
+  "candidates": []
+ },
+ "Mortal Kombat: Defenders of the Realm": {
+  "query": "Mortal Kombat: Defenders of the Realm",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 6212,
+  "title": "Смертельная Битва: Защитники Империи",
+  "original_title": "Mortal Kombat: Defenders of the Realm",
+  "first_year": 1996,
+  "candidates": []
+ },
+ "Sonic Underground": {
+  "query": "Sonic Underground",
+  "year_hint": null,
+  "status": "matched",
+  "reason": "clear",
+  "tmdb_tv": 20992,
+  "title": "Соник Андеграунд",
+  "original_title": "Sonic Underground",
+  "first_year": 1999,
+  "candidates": []
+ },
+ "The Mask": {
+  "query": "The Mask",
+  "year_hint": null,
+  "status": "auto_popular",
+  "reason": "most-voted exact name premiered before first watch 2026-10-27",
+  "tmdb_tv": 9957,
+  "title": "Маска: мультсериал",
+  "original_title": "The Mask: Animated Series",
+  "first_year": 1995,
+  "candidates": [
+   {
+    "tmdb_id": 9957,
+    "title": "Маска: мультсериал",
+    "original_title": "The Mask: Animated Series",
+    "year": 1995
+   },
+   {
+    "tmdb_id": 80653,
+    "title": "The Mask",
+    "original_title": "面具",
+    "year": 2018
+   },
+   {
+    "tmdb_id": 152508,
+    "title": "The Mask",
+    "original_title": "也平凡",
+    "year": 2021
+   },
+   {
+    "tmdb_id": 322363,
+    "title": "The Mask",
+    "original_title": "القناع",
+    "year": 2027
+   }
+  ]
+ }
+}
