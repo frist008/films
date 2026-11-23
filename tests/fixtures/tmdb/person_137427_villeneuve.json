@@ -1,0 +1,68 @@
+{
+ "id": 137427,
+ "name": "Дени Вильнёв",
+ "also_known_as": [
+  "Дени Вильнев",
+  "Denis Villeneuve OC CQ RCA",
+  "Deni Vilenüv"
+ ],
+ "imdb_id": "nm0898288",
+ "known_for_department": "Directing",
+ "external_ids": {
+  "imdb_id": "nm0898288"
+ },
+ "translations": {
+  "translations": [
+   {
+    "iso_3166_1": "US",
+    "iso_639_1": "en",
+    "name": "English",
+    "english_name": "English",
+    "data": {
+     "name": "Denis Villeneuve",
+     "primary": false
+    }
+   },
+   {
+    "iso_3166_1": "CA",
+    "iso_639_1": "fr",
+    "name": "Français",
+    "english_name": "French",
+    "data": {
+     "name": "Denis Villeneuve",
+     "primary": true
+    }
+   },
+   {
+    "iso_3166_1": "RU",
+    "iso_639_1": "ru",
+    "name": "Pусский",
+    "english_name": "Russian",
+    "data": {
+     "name": "Дени Вильнёв",
+     "primary": false
+    }
+   },
+   {
+    "iso_3166_1": "FR",
+    "iso_639_1": "fr",
+    "name": "Français",
+    "english_name": "French",
+    "data": {
+     "name": "",
+     "primary": false
+    }
+   },
+   {
+    "iso_3166_1": "UA",
+    "iso_639_1": "uk",
+    "name": "Український",
+    "english_name": "Ukrainian",
+    "data": {
+     "name": "Дені Вільнев",
+     "primary": false
+    }
+   }
+  ]
+ }
+}

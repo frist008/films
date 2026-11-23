@@ -1,0 +1,13 @@
+requests>=2.32
+beautifulsoup4>=4.12
+lxml>=5.2
+gspread>=6.1
+google-auth-oauthlib>=1.2
+yt-dlp[default]>=2025.11.12   # [default] brings yt-dlp-ejs (YouTube JS challenges, run by Deno — trailer-check skill)
+faster-whisper>=1.1
+numpy>=1.26
+Pillow>=11                    # people_sheet.py, sources/jellyfin_posters.py (was installed but not listed)
+pysilero-vad>=3.4            # faster-whisper's VAD filter without onnxruntime (same Silero v6 model; trailer_lang.vad_backend)
+# Python 3.15 (owner, 2026-11-17): there is no onnxruntime for 3.15 yet and pyyaml has no 3.15 wheel — install as in
+# docs/google-setup.md «Python 3.15»: everything but faster-whisper from this file, pyyaml pure-Python
+# (PYYAML_FORCE_LIBYAML=0), then faster-whisper and its other deps with --no-deps.

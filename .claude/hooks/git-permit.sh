@@ -1,0 +1,123 @@
+#!/usr/bin/env bash
+# Commit and push only with the owner's explicit permission (owner, 2026-11-03: «давай создадим хук, что комит и пуш можно
+# только с моего явного разрешения»; «Спрашивай каждый раз» — one answer = one commit with its push).
+#   pre  (PreToolUse, Bash / PowerShell): `git commit` / `git commit-tree` needs data/cache/locks/git_permit.json with
+#        granted = true, younger than 2 h and not used by a commit yet (the commit uses it); `git push` needs a granted
+#        permission younger than 2 h. Otherwise deny: ask with AskUserQuestion first.
+#   post (PostToolUse, AskUserQuestion): a question that names both «коммит» and «пуш» → its answer is written to
+#        git_permit.json (granted = the answer starts with «Да»).
+#   prompt (UserPromptSubmit): the owner's chat message «… потом комит пуш» (both words, no «нет / не / без») is the same
+#        permission, 24 h (2026-11-24: «я же давал разрешение»).
+# Tests: tests/test_git_permit.py.
+mode="${1:-pre}"
+input=$(cat)
+printf '%s' "$input" | MODE="$mode" CLAUDE_PROJECT_DIR="${CLAUDE_PROJECT_DIR:-.}" python -X utf8 -c '
+import json, os, re, sys, time
+d = json.load(sys.stdin)
+mode = os.environ["MODE"]
+locks = os.path.join(os.environ.get("CLAUDE_PROJECT_DIR", "."), "data", "cache", "locks")
+flag = os.path.join(locks, "git_permit.json")
+TTL = 2 * 3600
+
+def load():
+    try:
+        with open(flag, encoding="utf-8") as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return {}
+
+def save(obj):
+    os.makedirs(locks, exist_ok=True)
+    with open(flag, "w", encoding="utf-8") as f:
+        json.dump(obj, f, ensure_ascii=False)
+
+def head():
+    # the permission is spent by a commit that really happened (HEAD moved), not by an attempt another hook stopped
+    # (owner, 2026-11-13: «Да, поправить» — the «да» was spent on a commit the stage hook denied)
+    import subprocess
+    try:
+        r = subprocess.run(["git", "-C", os.environ.get("CLAUDE_PROJECT_DIR", "."), "rev-parse", "HEAD"],
+                           capture_output=True, text=True, timeout=20)
+        return r.stdout.strip() or None if r.returncode == 0 else None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+if mode == "prompt":
+    # a chat message of the owner is a permission too (owner, 2026-11-24: «как обновишь таблицу и всё сделаешь потом комит
+    # пуш» — then «И фикси причину почему тебе не хватило моего прошлого сообщения, я же давал разрешение»): a message
+    # naming both «коммит/комит» and «пуш» without a «нет / не / без» before them grants one commit with its push; it is
+    # given ahead of the work («как … сделаешь»), so it lives 24 h, not 2
+    p = d.get("prompt") or ""
+    if p.lstrip().startswith("<"):
+        sys.exit(0)
+    c = re.search(r"(?<![а-яё])ком+ит\w*|commit", p, re.I)
+    u = re.search(r"(?<![а-яё])пуш\w*|push", p, re.I)
+    if not (c and u):
+        sys.exit(0)
+    before = p[:min(c.start(), u.start())]
+    neg = re.search(r"(?<![а-яё])(нет|не|без|рано|пока не|не надо)(?![а-яё])[^.!?\n]{0,25}$", before, re.I) or \
+        re.search(r"(?<![а-яё])(не\s+(надо|нужно|делай|коммить|комить|пушить)|без\s+ком+ит|нельзя)", p, re.I)
+    if neg or "?" in p[c.start():]:
+        sys.exit(0)
+    save({"granted": True, "answer": p.strip()[:120], "at": time.time(), "head": head(), "source": "chat", "ttl": 24 * 3600})
+    sys.exit(0)
+
+if mode == "post":
+    if d.get("tool_name") != "AskUserQuestion":
+        sys.exit(0)
+    qs = [q.get("question", "") for q in (d.get("tool_input") or {}).get("questions") or []]
+    gq = [q for q in qs if re.search(r"коммит|commit", q, re.I) and re.search(r"пуш|push", q, re.I)]
+    if not gq:
+        sys.exit(0)
+    resp = d.get("tool_response")
+    answers = {}
+    if isinstance(resp, dict) and isinstance(resp.get("answers"), dict):
+        answers = resp["answers"]
+    else:
+        s = resp if isinstance(resp, str) else json.dumps(resp, ensure_ascii=False)
+        for q in gq:
+            m = re.search(re.escape(q) + r"\"\s*=\s*\"([^\"]*)", s)
+            if m:
+                answers[q] = m.group(1)
+    ans = next((answers.get(q) for q in gq if answers.get(q)), None)
+    if ans is None:
+        sys.exit(0)
+    # «да» anywhere as a word, unless the answer starts with «нет» (2026-11-03: «старая история тоже не нужна на компе, да
+    # комит и пуш» — a yes not at the start; owner: «правь хук!»)
+    yes = bool(re.search(r"(?<![а-яё])да(?![а-яё])", ans, re.I)) and not re.match(r"\s*(нет|не\s)", ans, re.I)
+    save({"granted": yes, "answer": ans[:120], "at": time.time(), "head": head()})
+    sys.exit(0)
+
+if d.get("tool_name") not in ("Bash", "PowerShell"):
+    sys.exit(0)
+cmd = str((d.get("tool_input") or {}).get("command") or "")
+cmd = re.sub(r"\"[^\"]*\"|\x27[^\x27]*\x27", "Q", cmd)   # quoted text is an argument (grep "git push", -m "…")
+GIT = r"(?<![\w./-])git(?:\.exe)?(?:\s+-[cC]\s+\S+)*\s+"
+commit = re.search(GIT + r"commit(?:-tree)?\b", cmd)
+push = re.search(GIT + r"push\b", cmd)
+if not (commit or push):
+    sys.exit(0)
+st = load()
+fresh = st.get("granted") and time.time() - float(st.get("at") or 0) < float(st.get("ttl") or TTL)
+if fresh and "head" not in st and not st.get("commit_used"):   # a permission written before 2026-11-13
+    st["head"] = head()
+    save(st)
+# used = a commit was made after the answer (HEAD is not where it was when the owner said «да»)
+used = bool(st.get("commit_used")) or ("head" in st and head() != st.get("head"))
+why = None
+if commit and not (fresh and not used):
+    why = "коммит"
+elif push and not fresh:
+    why = "пуш"
+if why:
+    msg = ("Коммит и пуш — только с явного разрешения владельца (2026-11-03: «давай создадим хук, что комит и пуш можно только "
+           "с моего явного разрешения», «Спрашивай каждый раз»). Сначала AskUserQuestion: в вопросе слова «коммит» и «пуш», "
+           "что войдёт в коммит; ответ «Да, коммить и пушить» / «Нет». Один ответ «да» — один коммит с пушем, 2 часа.")
+    if st:
+        msg += " Последний ответ: «" + str(st.get("answer")) + "», " + str(int((time.time() - float(st.get("at") or 0)) // 60)) + " мин назад" + (", коммит по нему уже сделан." if used else ".")
+    print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "deny",
+                                             "permissionDecisionReason": msg}}, ensure_ascii=False))
+    sys.exit(0)
+sys.exit(0)
+'
+exit 0

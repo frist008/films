@@ -1,0 +1,20 @@
+.env
+secrets/
+data/cache/
+data/*.db-wal
+data/*.db-shm
+__pycache__/
+*.pyc
+
+# personal identifiers (see config/private.example.toml)
+config/private.toml
+
+# the live DB (~900 MB) — published as text through films/backup.py → backup/
+data/*.db
+.claude/scheduled_tasks.lock
+.claude/settings.local.json
+data/logs/
+
+# План работ — только на компьютере, сделанное нигде не хранится (владелец, 2026-11-22)
+PLAN.md
+PLAN-done.md
